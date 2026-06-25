@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ABM - Gestión de Sitios Web</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        background: #f4f7f9;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      header {
+        background: #007bff;
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+      header h1 {
+        font-size: 2em;
+        margin-bottom: 10px;
+      }
+      header p {
+        opacity: 0.9;
+      }
+      .nav-links {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+      }
+      .nav-links a {
+        color: #007bff;
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: 500;
+      }
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+      .content {
+        padding: 30px;
+      }
+      .form-section {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+      }
+      .form-section h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: 500;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+      }
+      .form-group small {
+        display: block;
+        margin-top: 5px;
+        color: #777;
+        font-size: 12px;
+      }
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        font-size: 12px;
+      }
+      .btn-danger:hover {
+        background: #c82333;
+      }
+      .btn-edit {
+        background: #ffc107;
+        color: #333;
+        padding: 8px 16px;
+        font-size: 12px;
+        margin-right: 5px;
+      }
+      .btn-edit:hover {
+        background: #e0a800;
+      }
+      .table-section {
+        margin-top: 30px;
+      }
+      .table-section h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      thead {
+        background: #004085;
+        color: white;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+      }
+      th {
+        font-weight: 600;
+      }
+      tbody tr {
+        border-bottom: 1px solid #eee;
+      }
+      tbody tr:hover {
+        background: #f8f9fa;
+      }
+      .actions {
+        white-space: nowrap;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #007bff;
+        color: white;
+      }
+      .badge-critico {
+        background: #dc3545;
+      }
+      .alert {
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+      }
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .download-section {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+      .download-section p {
+        margin-bottom: 15px;
+        color: #555;
+      }
+      .hidden {
+        display: none;
+      }
+      @media (max-width: 768px) {
+        .container {
+          border-radius: 0;
+        }
+        table {
+          font-size: 12px;
+        }
+        th,
+        td {
+          padding: 10px 5px;
+        }
+        .btn {
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>⚙️ Panel de Administración</h1>
+        <p>Gestión de Sitios Web del Monitor de Estado</p>
+      </header>
+
+      <div class="nav-links">
+        <a href="index.html">← Volver al Monitor</a>
+        <a href="leyenda.html">Ver Leyenda</a>
+      </div>
+
+      <div class="content">
+        <div id="mensaje" class="hidden"></div>
+
+        <!-- Formulario ABM -->
+        <div class="form-section">
+          <h2 id="form-title">➕ Agregar Nuevo Sitio</h2>
+          <form id="abm-form">
+            <input type="hidden" id="edit-index" value="" />
+
+            <div class="form-group">
+              <label for="nombre">Nombre del Sitio *</label>
+              <input
+                type="text"
+                id="nombre"
+                required
+                placeholder="Ej: Google"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="url">URL *</label>
+              <input
+                type="url"
+                id="url"
+                required
+                placeholder="Ej: https://www.google.com"
+              />
+              <small>Debe incluir https:// o http://</small>
+            </div>
+
+            <div class="form-group">
+              <label for="orden">Orden (opcional)</label>
+              <input
+                type="number"
+                id="orden"
+                min="1"
+                placeholder="Deja vacío para agregar al final"
+              />
+              <small>Define la posición en la lista</small>
+            </div>
+
+            <div class="form-group">
+              <label for="grupo">Grupo (opcional)</label>
+              <select id="grupo">
+                <option value="">Sin grupo</option>
+                <option value="CRITICO">CRÍTICO</option>
+              </select>
+              <small>Los sitios críticos se destacan en el monitor</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-submit">
+              Agregar Sitio
+            </button>
+            <button
+              type="button"
+              class="btn btn-edit hidden"
+              id="btn-cancel"
+              onclick="cancelarEdicion()"
+            >
+              Cancelar
+            </button>
+          </form>
+        </div>
+
+        <!-- Tabla de sitios -->
+        <div class="table-section">
+          <h2>📋 Sitios Configurados (<span id="total-sitios">0</span>)</h2>
+          <div style="overflow-x: auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nombre</th>
+                  <th>URL</th>
+                  <th>Orden</th>
+                  <th>Grupo</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-sitios">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 40px">
+                    Cargando datos...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sección de guardado -->
+        <div class="download-section">
+          <p>
+            <strong>💡 Opciones de guardado:</strong> Puedes guardar los cambios
+            directamente en GitHub o descargar el archivo JSON.
+          </p>
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              justify-content: center;
+              flex-wrap: wrap;
+              margin-top: 15px;
+            "
+          >
+            <button
+              class="btn btn-primary"
+              onclick="guardarEnGitHub()"
+              id="btn-guardar-github"
+            >
+              🚀 Guardar en GitHub
+            </button>
+            <button class="btn btn-edit" onclick="descargarJSON()">
+              💾 Descargar JSON
+            </button>
+          </div>
+          <div
+            id="estado-guardado"
+            style="margin-top: 15px; font-size: 0.9em; color: #666"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let sitios = [];
+
+      // Cargar datos al iniciar
+      async function cargarDatos() {
+        try {
+          const response = await fetch('data/webs.json');
+          sitios = await response.json();
+          guardarEnLocalStorage();
+          renderizarTabla();
+        } catch (error) {
+          mostrarMensaje(
+            'Error al cargar los datos: ' + error.message,
+            'danger'
+          );
+        }
+      }
+
+      // Guardar en localStorage
+      function guardarEnLocalStorage() {
+        localStorage.setItem('webs_abm', JSON.stringify(sitios));
+      }
+
+      // Cargar desde localStorage si existe
+      function cargarDesdeLocalStorage() {
+        const guardado = localStorage.getItem('webs_abm');
+        if (guardado) {
+          sitios = JSON.parse(guardado);
+          renderizarTabla();
+        } else {
+          cargarDatos();
+        }
+      }
+
+      // Renderizar tabla
+      function renderizarTabla() {
+        const tbody = document.getElementById('tabla-sitios');
+        document.getElementById('total-sitios').textContent = sitios.length;
+
+        if (sitios.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 40px; color: #777;">
+                No hay sitios configurados. ¡Agrega el primero!
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = sitios
+          .map(
+            (sitio, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td><strong>${sitio.nombre}</strong></td>
+            <td><a href="${
+              sitio.url
+            }" target="_blank" style="color: #007bff;">${sitio.url}</a></td>
+            <td>${sitio.orden || '-'}</td>
+            <td>
+              ${
+                sitio.grupo
+                  ? `<span class="badge badge-critico">${sitio.grupo}</span>`
+                  : '-'
+              }
+            </td>
+            <td class="actions">
+              <button class="btn btn-edit" onclick="editarSitio(${index})">✏️ Editar</button>
+              <button class="btn btn-danger" onclick="eliminarSitio(${index})">🗑️ Eliminar</button>
+            </td>
+          </tr>
+        `
+          )
+          .join('');
+      }
+
+      // Mostrar mensaje
+      function mostrarMensaje(texto, tipo = 'success') {
+        const mensaje = document.getElementById('mensaje');
+        mensaje.className = `alert alert-${tipo}`;
+        mensaje.textContent = texto;
+        mensaje.classList.remove('hidden');
+
+        setTimeout(() => {
+          mensaje.classList.add('hidden');
+        }, 5000);
+
+        // Scroll al inicio
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Agregar o actualizar sitio
+      document
+        .getElementById('abm-form')
+        .addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          const editIndex = document.getElementById('edit-index').value;
+          const sitio = {
+            nombre: document.getElementById('nombre').value.trim(),
+            url: document.getElementById('url').value.trim(),
+          };
+
+          const orden = document.getElementById('orden').value;
+          if (orden) {
+            sitio.orden = parseInt(orden);
+          }
+
+          const grupo = document.getElementById('grupo').value;
+          if (grupo) {
+            sitio.grupo = grupo;
+          }
+
+          if (editIndex !== '') {
+            // Editar
+            sitios[parseInt(editIndex)] = sitio;
+            mostrarMensaje('✅ Sitio actualizado correctamente', 'success');
+          } else {
+            // Agregar
+            sitios.push(sitio);
+            mostrarMensaje('✅ Sitio agregado correctamente', 'success');
+          }
+
+          guardarEnLocalStorage();
+          renderizarTabla();
+          this.reset();
+          cancelarEdicion();
+        });
+
+      // Editar sitio
+      function editarSitio(index) {
+        const sitio = sitios[index];
+
+        document.getElementById('edit-index').value = index;
+        document.getElementById('nombre').value = sitio.nombre;
+        document.getElementById('url').value = sitio.url;
+        document.getElementById('orden').value = sitio.orden || '';
+        document.getElementById('grupo').value = sitio.grupo || '';
+
+        document.getElementById('form-title').textContent = '✏️ Editar Sitio';
+        document.getElementById('btn-submit').textContent = 'Actualizar Sitio';
+        document.getElementById('btn-cancel').classList.remove('hidden');
+
+        // Scroll al formulario
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Cancelar edición
+      function cancelarEdicion() {
+        document.getElementById('edit-index').value = '';
+        document.getElementById('form-title').textContent =
+          '➕ Agregar Nuevo Sitio';
+        document.getElementById('btn-submit').textContent = 'Agregar Sitio';
+        document.getElementById('btn-cancel').classList.add('hidden');
+        document.getElementById('abm-form').reset();
+      }
+
+      // Eliminar sitio
+      function eliminarSitio(index) {
+        const sitio = sitios[index];
+        if (confirm(`¿Estás seguro de eliminar "${sitio.nombre}"?`)) {
+          sitios.splice(index, 1);
+          guardarEnLocalStorage();
+          renderizarTabla();
+          mostrarMensaje('✅ Sitio eliminado correctamente', 'success');
+        }
+      }
+
+      // Guardar directamente en GitHub
+      async function guardarEnGitHub() {
+        const btn = document.getElementById('btn-guardar-github');
+        const estadoDiv = document.getElementById('estado-guardado');
+
+        try {
+          btn.disabled = true;
+          btn.textContent = '⏳ Guardando...';
+          estadoDiv.textContent = 'Enviando cambios al servidor...';
+
+          const response = await fetch('/.netlify/functions/update-webs', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              data: sitios,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            mostrarMensaje(
+              '✅ ¡Cambios guardados exitosamente en GitHub! El sitio se actualizará automáticamente.',
+              'success'
+            );
+            estadoDiv.innerHTML = `<span style="color: #28a745;">✓ Última actualización: ${new Date().toLocaleString()}</span>`;
+
+            // Limpiar localStorage después de guardar exitosamente
+            localStorage.removeItem('webs_abm');
+          } else {
+            throw new Error(result.error || 'Error desconocido');
+          }
+        } catch (error) {
+          mostrarMensaje(
+            '❌ Error al guardar: ' +
+              error.message +
+              '. Intenta descargar el JSON manualmente.',
+            'danger'
+          );
+          estadoDiv.innerHTML = `<span style="color: #dc3545;">✗ Error: ${error.message}</span>`;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '🚀 Guardar en GitHub';
+        }
+      }
+
+      // Descargar JSON
+      function descargarJSON() {
+        const dataStr = JSON.stringify(sitios, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'webs.json';
+        link.click();
+        URL.revokeObjectURL(url);
+
+        mostrarMensaje(
+          '💾 Archivo descargado. Reemplaza data/webs.json en tu servidor.',
+          'success'
+        );
+      }
+
+      // Inicializar
+      cargarDesdeLocalStorage();
+    </script>
+  </body>
+</html>

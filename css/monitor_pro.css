@@ -1,0 +1,244 @@
+/* cSpell:disable */
+/* ======================================================= */
+/* VERSIÓN PROFESIONAL Y DE ÉNFASIS (monitor_pro.css) */
+/* ======================================================= */
+
+:root {
+  --bg: #1e2124;
+  --text: #f4f7f9;
+  --accent: #7289da;
+  --container-bg: #282b2f;
+  --container-radius: 8px;
+  --container-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  --header-color: #7289da;
+  --link-color: #7289da;
+  --table-header-bg: #36393f;
+  --table-header-color: #ffffff;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+h1 {
+  color: var(--header-color);
+}
+
+/* Colores de información definidos a nivel de tema; la estructura se movió a monitor_base */
+.info-bar {
+  color: var(--info-color, #99aab5);
+}
+.update-info {
+  color: var(--update-info-color, #ffffff);
+}
+
+/* table-scroll-container movido a monitor_base.css */
+
+/* --- Estilos de la Tabla --- */
+#monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+#monitor-table th,
+#monitor-table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #36393f; /* Líneas divisorias oscuras */
+}
+#monitor-table td a {
+  color: #7289da;
+  text-decoration: none;
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+/* Encabezados */
+#monitor-table thead th {
+  background-color: #36393f; /* Fondo oscuro */
+  color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Filas alternas (Cebra) */
+#monitor-table tbody tr:nth-child(odd) {
+  background-color: #2f3136; /* Fila par */
+}
+#monitor-table tbody tr:nth-child(even) {
+  background-color: #282b2f; /* Fila impar */
+}
+#monitor-table tr:hover {
+  background-color: #3e4147; /* Resaltado en oscuro */
+}
+
+/* Centrar el texto en las columnas de datos (se mantiene) */
+#monitor-table td:nth-child(3),
+#monitor-table td:nth-child(4),
+#monitor-table td:nth-child(5),
+#monitor-table td:nth-child(6),
+#monitor-table td:nth-child(7),
+#monitor-table td:nth-child(8) {
+  text-align: center;
+}
+
+/* --- Estilos del Botón de Acción (PSI) --- */
+.psi-button,
+.btn-primary {
+  background-color: #43b581; /* Verde de éxito */
+  color: #23272a;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px; /* Botón más redondeado */
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.psi-button:hover,
+.btn-primary:hover {
+  background-color: #57d498;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(67, 181, 129, 0.3);
+}
+
+.error-button {
+  background-color: #f04747; /* Rojo Discord */
+  color: #ffffff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-left: 5px;
+}
+.error-button:hover {
+  background-color: #d84040;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(240, 71, 71, 0.3);
+}
+
+/* ======================================================= */
+/* --- Colores de Estado (PRO: Énfasis en el Borde Izquierdo) --- */
+/* ======================================================= */
+
+/* Presentación: mantener el texto de estado en negrita; los visuales (color/fondo) se definen mediante variables en monitor_base/tema */
+.status-very-fast,
+.status-fast,
+.status-normal,
+.status-slow,
+.status-critical,
+.status-risk,
+.status-extreme-risk {
+  font-weight: bold;
+}
+/* El fondo se mantiene transparente en el tema pro para preservar el color de la fila; el borde izquierdo indica la gravedad */
+
+/* 1. Muy Rápido (0 - 300 ms) -> VERDE */
+/* Colores de estado asignados mediante variables (tema pro); conservar borde izquierdo y animación cuando aplique */
+:root {
+  --status-very-fast-bg: transparent;
+  --status-very-fast-color: #43b581;
+  --status-fast-bg: transparent;
+  --status-fast-color: #57d498;
+  --status-normal-bg: transparent;
+  --status-normal-color: #7289da;
+  --status-slow-bg: transparent;
+  --status-slow-color: #faa61a;
+  --status-critical-bg: transparent;
+  --status-critical-color: #e65100;
+  --status-risk-bg: transparent;
+  --status-risk-color: #dc3545;
+  --status-extreme-risk-bg: transparent;
+  --status-extreme-risk-color: #ff0000;
+  --status-down-bg: #ff0000;
+  --status-down-color: white;
+}
+
+/* Conservar comportamiento de borde izquierdo/animación para el tema pro */
+.status-critical {
+  border-left: 3px solid var(--status-critical-color);
+}
+.status-risk {
+  border-left: 3px solid var(--status-risk-color);
+}
+.status-extreme-risk {
+  border-left: 3px solid var(--status-extreme-risk-color);
+  animation: pulse-border 2s infinite;
+}
+.status-down {
+  border-radius: 2px;
+}
+
+/* --- Keyframe para animación de extremo riesgo --- */
+@keyframes pulse-border {
+  0% {
+    border-color: #ff0000;
+  }
+  50% {
+    border-color: rgba(255, 0, 0, 0.4);
+  }
+  100% {
+    border-color: #ff0000;
+  }
+}
+
+/* --- Estilo para la Latencia (Métricas) --- */
+.latency-metric {
+  font-weight: bold;
+  font-size: 1em;
+  /* Sombra de texto sutil para destacar el número */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  color: #ffffff; /* Asegura color blanco para el número */
+}
+
+/* --- Responsive (se mantiene) --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+  #monitor-table {
+    font-size: 0.8em;
+  }
+}
+
+/* ======================================================= */
+/* REGLAS FINALES: Control de Visibilidad de Columnas */
+/* ======================================================= */
+
+/* Oculta la columna URL (2da columna) */
+#monitor-table th:nth-child(2),
+#monitor-table td:nth-child(2) {
+  display: none;
+}
+
+/* Muestra la columna Status HTTP (7ma columna) en el tema pro */
+#monitor-table th:nth-child(7),
+#monitor-table td:nth-child(7) {
+  display: table-cell;
+}
+
+/* Oculta la columna de Acción (8va columna) */
+#monitor-table th:nth-child(8),
+#monitor-table td:nth-child(8) {
+  display: none;
+}
+
+/* ======================================================= */
+/* ENLACES (mantener la legibilidad en tema oscuro) */
+/* ======================================================= */
+#monitor-table td:nth-child(1) a {
+  text-decoration: none;
+  color: #ffffff; /* Texto blanco en la columna de servicio */
+  font-weight: bold;
+}

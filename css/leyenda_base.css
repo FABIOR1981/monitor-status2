@@ -1,0 +1,205 @@
+/* ======================================================= */
+/* LEYENDA BASE: Estilos Estructurales (Comunes a todos los temas) */
+/* Los colores, bordes y fondos son definidos por los CSS de tema (leyenda_def/min/pro.css) */
+/* ======================================================= */
+
+body {
+  /* Layout principal */
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif; /* Fuente base */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+header {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  text-align: center;
+  /* El borde inferior (color) será definido por el CSS del tema */
+}
+
+#titulo-leyenda {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0;
+}
+
+#contenido-leyenda {
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  border-radius: 8px;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* --- Estilos de Tabla de Umbrales (Estructura fija) --- */
+.leyenda-tabla-umbrales {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.leyenda-tabla-umbrales th,
+.leyenda-tabla-umbrales td {
+  padding: 10px;
+  text-align: left;
+  /* Los bordes se definen en los CSS de tema (leyenda_def/pro/min.css) */
+}
+
+.leyenda-tabla-umbrales th {
+  font-weight: bold;
+}
+
+.leyenda-tabla-umbrales td:nth-child(2) {
+  /* Umbral de latencia: centrar */
+  text-align: center;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* Pie de página y enlace de retorno */
+footer {
+  margin-top: 30px;
+  padding-top: 10px;
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+
+#enlace-volver {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 1em;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+/* ======================================================= */
+/* NUEVOS ESTILOS DE PRESENTACIÓN PARA EXPANSIÓN Y ERRORES */
+/* Estructura y apariencia independiente del color del tema */
+/* ======================================================= */
+
+/* Estilos de título para las secciones internas */
+.leyenda-section h3 {
+  font-size: 1.5em;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  /* El color y el borde se definirán en el tema (usando var() ) */
+}
+
+/* Estilos de la nueva tabla de errores (Estructura fija) */
+.leyenda-tabla-errores {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.leyenda-tabla-errores th,
+.leyenda-tabla-errores td {
+  padding: 10px;
+  text-align: left;
+  /* Los bordes y fondos se definen en los CSS de tema */
+}
+
+.leyenda-tabla-errores th {
+  font-weight: bold;
+}
+
+/* --- Estilos para la justificación (details/summary) --- */
+
+.leyenda-tabla-umbrales details {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leyenda-tabla-umbrales summary {
+  cursor: pointer;
+  font-weight: bold;
+  list-style: none; /* Elimina la flecha predeterminada */
+  position: relative;
+  padding-left: 18px;
+  transition: color 0.2s ease;
+  /* El color se definirá en el tema (usando var() ) */
+}
+
+/* Indicador de expansión personalizado */
+.leyenda-tabla-umbrales summary::before {
+  content: '▶';
+  position: absolute;
+  left: 0;
+  font-size: 0.8em;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.2s;
+  /* El color se definirá en el tema (usando var() ) */
+}
+
+.leyenda-tabla-umbrales details[open] summary::before {
+  content: '▼';
+}
+
+/* Estilos para el contenido expandido */
+.leyenda-tabla-umbrales details p {
+  margin: 5px 0 0 0;
+  padding-left: 18px;
+  font-size: 0.9em;
+  /* El color y el borde se definirán en el tema (usando var() ) */
+}
+
+/* === Botón Toggle Modo Oscuro (Esquina Superior Derecha) === */
+.theme-toggle-button-corner {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: transparent;
+  border: 2px solid currentColor;
+  color: inherit;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.5em;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  width: 45px;
+  height: 45px;
+}
+
+.theme-toggle-button-corner:hover {
+  transform: translateY(-3px) rotate(20deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.theme-toggle-button-corner:active {
+  transform: translateY(0) rotate(0deg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle-button-corner #theme-icon {
+  font-size: 1em;
+  transition: transform 0.3s ease;
+}
+
+/* Responsive: mover botón en móviles */
+@media (max-width: 768px) {
+  .theme-toggle-button-corner {
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.3em;
+  }
+}

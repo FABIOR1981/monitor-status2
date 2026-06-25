@@ -1,0 +1,285 @@
+:root {
+  --bg: #121212;
+  --text: #e8e8e8;
+  --accent: #5cb3ff;
+  --container-bg: #1e1e1e;
+  --container-radius: 8px;
+  --container-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --header-color: #5cb3ff;
+  --table-header-bg: #1f3a5f;
+  --table-header-color: #ffffff;
+  --link-color: #5cb3ff;
+}
+
+/* Sobrescrituras específicas del tema oscuro */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+h1 {
+  color: var(--header-color);
+}
+
+/* Colores de info definidos a nivel de tema */
+.info-bar {
+  color: var(--info-color, #a0a0a0);
+}
+.update-info {
+  color: var(--update-info-color, #b0b0b0);
+}
+
+/* --- Estilos de la Tabla (Ajuste de Filas y Columnas) --- */
+#monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #2d2d2d;
+}
+#monitor-table th,
+#monitor-table td {
+  padding: 16px 12px;
+  text-align: left;
+  border-bottom: 1px solid #404040;
+  transition: all 0.2s ease;
+}
+#monitor-table td a {
+  color: #5cb3ff;
+  text-decoration: none;
+  font-size: 0.9em;
+  word-break: break-all;
+  transition: color 0.2s ease;
+}
+#monitor-table td a:hover {
+  color: #8cccff;
+  text-decoration: underline;
+}
+
+/* Establecer ANCHOS FIJOS para las 7 columnas (se muestran 5 en total) */
+/* Orden: Servicio(1), URL(2), Latencia Actual(3), Estado Actual(4), Promedios(5), Estado Promedio(6), Status HTTP(7), Acción(8) */
+#monitor-table thead th:nth-child(1) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(2) {
+  width: 30%;
+}
+#monitor-table thead th:nth-child(3) {
+  width: 10%;
+}
+#monitor-table thead th:nth-child(4) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(5) {
+  width: 10%;
+}
+#monitor-table thead th:nth-child(6) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(7) {
+  width: 5%;
+}
+#monitor-table thead th:nth-child(8) {
+  width: 5%;
+}
+
+#monitor-table thead th {
+  background-color: #1f3a5f;
+  color: white;
+  font-weight: bold;
+}
+#monitor-table tbody tr {
+  cursor: pointer;
+}
+#monitor-table tbody tr:hover {
+  background-color: #2a2a2a;
+  transform: scale(1.002);
+  box-shadow: 0 4px 12px rgba(92, 179, 255, 0.2);
+}
+
+/* Centrar el texto en las columnas de datos (3 a 8) */
+#monitor-table td:nth-child(3),
+#monitor-table td:nth-child(4),
+#monitor-table td:nth-child(5),
+#monitor-table td:nth-child(6),
+#monitor-table td:nth-child(7),
+#monitor-table td:nth-child(8) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* --- Contenedores y elementos principales --- */
+.container {
+  background-color: var(--container-bg);
+  border-radius: var(--container-radius);
+  box-shadow: var(--container-shadow);
+}
+
+/* --- Botones y Controles --- */
+button,
+select {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #4a9eff;
+}
+
+button:hover,
+select:hover {
+  background-color: #4a4a4a;
+  border-color: #6bb3ff;
+}
+
+button:active {
+  background-color: #2a2a2a;
+}
+
+/* --- Sección de Duración --- */
+.duration-section {
+  background-color: #2d2d2d;
+  border: 1px solid #404040;
+}
+
+/* --- Barra de Información --- */
+.info-bar {
+  background-color: #2d2d2d;
+  border: 1px solid #404040;
+}
+
+/* --- Spinner de Carga --- */
+.spinner {
+  border: 4px solid #3a3a3a;
+  border-top: 4px solid #4a9eff;
+}
+
+/* --- Colores de Estado (tema oscuro optimizado) --- */
+:root {
+  --status-very-fast-bg: #1e4620;
+  --status-very-fast-color: #7cfc7c;
+  --status-fast-bg: #2d5a2f;
+  --status-fast-color: #90ee90;
+  --status-normal-bg: #1a3d5f;
+  --status-normal-color: #87ceeb;
+  --status-slow-bg: #5f4a1a;
+  --status-slow-color: #ffa500;
+  --status-critical-bg: #5f1a1a;
+  --status-critical-color: #ff6b6b;
+  --status-risk-bg: #6b1a2f;
+  --status-risk-color: #ff4757;
+  --status-extreme-risk-bg: #8b0000;
+  --status-extreme-risk-color: #ffcccc;
+  --status-down-bg: #000000;
+  --status-down-color: #ffffff;
+}
+
+/* Mantener font-weight donde sea necesario */
+.status-very-fast,
+.status-fast,
+.status-normal,
+.status-slow,
+.status-critical,
+.status-risk,
+.status-extreme-risk,
+.status-down {
+  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Excepción: CAÍDA/ERROR puede tener ancho variable para mostrar todo */
+.status-down {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Destacar estados críticos - TOP 2: Jerarquía Visual */
+.status-critical,
+.status-risk,
+.status-extreme-risk {
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+}
+
+/* Servicios caídos con animación de alerta */
+.status-down {
+  border: 2px solid #ff4757;
+  animation: pulse-alert-dark 2s ease-in-out infinite;
+}
+
+@keyframes pulse-alert-dark {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(255, 107, 107, 0);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 107, 107, 0.7);
+  }
+}
+
+/* --- Enlaces --- */
+a {
+  color: #5cb3ff;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #8cccff;
+  text-decoration: underline;
+}
+
+/* --- PSI Button --- */
+.psi-button,
+.btn-primary {
+  background-color: #1f3a5f;
+  color: #ffffff;
+  border: 1px solid #4a9eff;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.psi-button:hover,
+.btn-primary:hover {
+  background-color: #2a4a7f;
+  border-color: #6bb3ff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
+}
+
+.error-button {
+  background-color: #8b0000;
+  color: #ffffff;
+  border: 1px solid #ff4444;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-left: 5px;
+}
+
+.error-button:hover {
+  background-color: #a00000;
+  border-color: #ff6666;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.3);
+}
+
+/* --- Reiniciar Monitoreo Button --- */
+#reiniciar-btn {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #4a9eff;
+}
+
+#reiniciar-btn:hover {
+  background-color: #4a4a4a;
+}

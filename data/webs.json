@@ -1,0 +1,38 @@
+[
+  {
+    "nombre": "Google",
+    "url": "https://www.google.com",
+    "orden": 1,
+    "grupo": "CRITICO"
+  },
+  {
+    "nombre": "AhiVa",
+    "url": "https://ahiva.correo.com.uy"
+  },
+  {
+    "nombre": "CasillaMia",
+    "url": "https://www.casillamia.uy"
+  },
+  {
+    "nombre": "Correo",
+    "url": "https://www.correo.com.uy/home",
+    "grupo": "CRITICO"
+  },
+  {
+    "nombre": "ExportaFacil",
+    "url": "https://www.exportafacil.com.uy/exportafacil"
+  },
+  {
+    "nombre": "Aduanas Clientes",
+    "url": "https://ahiva.correo.com.uy/aduanas-web/login?1"
+  },
+  {
+    "nombre": "ProdAgenda",
+    "url": "https://prodagenda.correo.com.uy/sae/agendarReserva/Paso1.xhtml?e=2&a=2&r=6",
+    "grupo": "CRITICO"
+  },
+  {
+    "nombre": "Notas",
+    "url": "https://notas.correo.com.uy/notas"
+  }
+]

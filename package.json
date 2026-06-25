@@ -1,0 +1,20 @@
+{
+  "name": "monitor-status",
+  "version": "1.0.0",
+  "description": "Monitor de disponibilidad web con Netlify Functions.",
+  "scripts": {
+    "lint": "eslint . --ext .js,.html",
+    "lint:fix": "eslint . --ext .js,.html --fix",
+    "format": "prettier --write \"**/*.{js,css,html,json,md}\""
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0",
+    "abort-controller": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.43.0",
+    "prettier": "^2.8.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-html": "^7.1.0"
+  }
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor de Servicios</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px;
+        min-height: 60vh;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 5px;
+      }
+      .info-bar {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 0.9em;
+      }
+      .update-info {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      #monitor-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      #monitor-table th,
+      #monitor-table td {
+        text-align: left;
+      }
+      #monitor-table td a {
+        text-decoration: none;
+        font-size: 0.9em;
+        word-break: break-all;
+      }
+      #monitor-table td:nth-child(n + 3):nth-child(-n + 8) {
+        text-align: center;
+      }
+      .psi-button,
+      .btn-primary {
+        border: none;
+        padding: 5px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        transition: background-color 0.2s;
+      }
+      .latency-metric {
+        font-size: 1em;
+      }
+    </style>
+
+    <link rel="stylesheet" href="css/monitor_base.css" />
+    <link id="estilo-principal" rel="stylesheet" href="css/monitor_def.css" />
+  </head>
+  <body>
+    <main>
+      <!-- Botón Toggle Modo Oscuro - Esquina Superior Derecha -->
+      <button
+        id="theme-toggle-btn"
+        class="theme-toggle-button-corner"
+        onclick="toggleDarkMode()"
+        title="Cambiar modo de visualización"
+      >
+        <span id="theme-icon">🌙</span>
+      </button>
+
+      <div class="container">
+        <h1 id="titulo-principal">Monitor de Estado de Servicios</h1>
+
+        <div style="text-align: center; margin-bottom: 15px">
+          <label
+            for="duracion-selector"
+            style="font-size: 0.9em; margin-right: 8px"
+            >Duración del historial:</label
+          >
+          <select
+            id="duracion-selector"
+            style="
+              padding: 5px 10px;
+              border-radius: 4px;
+              border: 1px solid #ccc;
+              font-size: 0.9em;
+              cursor: pointer;
+            "
+            aria-label="Seleccionar duración del historial"
+          ></select>
+          <button
+            id="btn-reiniciar"
+            class="btn-primary"
+            style="margin-left: 15px; padding: 5px 15px; font-size: 0.9em"
+            onclick="reiniciarMonitoreo()"
+            aria-label="Reiniciar monitoreo de servicios"
+          >
+            <span aria-hidden="true">🔄</span>
+            <span id="texto-btn-reiniciar">Reiniciar Monitoreo</span>
+          </button>
+        </div>
+
+        <div
+          class="info-bar"
+          id="info-bar-msg"
+          role="status"
+          aria-live="polite"
+        ></div>
+
+        <div style="text-align: center; margin-bottom: 10px">
+          <div class="menu-horizontal">
+            <a
+              href="leyenda.html"
+              id="enlace-leyenda"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="menu-item"
+              title="Ver rangos y colores de latencia"
+            >
+              📊 Leyenda
+            </a>
+            <a
+              href="abm-webs.html"
+              id="enlace-abm"
+              class="menu-item"
+              style="display: none"
+              title="Administrar sitios web monitoreados"
+            >
+              ⚙️ ABM Webs
+            </a>
+          </div>
+        </div>
+
+        <div
+          class="update-info"
+          id="ultima-actualizacion"
+          role="status"
+          aria-live="polite"
+        ></div>
+
+        <!-- Los filtros se insertarán aquí dinámicamente -->
+
+        <div class="table-scroll-container">
+          <table
+            id="monitor-table"
+            role="table"
+            aria-label="Tabla de monitoreo de servicios"
+          >
+            <thead>
+              <tr>
+                <th id="header-service" scope="col"></th>
+                <th id="header-url" scope="col"></th>
+                <th id="header-latency-actual" scope="col"></th>
+                <th id="header-status-actual" scope="col"></th>
+                <th id="header-promedio-ms" scope="col"></th>
+                <th id="header-promedio-status" scope="col"></th>
+                <th id="header-action" scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="status-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Contenedor de notificaciones (se crea dinámicamente) -->
+
+    <script defer src="js/config.js"></script>
+    <script defer src="js/i18n.js"></script>
+    <script defer src="js/script.js"></script>
+  </body>
+</html>

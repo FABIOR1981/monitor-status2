@@ -1,0 +1,267 @@
+:root {
+  --bg: #f4f7f9;
+  --text: #333;
+  --accent: #007bff;
+  --container-bg: #fff;
+  --container-radius: 8px;
+  --container-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --header-color: #007bff;
+  --table-header-bg: #004085;
+  --table-header-color: #ffffff;
+  --link-color: #007bff;
+}
+
+/* Sobrescrituras específicas del tema: uso simple de las variables definidas en monitor_base */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+h1 {
+  color: var(--header-color);
+}
+
+/* Colores de info definidos a nivel de tema; la estructura se movió a styles_base */
+.info-bar {
+  color: var(--info-color, #6c757d);
+}
+.update-info {
+  color: var(--update-info-color, #495057);
+}
+
+/* table-scroll-container movido a monitor_base.css */
+
+/* --- Estilos de la Tabla (Ajuste de Filas y Columnas) --- */
+#monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+#monitor-table th,
+#monitor-table td {
+  padding: 16px 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  transition: all 0.2s ease;
+}
+#monitor-table td a {
+  color: #007bff;
+  text-decoration: none;
+  font-size: 0.9em;
+  word-break: break-all;
+  transition: color 0.2s ease;
+}
+#monitor-table td a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Establecer ANCHOS FIJOS para las 7 columnas (se muestran 5 en total) */
+/* Orden: Servicio(1), URL(2), Latencia Actual(3), Estado Actual(4), Promedios(5), Estado Promedio(6), Status HTTP(7), Acción(8) */
+#monitor-table thead th:nth-child(1) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(2) {
+  width: 30%;
+}
+#monitor-table thead th:nth-child(3) {
+  width: 10%;
+}
+#monitor-table thead th:nth-child(4) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(5) {
+  width: 10%;
+}
+#monitor-table thead th:nth-child(6) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(7) {
+  width: 5%;
+}
+#monitor-table thead th:nth-child(8) {
+  width: 5%;
+}
+
+#monitor-table thead th {
+  background-color: #004085;
+  color: white;
+  font-weight: bold;
+}
+#monitor-table tbody tr {
+  cursor: pointer;
+}
+#monitor-table tbody tr:hover {
+  background-color: #e8f4f8;
+  transform: scale(1.002);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+/* Centrar el texto en las columnas de datos (3 a 8) */
+#monitor-table td:nth-child(3),
+#monitor-table td:nth-child(4),
+#monitor-table td:nth-child(5),
+#monitor-table td:nth-child(6),
+#monitor-table td:nth-child(7),
+#monitor-table td:nth-child(8) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* --- Estilos del Botón de Acción (PSI) --- */
+.psi-button,
+.btn-primary {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.psi-button:hover,
+.btn-primary:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.error-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-left: 5px;
+}
+.error-button:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* --- Colores de Estado según Tramos de Velocidad (7 Niveles) --- */
+
+/* --- Colores de Estado (NUEVA PALETA DE LATENCIA) --- */
+/* Colores de estado definidos mediante variables */
+:root {
+  --status-very-fast-bg: #d4edda;
+  --status-very-fast-color: #0f5132;
+  --status-fast-bg: #c3e6cb;
+  --status-fast-color: #155724;
+  --status-normal-bg: #cce8ff;
+  --status-normal-color: #044385;
+  --status-slow-bg: #ffe0b2;
+  --status-slow-color: #9c5a00;
+  --status-critical-bg: #f8d7da;
+  --status-critical-color: #721c24;
+  --status-risk-bg: #e9a3af;
+  --status-risk-color: #58151c;
+  --status-extreme-risk-bg: #dc3545;
+  --status-extreme-risk-color: white;
+  --status-down-bg: #343a40;
+  --status-down-color: white;
+}
+
+/* Mantener el peso de fuente y otras presentaciones por encima de las reglas base */
+.status-very-fast,
+.status-fast,
+.status-normal,
+.status-slow,
+.status-critical,
+.status-risk,
+.status-extreme-risk,
+.status-down {
+  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Excepción: CAÍDA/ERROR puede tener ancho variable para mostrar todo */
+.status-down {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Destacar estados críticos - TOP 2: Jerarquía Visual */
+.status-critical,
+.status-risk,
+.status-extreme-risk {
+  border: 2px solid #dc3545;
+  box-shadow: 0 0 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Servicios caídos con animación de alerta */
+.status-down {
+  border: 2px solid #721c24;
+  animation: pulse-alert 2s ease-in-out infinite;
+}
+
+@keyframes pulse-alert {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(220, 53, 69, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(220, 53, 69, 0.6);
+  }
+}
+
+/* --- Estilo para la Latencia (Métricas) --- */
+.latency-metric {
+  font-weight: bold;
+  font-size: 1em;
+  background-color: #fff;
+}
+
+/* --- Responsive (Ajustes para scroll horizontal en móvil) --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+  #monitor-table {
+    font-size: 0.8em;
+  }
+}
+
+/* ======================================================= */
+/* REGLAS FINALES: Control de Visibilidad de Columnas */
+/* ======================================================= */
+
+/* Oculta la columna URL (2da columna) en el tema standard */
+#monitor-table th:nth-child(2),
+#monitor-table td:nth-child(2) {
+  display: none;
+}
+
+/* NUEVO: Oculta la columna Status HTTP (7ma columna) en el tema standard */
+#monitor-table th:nth-child(7),
+#monitor-table td:nth-child(7) {
+  display: none;
+}
+
+/* NUEVO: Oculta la columna de Acción (8va columna) en el tema standard */
+#monitor-table th:nth-child(8),
+#monitor-table td:nth-child(8) {
+  display: none;
+}
+
+/* Pseudo-elementos Emoji centralizados en monitor_base.css; no se duplican aquí. */
+/* ======================================================= */

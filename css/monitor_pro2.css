@@ -1,0 +1,232 @@
+/* cSpell:disable */
+/* ======================================================= */
+/* VERSIÓN PROFESIONAL CLARA (monitor_pro2.css) */
+/* Paleta de colores clara manteniendo el estilo profesional */
+/* ======================================================= */
+
+:root {
+  --bg: #f0f2f5;
+  --text: #1a1a1a;
+  --accent: #5865f2;
+  --container-bg: #ffffff;
+  --container-radius: 8px;
+  --container-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  --header-color: #5865f2;
+  --link-color: #5865f2;
+  --table-header-bg: #e3e5e8;
+  --table-header-color: #2c2f33;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+h1 {
+  color: var(--header-color);
+}
+
+/* Colores de información definidos a nivel de tema */
+.info-bar {
+  color: var(--info-color, #5b6270);
+}
+.update-info {
+  color: var(--update-info-color, #2c2f33);
+}
+
+/* table-scroll-container movido a monitor_base.css */
+
+/* --- Estilos de la Tabla --- */
+#monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+#monitor-table th,
+#monitor-table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e3e5e8;
+}
+#monitor-table td a {
+  color: #5865f2;
+  text-decoration: none;
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+/* Encabezados */
+#monitor-table thead th {
+  background-color: #e3e5e8;
+  color: #2c2f33;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Filas alternas (Cebra) */
+#monitor-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+#monitor-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+#monitor-table tr:hover {
+  background-color: #e8eaf0;
+}
+
+/* Centrar el texto en las columnas de datos */
+#monitor-table td:nth-child(3),
+#monitor-table td:nth-child(4),
+#monitor-table td:nth-child(5),
+#monitor-table td:nth-child(6),
+#monitor-table td:nth-child(7),
+#monitor-table td:nth-child(8) {
+  text-align: center;
+}
+
+/* --- Estilos del Botón de Acción (PSI) --- */
+.psi-button,
+.btn-primary {
+  background-color: #3ba55d;
+  color: #ffffff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.psi-button:hover,
+.btn-primary:hover {
+  background-color: #2d8049;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(59, 165, 93, 0.3);
+}
+
+.error-button {
+  background-color: #ed4245;
+  color: #ffffff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-left: 5px;
+}
+.error-button:hover {
+  background-color: #c03537;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(237, 66, 69, 0.3);
+}
+
+/* ======================================================= */
+/* --- Colores de Estado (PRO2: Énfasis en el Borde Izquierdo con Paleta Clara) --- */
+/* ======================================================= */
+
+/* Presentación: mantener el texto de estado en negrita */
+.status-very-fast,
+.status-fast,
+.status-normal,
+.status-slow,
+.status-critical,
+.status-risk,
+.status-extreme-risk {
+  font-weight: bold;
+}
+
+/* Colores de estado optimizados para tema claro */
+:root {
+  --status-very-fast-bg: transparent;
+  --status-very-fast-color: #2d8049;
+  --status-fast-bg: transparent;
+  --status-fast-color: #3ba55d;
+  --status-normal-bg: transparent;
+  --status-normal-color: #5865f2;
+  --status-slow-bg: transparent;
+  --status-slow-color: #f59e0b;
+  --status-critical-bg: transparent;
+  --status-critical-color: #dc6900;
+  --status-risk-bg: transparent;
+  --status-risk-color: #c03537;
+  --status-extreme-risk-bg: transparent;
+  --status-extreme-risk-color: #d32f2f;
+  --status-down-bg: #d32f2f;
+  --status-down-color: white;
+}
+
+/* Conservar comportamiento de borde izquierdo/animación */
+.status-critical {
+  border-left: 3px solid var(--status-critical-color);
+}
+.status-risk {
+  border-left: 3px solid var(--status-risk-color);
+}
+.status-extreme-risk {
+  border-left: 3px solid var(--status-extreme-risk-color);
+  animation: pulse-border 2s infinite;
+}
+.status-down {
+  border-radius: 2px;
+}
+
+/* --- Keyframe para animación de extremo riesgo --- */
+@keyframes pulse-border {
+  0% {
+    border-color: #d32f2f;
+  }
+  50% {
+    border-color: rgba(211, 47, 47, 0.4);
+  }
+  100% {
+    border-color: #d32f2f;
+  }
+}
+
+/* --- Estilo para la Latencia (Métricas) --- */
+.latency-metric {
+  font-weight: bold;
+  font-size: 1em;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+  color: #1a1a1a;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+  #monitor-table {
+    font-size: 0.8em;
+  }
+}
+
+/* ======================================================= */
+/* REGLAS FINALES: Control de Visibilidad de Columnas */
+/* ======================================================= */
+
+/* Oculta la columna URL (2da columna) */
+#monitor-table th:nth-child(2),
+#monitor-table td:nth-child(2) {
+  display: none;
+}
+
+/* Muestra la columna Status HTTP (7ma columna) en el tema pro2 */
+#monitor-table th:nth-child(7),
+#monitor-table td:nth-child(7) {
+  display: table-cell;
+}
+/* Muestra la columna de Latencia Promedio Extra */
+#monitor-table th:nth-child(8),
+#monitor-table td:nth-child(8) {
+  display: table-cell;
+}

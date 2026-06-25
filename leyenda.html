@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="leyenda-titulo">Cargando Leyenda...</title>
+
+    <link rel="stylesheet" href="css/leyenda_base.css?v=2025121501" />
+
+    <link id="tema-base-css" rel="stylesheet" href="" />
+
+    <script src="js/config.js?v=2025121501"></script>
+    <script src="js/i18n.js?v=2025121501"></script>
+  </head>
+  <body>
+    <!-- Botón Toggle Modo Oscuro - Esquina Superior Derecha -->
+    <button
+      id="theme-toggle-btn"
+      class="theme-toggle-button-corner"
+      onclick="toggleDarkMode()"
+      title="Cambiar modo de visualización"
+    >
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <header>
+      <h1 id="titulo-leyenda"></h1>
+    </header>
+
+    <main id="contenido-leyenda"></main>
+
+    <script defer src="js/leyenda_script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,233 @@
+/* ======================================================= */
+/* VERSÍON MINIMALISTA Y NEUTRA DE monitor.css */
+/* (Base: Versión minimalista solicitada) */
+/* ======================================================= */
+
+:root {
+  --bg: #f7f7f7;
+  --text: #333;
+  --accent: #6c757d;
+  --container-bg: #fff;
+  --container-radius: 4px;
+  --container-shadow: none;
+  --header-color: #444;
+  --link-color: #007bff;
+  --table-header-bg: #eee;
+  --table-header-color: #444;
+
+  --status-very-fast-bg: transparent;
+  --status-very-fast-color: #104e10;
+  --status-fast-bg: transparent;
+  --status-fast-color: #1a571a;
+  --status-normal-bg: transparent;
+  --status-normal-color: #004085;
+  --status-slow-bg: transparent;
+  --status-slow-color: #d45a00;
+  --status-critical-bg: transparent;
+  --status-critical-color: #e65100;
+  --status-risk-bg: transparent;
+  --status-risk-color: #b71c1c;
+  --status-extreme-risk-bg: transparent;
+  --status-extreme-risk-color: #880e4f;
+  --status-down-bg: #dc3545;
+  --status-down-color: white;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+h1 {
+  color: var(--header-color);
+}
+
+/* Colores de información definidos a nivel de tema; la estructura se movió a monitor_base */
+.info-bar {
+  color: var(--info-color, #6c757d);
+}
+.update-info {
+  color: var(--update-info-color, #495057);
+}
+
+/* table-scroll-container movido a monitor_base.css */
+
+/* --- Estilos de la Tabla --- */
+#monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Eliminada la sombra de la tabla */
+  border-radius: 4px;
+  border: 1px solid #ccc; /* Borde simple para definir la tabla */
+  margin-bottom: 20px;
+}
+#monitor-table th,
+#monitor-table td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid #eee; /* Borde muy sutil entre filas */
+}
+#monitor-table td a {
+  color: #007bff;
+  text-decoration: none;
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+/* Establecer ANCHOS FIJOS (Se mantiene la estructura) */
+#monitor-table thead th:nth-child(1) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(2) {
+  width: 30%;
+}
+#monitor-table thead th:nth-child(3) {
+  width: 10%;
+}
+#monitor-table thead th:nth-child(4) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(5) {
+  width: 10%;
+}
+#monitor-table thead th:nth-child(6) {
+  width: 15%;
+}
+#monitor-table thead th:nth-child(7) {
+  width: 5%;
+}
+#monitor-table thead th:nth-child(8) {
+  width: 5%;
+}
+
+#monitor-table thead th {
+  background-color: #eee; /* Fondo de encabezado muy claro */
+  color: #444; /* Texto oscuro */
+  font-weight: bold;
+  border-bottom: 2px solid #ccc; /* Separador más notorio */
+  /* 🚀 CORRECCIÓN DE ALINEACIÓN Y WRAPPING 🚀 */
+  white-space: nowrap; /* Evita que el texto de la cabecera se rompa en múltiples líneas */
+  text-align: center; /* Centra el texto de la cabecera */
+}
+#monitor-table tr:hover {
+  background-color: #f5f5f5; /* Efecto hover muy sutil */
+}
+
+/* Centrar el texto en las columnas de datos (se mantiene) */
+#monitor-table td:nth-child(3),
+#monitor-table td:nth-child(4),
+#monitor-table td:nth-child(5),
+#monitor-table td:nth-child(6),
+#monitor-table td:nth-child(7),
+#monitor-table td:nth-child(8) {
+  text-align: center;
+}
+
+/* --- Estilos del Botón de Acción (PSI) --- */
+.psi-button,
+.btn-primary {
+  background-color: #333; /* Color funcional más neutro */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.psi-button:hover,
+.btn-primary:hover {
+  background-color: #555;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(85, 85, 85, 0.3);
+}
+
+.error-button {
+  background-color: #d9534f; /* Rojo Bootstrap */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-left: 5px;
+}
+.error-button:hover {
+  background-color: #c9302c;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(217, 83, 79, 0.3);
+}
+
+/* ======================================================= */
+/* --- Colores de Estado (Minimalista con Corrección de Contraste) --- */
+/* ======================================================= */
+
+/* Todos los colores ahora provienen de variables definidas en :root */
+.status-very-fast,
+.status-fast,
+.status-normal,
+.status-slow,
+.status-critical,
+.status-risk,
+.status-extreme-risk,
+.status-down {
+  font-weight: bold;
+}
+
+/* Las diferencias de presentación están centralizadas en styles_base usando variables CSS */
+
+/* --- Estilo para la Latencia (Métricas) --- (se mantiene) */
+.latency-metric {
+  font-weight: bold;
+  font-size: 1em;
+  background-color: #fff;
+}
+
+/* --- Responsive (se mantiene) --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+  #monitor-table {
+    font-size: 0.8em;
+  }
+}
+
+/* ======================================================= */
+/* REGLAS FINALES: Control de Visibilidad de Columnas (Tema Metrics) */
+/* ======================================================= */
+
+/* Oculta la columna URL (2da columna) */
+#monitor-table th:nth-child(2),
+#monitor-table td:nth-child(2) {
+  display: none;
+}
+
+/* Muestra la columna Status HTTP (7ma columna) en el tema metrics */
+#monitor-table th:nth-child(7),
+#monitor-table td:nth-child(7) {
+  display: table-cell;
+}
+
+/* Oculta la columna de Acción (8va columna) */
+#monitor-table th:nth-child(8),
+#monitor-table td:nth-child(8) {
+  display: none;
+}
+
+/* ======================================================= */
+/* NUEVO: ESTILO DE ENLACES EN COLUMNA DE SERVICIO (TEMA MINIMALISTA) */
+/* =JOV: Esto hace que el nombre del servicio se vea como texto normal, pero sea clicable */
+/* ======================================================= */
+#monitor-table td:nth-child(1) a {
+  text-decoration: none; /* Elimina el subrayado */
+  color: inherit; /* Hereda el color del texto de la tabla */
+  font-weight: bold;
+}

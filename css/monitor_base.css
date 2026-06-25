@@ -1,0 +1,443 @@
+/* Estilos base y variables usadas por todos los temas */
+:root {
+  --bg: #ffffff;
+  --text: #222222;
+  --accent: #007bff;
+  --container-max-width: 1000px;
+  --container-padding: 30px;
+  --container-radius: 8px;
+  --container-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --table-header-bg: #eeeeee;
+  --table-header-text: #222222;
+  --link-color: var(--accent);
+
+  /* Colores de estado por defecto; los temas pueden sobrescribirlos */
+  --status-very-fast-bg: transparent;
+  --status-very-fast-color: inherit;
+  --status-fast-bg: transparent;
+  --status-fast-color: inherit;
+  --status-normal-bg: transparent;
+  --status-normal-color: inherit;
+  --status-slow-bg: transparent;
+  --status-slow-color: inherit;
+  --status-critical-bg: transparent;
+  --status-critical-color: inherit;
+  --status-risk-bg: transparent;
+  --status-risk-color: inherit;
+  --status-extreme-risk-bg: transparent;
+  --status-extreme-risk-color: inherit;
+  --status-down-bg: transparent;
+  --status-down-color: inherit;
+}
+
+/* Aplicar colores de estado usando variables */
+.status-very-fast {
+  background-color: var(--status-very-fast-bg);
+  color: var(--status-very-fast-color);
+}
+.status-fast {
+  background-color: var(--status-fast-bg);
+  color: var(--status-fast-color);
+}
+.status-normal {
+  background-color: var(--status-normal-bg);
+  color: var(--status-normal-color);
+}
+.status-slow {
+  background-color: var(--status-slow-bg);
+  color: var(--status-slow-color);
+}
+.status-critical {
+  background-color: var(--status-critical-bg);
+  color: var(--status-critical-color);
+}
+.status-risk {
+  background-color: var(--status-risk-bg);
+  color: var(--status-risk-color);
+}
+.status-extreme-risk {
+  background-color: var(--status-extreme-risk-bg);
+  color: var(--status-extreme-risk-color);
+}
+.status-down {
+  background-color: var(--status-down-bg);
+  color: var(--status-down-color);
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  background-color: var(--container-bg, #fff);
+  padding: var(--container-padding);
+  border-radius: var(--container-radius);
+  box-shadow: var(--container-shadow);
+  min-height: 60vh; /* Predeterminado más responsivo */
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 5px;
+}
+.info-bar {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+}
+.update-info {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Menú horizontal */
+.menu-horizontal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.menu-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  font-size: 0.9em;
+  color: #007bff;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background-color: rgba(0, 123, 255, 0.05);
+  border: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+.menu-item:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+  border-color: rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.menu-item:active {
+  transform: translateY(0);
+}
+
+/* Contenedor compartido de la tabla */
+.table-scroll-container {
+  overflow-x: auto;
+  min-height: 450px;
+}
+
+/* Estilos base compartidos de la tabla */
+#monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+#monitor-table th,
+#monitor-table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+#monitor-table td a {
+  color: var(--link-color);
+  text-decoration: none;
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+#monitor-table thead th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: bold;
+}
+#monitor-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+#monitor-table td:nth-child(3),
+#monitor-table td:nth-child(4),
+#monitor-table td:nth-child(5),
+#monitor-table td:nth-child(6),
+#monitor-table td:nth-child(7),
+#monitor-table td:nth-child(8) {
+  text-align: center;
+}
+
+/* Botones y métricas */
+.psi-button,
+.error-button,
+.btn-primary {
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  transition: background-color 0.2s;
+}
+
+/* Botón PSI específico */
+.psi-button {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Botón de Errores */
+.error-button {
+  background-color: #c92a2a;
+  color: #ffffff;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 5px;
+  transition: all 0.2s;
+}
+
+.error-button:hover {
+  background-color: #a61e1e;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(201, 42, 42, 0.3);
+}
+
+.error-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.latency-metric {
+  font-weight: bold;
+  font-size: 1em;
+}
+
+/* Clases de estado base (colores definidos por el tema) */
+.status-very-fast,
+.status-fast,
+.status-normal,
+.status-slow,
+.status-critical,
+.status-risk,
+.status-extreme-risk,
+.status-down {
+  font-weight: bold;
+}
+
+/* Visibilidad de columnas por defecto (los temas pueden sobrescribir) */
+#monitor-table th:nth-child(2),
+#monitor-table td:nth-child(2) {
+  display: none;
+}
+#monitor-table th:nth-child(7),
+#monitor-table td:nth-child(7) {
+  display: none;
+}
+#monitor-table th:nth-child(8),
+#monitor-table td:nth-child(8) {
+  display: none;
+}
+
+/* Emojis para estado visual rápido (presentacionales - no para lectores de pantalla) */
+.status-very-fast::after {
+  content: ' 🚀';
+}
+.status-fast::after {
+  content: ' ⭐';
+}
+.status-normal::after {
+  content: ' ✅';
+}
+.status-slow::after {
+  content: ' ⚠️';
+}
+.status-critical::after {
+  content: ' 🐌';
+}
+.status-risk::after {
+  content: ' 🚨';
+}
+.status-extreme-risk::after {
+  content: ' 🔥';
+}
+.status-down::after {
+  content: ' ❌';
+}
+
+/* Ayudante de accesibilidad: solo para lectores de pantalla (mantiene el texto legible para tecnologías de asistencia) */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ====================================
+   ESTILOS PARA EXPANSIÓN DE ERRORES
+   ==================================== */
+
+/* Efecto hover para badges clickeables */
+.status-very-fast[style*='cursor: pointer']:hover,
+.status-fast[style*='cursor: pointer']:hover,
+.status-normal[style*='cursor: pointer']:hover,
+.status-slow[style*='cursor: pointer']:hover,
+.status-critical[style*='cursor: pointer']:hover,
+.status-risk[style*='cursor: pointer']:hover,
+.status-extreme-risk[style*='cursor: pointer']:hover,
+.status-down[style*='cursor: pointer']:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Botón PSI */
+.psi-button {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Fila de detalle de errores */
+.error-detail-row {
+  background: #fff5f5;
+  border-left: 4px solid #ff6b6b;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.error-detail-row.expanded {
+  max-height: 500px;
+  transition: max-height 0.3s ease-in;
+}
+
+.error-detail-row td {
+  padding: 0 !important;
+}
+
+/* Contenedor de errores */
+.error-detail-container {
+  padding: 15px 20px;
+  font-size: 0.9em;
+}
+
+.error-detail-header {
+  font-weight: bold;
+  color: #c92a2a;
+  margin-bottom: 10px;
+  font-size: 1.05em;
+}
+
+.error-detail-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.error-detail-list li {
+  padding: 8px 12px;
+  margin: 5px 0;
+  background: white;
+  border-radius: 4px;
+  border-left: 3px solid #ff6b6b;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95em;
+  transition: background 0.2s;
+}
+
+.error-detail-list li:hover {
+  background: #ffe0e0;
+}
+
+.error-time {
+  color: #666;
+  font-weight: bold;
+}
+
+.error-code {
+  color: #c92a2a;
+  font-weight: bold;
+  background: #ffe0e0;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.error-msg {
+  color: #333;
+}
+
+.error-latency {
+  color: #999;
+  font-size: 0.9em;
+}
+
+.error-detail-footer {
+  margin-top: 10px;
+  color: #999;
+  font-style: italic;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+/* === Botón Toggle Modo Oscuro (Esquina Superior Derecha) === */
+.theme-toggle-button-corner {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: var(--container-bg, #fff);
+  border: 2px solid var(--accent, #007bff);
+  color: var(--text, #333);
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.5em;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  width: 45px;
+  height: 45px;
+}
+
+.theme-toggle-button-corner:hover {
+  transform: translateY(-3px) rotate(20deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.theme-toggle-button-corner:active {
+  transform: translateY(0) rotate(0deg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle-button-corner #theme-icon {
+  font-size: 1em;
+  transition: transform 0.3s ease;
+}
+
+/* Responsive: mover botón en móviles */
+@media (max-width: 768px) {
+  .theme-toggle-button-corner {
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.3em;
+  }
+}
