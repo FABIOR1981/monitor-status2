@@ -39,7 +39,6 @@ exports.handler = async (event, context) => {
     // Determinar el agente según el protocolo del target inicial.
     // Evitamos pasar una función agent a node-fetch porque en algunos entornos
     // las redirecciones HTTP->HTTPS pueden intentar reutilizar un agente
-    // incorrecto y provocar errores. Seleccionamos el agente antes del fetch.
     let agentToUse;
     try {
       const parsed = new URL(targetUrl);
@@ -82,15 +81,21 @@ exports.handler = async (event, context) => {
       agentToUse = undefined;
     }
 
-    // Intentos con reintentos y UA alternativo para mitigar bloqueos o fallos transitorios
-    const defaultUA = 'Mozilla/5.0 (Monitor-Status-Check)';
-    const altUA =
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36';
+    // Cabeceras optimizadas que simulan con precisión un navegador real actual
+    const browserHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'Connection': 'keep-alive'
+    };
 
+    // Configuramos los intentos utilizando siempre las cabeceras del navegador simulado
     const attemptConfigs = [
-      { agent: agentToUse, ua: defaultUA },
-      { agent: undefined, ua: defaultUA },
-      { agent: undefined, ua: altUA },
+      { agent: agentToUse, headers: browserHeaders },
+      { agent: undefined, headers: browserHeaders },
+      { agent: undefined, headers: browserHeaders }
     ];
 
     let lastError = null;
@@ -101,24 +106,26 @@ exports.handler = async (event, context) => {
       attemptIndex++;
       const attemptStart = Date.now();
       try {
-        console.log(`Attempt ${attemptIndex} for ${targetUrl} (agent=${cfg.agent ? 'yes' : 'no'}, ua=${cfg.ua})`);
+        console.log(`Attempt ${attemptIndex} for ${targetUrl} (agent=${cfg.agent ? 'yes' : 'no'}, ua=Simulated Browser)`);
         const resp = await fetch(targetUrl, {
           method: 'GET',
           signal: controller.signal,
           redirect: 'follow',
           agent: cfg.agent,
-          headers: {
-            'User-Agent': cfg.ua,
-          },
+          headers: cfg.headers, // Pasamos las cabeceras de navegación reales
         });
 
         const attemptEnd = Date.now();
         const attemptTime = attemptEnd - attemptStart;
-        // totalTime mide desde el inicio del handler (incluye DNS + TCP probe + fetch)
         const totalTime = attemptEnd - startTime;
-        attemptsDiagnostics.push({ attempt: attemptIndex, status: resp.status, time: attemptTime, ua: cfg.ua, agent: !!cfg.agent });
+        attemptsDiagnostics.push({
+          attempt: attemptIndex,
+          status: resp.status,
+          time: attemptTime,
+          ua: cfg.headers['User-Agent'],
+          agent: !!cfg.agent
+        });
 
-        // Consideramos éxito si responde con cualquier código HTTP (incluso 4xx/5xx)
         clearTimeout(timeoutId);
         console.log(`Success attempt ${attemptIndex} for ${targetUrl} - status ${resp.status}`);
         return {
@@ -129,18 +136,22 @@ exports.handler = async (event, context) => {
       } catch (errAttempt) {
         const attemptEnd = Date.now();
         const attemptTime = attemptEnd - attemptStart;
-        attemptsDiagnostics.push({ attempt: attemptIndex, error: errAttempt.message, time: attemptTime, ua: cfg.ua, agent: !!cfg.agent });
+        attemptsDiagnostics.push({
+          attempt: attemptIndex,
+          error: errAttempt.message,
+          time: attemptTime,
+          ua: cfg.headers['User-Agent'],
+          agent: !!cfg.agent
+        });
         console.warn(`Attempt ${attemptIndex} failed for ${targetUrl}: ${errAttempt.message}`);
         lastError = errAttempt;
-        // Backoff entre intentos
         if (attemptIndex < attemptConfigs.length) {
           await new Promise((r) => setTimeout(r, 500 * attemptIndex));
         }
       }
     }
 
-    // Si llegamos acá, todos los intentos directos fallaron.
-    // Intentar fallback mediante proxies públicos configurables.
+    // Fallback mediante proxies si todos los intentos directos fallaron
     const defaultProxies = [
       'https://api.allorigins.win/raw?url=',
       'https://api.codetabs.com/v1/proxy?quest=',
@@ -167,19 +178,15 @@ exports.handler = async (event, context) => {
           method: 'GET',
           signal: controller.signal,
           redirect: 'follow',
-          headers: {
-            'User-Agent': defaultUA,
-          },
+          headers: browserHeaders, // También simulamos navegador en peticiones por proxy por consistencia
         });
         const pEnd = Date.now();
         const pTime = pEnd - pStart;
-        // totalTime desde el inicio del handler para consistencia con medición directa
         const totalTimeProxy = pEnd - startTime;
         proxyAttempts.push({ proxy: proxyBase, status: presp.status, time: pTime });
 
         if (presp.ok) {
           clearTimeout(timeoutId);
-          // Consideramos reachable: devolvemos totalTime para coherencia con mediciones directas
           return {
             statusCode: 200,
             headers,
@@ -220,7 +227,6 @@ exports.handler = async (event, context) => {
     // Incluir diagnósticos en la respuesta para facilitar el debug desde el frontend
     const diagnostics = {};
     try {
-      // si la excepción contiene información útil, añadirla
       diagnostics.errorName = error.name;
       diagnostics.errorMessage = error.message;
     } catch (e) {
