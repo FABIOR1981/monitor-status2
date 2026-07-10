@@ -8,6 +8,7 @@ const net = require('net');
 // No validamos los certificados SSL porque lo importante es saber si el servicio responde, no si el certificado es válido
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
+  keepAlive: false // Desactivamos keepAlive para evitar reutilizar sockets bloqueados por firewalls
 });
 
 const httpAgent = new http.Agent({
@@ -81,20 +82,25 @@ exports.handler = async (event, context) => {
       agentToUse = undefined;
     }
 
-    // Cabeceras optimizadas que simulan con precisión un navegador real actual
+    // Cabeceras de simulación ultra-fiel de navegador moderno (evita bloqueos WAF)
     const browserHeaders = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8,en-US;q=0.7',
       'Cache-Control': 'no-cache',
       'Pragma': 'no-cache',
-      'Connection': 'keep-alive'
+      'Connection': 'keep-alive',
+      'Upgrade-Insecure-Requests': '1',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1'
     };
 
     // Configuramos los intentos utilizando siempre las cabeceras del navegador simulado
     const attemptConfigs = [
       { agent: agentToUse, headers: browserHeaders },
-      { agent: undefined, headers: browserHeaders },
+      { agent: undefined, headers: browserHeaders }, // Intento sin agente personalizado por si TLS rompe
       { agent: undefined, headers: browserHeaders }
     ];
 
@@ -112,7 +118,7 @@ exports.handler = async (event, context) => {
           signal: controller.signal,
           redirect: 'follow',
           agent: cfg.agent,
-          headers: cfg.headers, // Pasamos las cabeceras de navegación reales
+          headers: cfg.headers,
         });
 
         const attemptEnd = Date.now();
@@ -146,7 +152,7 @@ exports.handler = async (event, context) => {
         console.warn(`Attempt ${attemptIndex} failed for ${targetUrl}: ${errAttempt.message}`);
         lastError = errAttempt;
         if (attemptIndex < attemptConfigs.length) {
-          await new Promise((r) => setTimeout(r, 500 * attemptIndex));
+          await new Promise((r) => setTimeout(r, 600 * attemptIndex)); // Pequeño delay incremental entre reintentos
         }
       }
     }
@@ -178,7 +184,7 @@ exports.handler = async (event, context) => {
           method: 'GET',
           signal: controller.signal,
           redirect: 'follow',
-          headers: browserHeaders, // También simulamos navegador en peticiones por proxy por consistencia
+          headers: browserHeaders,
         });
         const pEnd = Date.now();
         const pTime = pEnd - pStart;
