@@ -8,7 +8,7 @@ const net = require('net');
 // No validamos los certificados SSL porque lo importante es saber si el servicio responde, no si el certificado es válido
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
-  keepAlive: false // Desactivamos keepAlive para evitar reutilizar sockets bloqueados por firewalls
+  keepAlive: false // Desactivamos keepAlive para mitigar bloqueos por sockets persistentes en firewalls
 });
 
 const httpAgent = new http.Agent({
@@ -31,7 +31,7 @@ exports.handler = async (event, context) => {
   };
 
   const controller = new AbortController();
-  const timeoutMs = 12000; // aumentar timeout para diagnosticar timeouts intermitentes
+  const timeoutMs = 15000; // Opción C: Aumentamos timeout a 15s para dar margen a handshakes lentos internacionales
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
@@ -56,7 +56,7 @@ exports.handler = async (event, context) => {
         console.warn(`DNS lookup failed for ${parsed.hostname}: ${e.message}`);
       }
 
-      // Prueba TCP simple al puerto según esquema
+      // Prueba TCP simple al puerto según esquema aumentando el timeout interno a 7 segundos
       const port = parsed.protocol === 'http:' ? 80 : 443;
       const tcpResult = await (async function testTcp(host, port, tmo) {
         return new Promise((resolve) => {
@@ -64,7 +64,7 @@ exports.handler = async (event, context) => {
             socket.destroy();
             resolve({ ok: true });
           });
-          socket.setTimeout(Math.min(5000, tmo - 1000));
+          socket.setTimeout(Math.min(7000, tmo - 2000));
           socket.on('error', (err) => {
             socket.destroy();
             resolve({ ok: false, error: err.message });
@@ -82,7 +82,7 @@ exports.handler = async (event, context) => {
       agentToUse = undefined;
     }
 
-    // Cabeceras de simulación ultra-fiel de navegador moderno (evita bloqueos WAF)
+    // Cabeceras ultra-fieles de simulación de navegador actual (Sec-Fetch nativo de Chrome)
     const browserHeaders = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
@@ -97,10 +97,10 @@ exports.handler = async (event, context) => {
       'Sec-Fetch-User': '?1'
     };
 
-    // Configuramos los intentos utilizando siempre las cabeceras del navegador simulado
+    // Configuramos los intentos alternando agentes para saltar rigideces de encriptación TLS
     const attemptConfigs = [
       { agent: agentToUse, headers: browserHeaders },
-      { agent: undefined, headers: browserHeaders }, // Intento sin agente personalizado por si TLS rompe
+      { agent: undefined, headers: browserHeaders }, // Forzar comportamiento TLS por defecto de Node
       { agent: undefined, headers: browserHeaders }
     ];
 
@@ -152,7 +152,7 @@ exports.handler = async (event, context) => {
         console.warn(`Attempt ${attemptIndex} failed for ${targetUrl}: ${errAttempt.message}`);
         lastError = errAttempt;
         if (attemptIndex < attemptConfigs.length) {
-          await new Promise((r) => setTimeout(r, 600 * attemptIndex)); // Pequeño delay incremental entre reintentos
+          await new Promise((r) => setTimeout(r, 800 * attemptIndex)); // Delay incremental un poco mayor
         }
       }
     }
