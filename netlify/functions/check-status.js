@@ -5,14 +5,19 @@ const http = require('http');
 const dns = require('dns').promises;
 const net = require('net');
 
-// No validamos los certificados SSL porque lo importante es saber si el servicio responde, no si el certificado es válido
+// Optimizamos el agente HTTPS para mantener la conexión activa (Keep-Alive)
+// Esto es clave para reutilizar la negociación TLS/SSL en ejecuciones consecutivas
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
-  keepAlive: false // Desactivamos keepAlive para mitigar bloqueos por sockets persistentes en firewalls
+  keepAlive: true,             // Habilitado para no negociar SSL desde cero en cada petición
+  keepAliveMsecs: 60000,       // Mantiene el socket abierto por 60 segundos
+  maxSockets: 100,             // Permite paralelismo limpio
+  maxFreeSockets: 10
 });
 
 const httpAgent = new http.Agent({
-  keepAlive: false,
+  keepAlive: true,
+  keepAliveMsecs: 60000
 });
 
 exports.handler = async (event, context) => {
@@ -31,32 +36,29 @@ exports.handler = async (event, context) => {
   };
 
   const controller = new AbortController();
-  const timeoutMs = 15000; // Opción C: Aumentamos timeout a 15s para dar margen a handshakes lentos internacionales
+  const timeoutMs = 15000; // 15 segundos para dar margen holgado a redes estatales externas
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const startTime = Date.now();
 
-    // Determinar el agente según el protocolo del target inicial.
-    // Evitamos pasar una función agent a node-fetch porque en algunos entornos
-    // las redirecciones HTTP->HTTPS pueden intentar reutilizar un agente
     let agentToUse;
     try {
       const parsed = new URL(targetUrl);
       agentToUse = parsed.protocol === 'http:' ? httpAgent : httpsAgent;
 
-      // Diagnósticos: resolver DNS y probar conexión TCP al host antes del fetch
+      // Diagnósticos rápidos de DNS para los logs de Netlify
       let dnsInfo = null;
       try {
         const lookup = await dns.lookup(parsed.hostname);
         dnsInfo = { address: lookup.address, family: lookup.family };
-        console.log(`DNS lookup for ${parsed.hostname}: ${lookup.address}`);
+        console.log(`DNS lookup para ${parsed.hostname}: ${lookup.address}`);
       } catch (e) {
         dnsInfo = { error: e.message };
-        console.warn(`DNS lookup failed for ${parsed.hostname}: ${e.message}`);
+        console.warn(`DNS lookup falló para ${parsed.hostname}: ${e.message}`);
       }
 
-      // Prueba TCP simple al puerto según esquema aumentando el timeout interno a 7 segundos
+      // Prueba TCP previa al fetch propiamente dicho
       const port = parsed.protocol === 'http:' ? 80 : 443;
       const tcpResult = await (async function testTcp(host, port, tmo) {
         return new Promise((resolve) => {
@@ -64,7 +66,7 @@ exports.handler = async (event, context) => {
             socket.destroy();
             resolve({ ok: true });
           });
-          socket.setTimeout(Math.min(7000, tmo - 2000));
+          socket.setTimeout(4000); // 4 segundos máximo para el handshake TCP puro
           socket.on('error', (err) => {
             socket.destroy();
             resolve({ ok: false, error: err.message });
@@ -76,13 +78,12 @@ exports.handler = async (event, context) => {
         });
       })(parsed.hostname, port, timeoutMs);
 
-      console.log(`TCP test for ${parsed.hostname}:${port} -> ${JSON.stringify(tcpResult)}`);
+      console.log(`TCP test para ${parsed.hostname}:${port} -> ${JSON.stringify(tcpResult)}`);
     } catch (e) {
-      // Si la URL no es válida, dejar agentToUse undefined y permitir el comportamiento por defecto
       agentToUse = undefined;
     }
 
-    // Cabeceras ultra-fieles de simulación de navegador actual (Sec-Fetch nativo de Chrome)
+    // Cabeceras de simulación de navegador actualizadas para saltar filtros WAF de agentes
     const browserHeaders = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
@@ -97,10 +98,10 @@ exports.handler = async (event, context) => {
       'Sec-Fetch-User': '?1'
     };
 
-    // Configuramos los intentos alternando agentes para saltar rigideces de encriptación TLS
+    // Configuramos la secuencia de intentos alternando agentes para evitar rigideces TLS
     const attemptConfigs = [
       { agent: agentToUse, headers: browserHeaders },
-      { agent: undefined, headers: browserHeaders }, // Forzar comportamiento TLS por defecto de Node
+      { agent: undefined, headers: browserHeaders }, 
       { agent: undefined, headers: browserHeaders }
     ];
 
@@ -112,11 +113,11 @@ exports.handler = async (event, context) => {
       attemptIndex++;
       const attemptStart = Date.now();
       try {
-        console.log(`Attempt ${attemptIndex} for ${targetUrl} (agent=${cfg.agent ? 'yes' : 'no'}, ua=Simulated Browser)`);
+        console.log(`Intento ${attemptIndex} para ${targetUrl} (agent=${cfg.agent ? 'KeepAlive' : 'Default'})`);
         const resp = await fetch(targetUrl, {
           method: 'GET',
           signal: controller.signal,
-          redirect: 'follow',
+          redirect: 'follow', // Muy importante para Aduanas Clientes por sus redirecciones internas (?1)
           agent: cfg.agent,
           headers: cfg.headers,
         });
@@ -124,16 +125,16 @@ exports.handler = async (event, context) => {
         const attemptEnd = Date.now();
         const attemptTime = attemptEnd - attemptStart;
         const totalTime = attemptEnd - startTime;
+        
         attemptsDiagnostics.push({
           attempt: attemptIndex,
           status: resp.status,
           time: attemptTime,
-          ua: cfg.headers['User-Agent'],
           agent: !!cfg.agent
         });
 
         clearTimeout(timeoutId);
-        console.log(`Success attempt ${attemptIndex} for ${targetUrl} - status ${resp.status}`);
+        console.log(`Éxito en intento ${attemptIndex} para ${targetUrl} - Status ${resp.status}`);
         return {
           statusCode: 200,
           headers,
@@ -141,23 +142,22 @@ exports.handler = async (event, context) => {
         };
       } catch (errAttempt) {
         const attemptEnd = Date.now();
-        const attemptTime = attemptEnd - attemptStart;
         attemptsDiagnostics.push({
           attempt: attemptIndex,
           error: errAttempt.message,
-          time: attemptTime,
-          ua: cfg.headers['User-Agent'],
+          time: attemptEnd - attemptStart,
           agent: !!cfg.agent
         });
-        console.warn(`Attempt ${attemptIndex} failed for ${targetUrl}: ${errAttempt.message}`);
+        console.warn(`Intento ${attemptIndex} falló para ${targetUrl}: ${errAttempt.message}`);
         lastError = errAttempt;
+        
         if (attemptIndex < attemptConfigs.length) {
-          await new Promise((r) => setTimeout(r, 800 * attemptIndex)); // Delay incremental un poco mayor
+          await new Promise((r) => setTimeout(r, 500 * attemptIndex)); // Pequeña pausa incremental entre intentos
         }
       }
     }
 
-    // Fallback mediante proxies si todos los intentos directos fallaron
+    // Si los intentos directos fallan por completo, saltamos al bloque de Fallback Proxies
     const defaultProxies = [
       'https://api.allorigins.win/raw?url=',
       'https://api.codetabs.com/v1/proxy?quest=',
@@ -169,23 +169,25 @@ exports.handler = async (event, context) => {
         proxies = JSON.parse(process.env.FALLBACK_PROXIES);
       }
     } catch (e) {
-      console.warn('FALLBACK_PROXIES parse error, using defaults');
+      console.warn('Error parseando FALLBACK_PROXIES, usando valores por defecto');
       proxies = defaultProxies;
     }
 
     let proxyLastError = null;
     const proxyAttempts = [];
+    
     for (const proxyBase of proxies) {
       const proxyUrl = `${proxyBase}${encodeURIComponent(targetUrl)}`;
       const pStart = Date.now();
       try {
-        console.log(`Proxy attempt to ${proxyUrl}`);
+        console.log(`Intentando proxy alternativo: ${proxyUrl}`);
         const presp = await fetch(proxyUrl, {
           method: 'GET',
           signal: controller.signal,
           redirect: 'follow',
           headers: browserHeaders,
         });
+        
         const pEnd = Date.now();
         const pTime = pEnd - pStart;
         const totalTimeProxy = pEnd - startTime;
@@ -207,44 +209,31 @@ exports.handler = async (event, context) => {
         }
       } catch (pe) {
         const pEnd = Date.now();
-        const pTime = pEnd - pStart;
-        proxyAttempts.push({ proxy: proxyBase, error: pe.message, time: pTime });
+        proxyAttempts.push({ proxy: proxyBase, error: pe.message, time: pEnd - pStart });
         proxyLastError = pe;
-        console.warn(`Proxy ${proxyBase} failed: ${pe.message}`);
+        console.warn(`Proxy ${proxyBase} falló: ${pe.message}`);
       }
     }
 
-    // Si acá tampoco, devolvemos el último error con los diagnósticos completos
-    const combinedDiagnostics = {
-      attempts: attemptsDiagnostics,
-      proxyAttempts,
-    };
-    throw proxyLastError || lastError || new Error('All attempts and proxies failed');
+    // Si llegó hasta acá sin retornar, forzamos el lanzamiento del error combinado
+    throw proxyLastError || lastError || new Error('Todos los intentos directos y proxies fallaron');
+
   } catch (error) {
     clearTimeout(timeoutId);
+    console.error(`Error de conexión absoluto para ${targetUrl}: ${error.name} - ${error.message}`);
 
-    console.error(
-      `Error de conexión para ${targetUrl}: ${error.name} - ${error.message}`
-    );
+    const diagnostics = {
+      errorName: error.name,
+      errorMessage: error.message
+    };
 
-    // Siempre devolvemos HTTP 200 con status=0 para que se pueda saber si:
-    // - Falló la función serverless (sería un HTTP 500 real)
-    // - Falló el servicio que estamos monitoreando (status: 0)
-    // Incluir diagnósticos en la respuesta para facilitar el debug desde el frontend
-    const diagnostics = {};
-    try {
-      diagnostics.errorName = error.name;
-      diagnostics.errorMessage = error.message;
-    } catch (e) {
-      // ignore
-    }
-
+    // Estructura de retorno idéntica al estándar del monitor para pintar en UI
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         status: 0,
-        time: 99999,
+        time: 99999, // Penalización de fallo por desconexión/timeout
         error: `${error.name}: ${error.message}`,
         diagnostics,
       }),
