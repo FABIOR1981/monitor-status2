@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Servicios</title>
+  <link id="theme-css" rel="stylesheet" href="css/dashboard_base.css">
+  <link id="theme-specific-css" rel="stylesheet" href="css/dashboard_def.css">
+</head>
+<body>
+  <main>
+    <!-- Toggle Modo Oscuro -->
+    <button id="theme-toggle-btn" class="theme-toggle-button-corner" onclick="toggleDarkMode()" title="Cambiar modo de visualización">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <!-- Navegación entre vistas -->
+    <nav class="vista-nav">
+      <a href="index.html" class="vista-link">📊 Tabla</a>
+      <span class="vista-activa">🎯 Dashboard</span>
+    </nav>
+
+    <div class="container">
+      <h1 id="titulo-principal">Dashboard de Servicios</h1>
+      <p id="subtitulo" class="subtitulo">Vista rápida del estado de todos los servicios</p>
+
+      <!-- Selector de duración (compartido con tabla) -->
+      <div class="controles">
+        <label for="duracion-selector">Duración del historial:</label>
+        <select id="duracion-selector">
+          <option value="1">1 hora</option>
+          <option value="3">3 horas</option>
+          <option value="6">6 horas</option>
+          <option value="9" selected>9 horas</option>
+        </select>
+        <button id="btn-reiniciar" onclick="reiniciarMonitoreo()">🔄 Reiniciar</button>
+        <span id="contador-regresivo"></span>
+      </div>
+
+      <!-- Resumen superior -->
+      <div id="resumen-superior" class="resumen-superior">
+        <div class="contador ok" data-estado="ok">
+          <span class="contador-numero" id="contador-ok">0</span>
+          <span class="contador-label">🟢 OK</span>
+        </div>
+        <div class="contador lento" data-estado="lento">
+          <span class="contador-numero" id="contador-lento">0</span>
+          <span class="contador-label">🟡 Lentos</span>
+        </div>
+        <div class="contador critico" data-estado="critico">
+          <span class="contador-numero" id="contador-critico">0</span>
+          <span class="contador-label">🔴 Críticos</span>
+        </div>
+        <div class="contador caido" data-estado="caido">
+          <span class="contador-numero" id="contador-caido">0</span>
+          <span class="contador-label">⚫ Caídos</span>
+        </div>
+      </div>
+
+      <!-- Grid de tarjetas -->
+      <div id="grid-dashboard" class="grid-dashboard">
+        <!-- Las tarjetas se generan dinámicamente -->
+      </div>
+
+      <!-- Leyenda de fuentes -->
+      <div class="leyenda-fuentes">
+        <span>🌐 Proxy (internet)</span>
+        <span>🖥️ Directo (red interna)</span>
+        <span>▲ Empeorando</span>
+        <span>▼ Mejorando</span>
+        <span>─ Estable</span>
+      </div>
+
+      <!-- Última actualización -->
+      <div id="ultima-actualizacion" class="ultima-actualizacion"></div>
+    </div>
+  </main>
+
+  <!-- Scripts compartidos -->
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="i18n_es.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

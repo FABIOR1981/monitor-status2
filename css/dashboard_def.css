@@ -1,0 +1,172 @@
+/* =======================================================
+   DASHBOARD_DEF.CSS — Tema Default para Dashboard
+   ======================================================= */
+
+/* Variables del tema */
+:root {
+  --color-ok: #4caf50;
+  --color-ok-light: #e8f5e9;
+  --color-lento: #ff9800;
+  --color-lento-light: #fff3e0;
+  --color-critico: #f44336;
+  --color-critico-light: #ffebee;
+  --color-caido: #9e9e9e;
+  --color-caido-light: #f5f5f5;
+  --color-directo: #3498db;
+  --color-fondo: #f5f7fa;
+  --color-texto: #333;
+  --color-texto-secundario: #666;
+  --color-borde: #e0e0e0;
+  --sombra-suave: 0 2px 8px rgba(0,0,0,0.08);
+  --sombra-hover: 0 6px 20px rgba(0,0,0,0.12);
+  --radio-borde: 12px;
+}
+
+/* Fondo general */
+body {
+  background: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+/* Tarjetas con colores específicos del tema */
+.tarjeta.estado-ok {
+  border-left-color: var(--color-ok);
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-ok-light) 100%);
+}
+
+.tarjeta.estado-ok .tarjeta-estado-texto {
+  color: var(--color-ok);
+}
+
+.tarjeta.estado-lento {
+  border-left-color: var(--color-lento);
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-lento-light) 100%);
+}
+
+.tarjeta.estado-lento .tarjeta-estado-texto {
+  color: var(--color-lento);
+}
+
+.tarjeta.estado-critico {
+  border-left-color: var(--color-critico);
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-critico-light) 100%);
+}
+
+.tarjeta.estado-critico .tarjeta-estado-texto {
+  color: var(--color-critico);
+}
+
+.tarjeta.estado-caido {
+  border-left-color: var(--color-caido);
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-caido-light) 100%);
+}
+
+.tarjeta.estado-caido .tarjeta-estado-texto {
+  color: var(--color-caido);
+}
+
+/* Tarjeta directo */
+.tarjeta.directo {
+  border-right: 3px solid var(--color-directo);
+}
+
+/* Contadores */
+.contador.ok { border-top-color: var(--color-ok); }
+.contador.ok .contador-numero { color: var(--color-ok); }
+
+.contador.lento { border-top-color: var(--color-lento); }
+.contador.lento .contador-numero { color: var(--color-lento); }
+
+.contador.critico { border-top-color: var(--color-critico); }
+.contador.critico .contador-numero { color: var(--color-critico); }
+
+.contador.caido { border-top-color: var(--color-caido); }
+.contador.caido .contador-numero { color: var(--color-caido); }
+
+/* Navegación */
+.vista-nav .vista-activa {
+  background: #1976d2;
+  color: white;
+}
+
+/* Título */
+h1 {
+  color: #1565c0;
+}
+
+/* Botones */
+.controles button {
+  background: #1976d2;
+}
+
+.controles button:hover {
+  background: #1565c0;
+}
+
+/* Links */
+.tarjeta-url a {
+  color: #1976d2;
+}
+
+/* =======================================================
+   MODO OSCURO
+   ======================================================= */
+body.dark-mode {
+  --color-fondo: #1a1a2e;
+  --color-texto: #e0e0e0;
+  --color-texto-secundario: #aaa;
+  --color-borde: #333;
+  --sombra-suave: 0 2px 8px rgba(0,0,0,0.3);
+  --sombra-hover: 0 6px 20px rgba(0,0,0,0.4);
+
+  background: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+body.dark-mode .tarjeta {
+  background: #16213e;
+  box-shadow: var(--sombra-suave);
+}
+
+body.dark-mode .tarjeta.estado-ok {
+  background: linear-gradient(135deg, #16213e 0%, #1b5e20 100%);
+}
+
+body.dark-mode .tarjeta.estado-lento {
+  background: linear-gradient(135deg, #16213e 0%, #e65100 100%);
+}
+
+body.dark-mode .tarjeta.estado-critico {
+  background: linear-gradient(135deg, #16213e 0%, #b71c1c 100%);
+}
+
+body.dark-mode .tarjeta.estado-caido {
+  background: linear-gradient(135deg, #16213e 0%, #424242 100%);
+}
+
+body.dark-mode .tarjeta-nombre {
+  color: #e0e0e0;
+}
+
+body.dark-mode .tarjeta-latencia {
+  color: #e0e0e0;
+}
+
+body.dark-mode .contador {
+  background: #16213e;
+  box-shadow: var(--sombra-suave);
+}
+
+body.dark-mode .leyenda-fuentes {
+  background: #16213e;
+  color: #aaa;
+}
+
+body.dark-mode .vista-nav a {
+  background: #333;
+  color: #aaa;
+}
+
+body.dark-mode .vista-nav a:hover {
+  background: #444;
+}
