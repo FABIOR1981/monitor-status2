@@ -1054,6 +1054,7 @@ async function monitorearTodosWebsites() {
       res = {
         time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
         status: ESTADO_ERROR_CONEXION,
+        proxyError: true,
       };
     }
 
@@ -1062,6 +1063,7 @@ async function monitorearTodosWebsites() {
       url: web.url,
       time: res.time,
       status: res.status,
+      verifiedDirect: res.verifiedDirect || false,
     });
   });
 
