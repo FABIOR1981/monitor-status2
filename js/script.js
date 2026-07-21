@@ -351,7 +351,7 @@ function historialCompleto() {
   return false;
 }
 
-function actualizarHistorial(url, time, status) {
+function actualizarHistorial(url, time, status, source = 'proxy') {
   if (!historialStatus[url]) {
     historialStatus[url] = [];
   }
@@ -361,7 +361,7 @@ function actualizarHistorial(url, time, status) {
     return;
   }
 
-  historialStatus[url].push({ time, status, timestamp: Date.now() });
+  historialStatus[url].push({ time, status, source, timestamp: Date.now() });
 
   guardarHistorial();
 }
@@ -377,6 +377,7 @@ function calcularPromedio(url) {
       estadoPromedio: obtenerEstadoVisual(0, 200),
       validCount: 0,
       historial: historial,
+      fuentes: { proxy: 0, direct: 0 },
     };
   }
 
@@ -384,8 +385,16 @@ function calcularPromedio(url) {
   let medicionesExitosas = 0;
   let fallos = 0;
   let ultimoCodigoError = 200;
+  let fuentes = { proxy: 0, direct: 0 };
 
   historial.forEach((entry) => {
+    // Contar fuentes
+    if (entry.source === 'direct') {
+      fuentes.direct++;
+    } else {
+      fuentes.proxy++;
+    }
+
     const esFallo =
       entry.status !== 200 ||
       entry.time >= UMBRALES_LATENCIA.PENALIZACION_FALLO;
@@ -412,6 +421,7 @@ function calcularPromedio(url) {
       ),
       validCount: validCount,
       historial: historial,
+      fuentes: fuentes,
     };
   }
 
@@ -429,6 +439,7 @@ function calcularPromedio(url) {
       ),
       validCount: validCount,
       historial: historial,
+      fuentes: fuentes,
     };
   }
 
@@ -437,6 +448,7 @@ function calcularPromedio(url) {
     estadoPromedio: obtenerEstadoVisual(promedioMs, 200),
     validCount: validCount,
     historial: historial,
+    fuentes: fuentes,
   };
 }
 
@@ -910,10 +922,16 @@ function actualizarFila(web, resultado) {
   // --- Actualización de celdas (Columnas 3 a 7) ---
 
   // Columna 3: Latencia Actual (índice 2)
-  row.cells[2].textContent = `${resultado.time} ms`;
+  row.cells[2].textContent = `${resultado.time} ms ${resultado.verifiedDirect ? '🖥️' : '🌐'}`;
+  row.cells[2].title = resultado.verifiedDirect 
+    ? 'Medición directa desde navegador (red interna)' 
+    : 'Medición vía proxy serverless (internet)';
 
   // Columna 4: Estado Actual (índice 3)
-  row.cells[3].textContent = estadoActual.text;
+  row.cells[3].textContent = estadoActual.text + (resultado.verifiedDirect ? ' 🖥️' : ' 🌐');
+  row.cells[3].title = resultado.verifiedDirect 
+    ? 'Estado verificado directamente desde navegador' 
+    : 'Estado vía proxy serverless';
   row.cells[3].className = estadoActual.className;
 
   // Obtener tema actual y verificar si permite expansión (todos menos DEF y OSC)
@@ -940,10 +958,16 @@ function actualizarFila(web, resultado) {
     errores.length > 0 && permiteExpansion
       ? ` ⚠️ ${errores.length}/${totalMediciones}`
       : '';
-  row.cells[4].textContent = `${promedio} ms${contadorErrores}`;
+  row.cells[4].textContent = `${promedio} ms${contadorErrores} ${resultado.verifiedDirect ? '🖥️' : '🌐'}`;
+  row.cells[4].title = resultado.verifiedDirect 
+    ? 'Promedio con medición directa desde navegador' 
+    : 'Promedio vía proxy serverless';
 
   // Columna 6: Estado Promedio (índice 5)
-  row.cells[5].textContent = estadoPromedio.text;
+  row.cells[5].textContent = estadoPromedio.text + (resultado.verifiedDirect ? ' 🖥️' : ' 🌐');
+  row.cells[5].title = resultado.verifiedDirect 
+    ? 'Estado promedio con verificación directa' 
+    : 'Estado promedio vía proxy';
   row.cells[5].className = estadoPromedio.className;
 
   // Hacer clickeable el badge promedio si hay errores y el tema lo permite
@@ -1083,8 +1107,8 @@ async function monitorearTodosWebsites() {
   resultadosMonitoreo.forEach((res) => {
     const web = websitesData.find((w) => w.url === res.url);
 
-    // 4.1. Guardar el historial
-    actualizarHistorial(res.url, res.time, res.status);
+    // 4.1. Guardar el historial (con fuente: proxy o direct)
+    actualizarHistorial(res.url, res.time, res.status, res.verifiedDirect ? 'direct' : 'proxy');
 
     // 4.2. Actualizar la fila en la pantalla
     actualizarFila(web, res);
@@ -1415,10 +1439,17 @@ async function cargarYMostrarHistorialExistente() {
 
       maxValidCount = Math.max(maxValidCount, validCount);
 
-      row.insertCell().textContent = `${ultimaMedicion.time} ms`;
+      const cellLat = row.insertCell();
+      cellLat.textContent = `${ultimaMedicion.time} ms ${ultimaMedicion.source === 'direct' ? '🖥️' : '🌐'}`;
+      cellLat.title = ultimaMedicion.source === 'direct' 
+        ? 'Medición directa desde navegador (red interna)' 
+        : 'Medición vía proxy serverless (internet)';
 
       const cellEstadoActual = row.insertCell();
-      cellEstadoActual.textContent = estadoActual.text;
+      cellEstadoActual.textContent = estadoActual.text + (ultimaMedicion.source === 'direct' ? ' 🖥️' : ' 🌐');
+      cellEstadoActual.title = ultimaMedicion.source === 'direct' 
+        ? 'Estado verificado directamente desde navegador' 
+        : 'Estado vía proxy serverless';
       cellEstadoActual.className = estadoActual.className;
 
       // Hacer clickeable el badge si hay errores y el tema lo permite
@@ -1436,10 +1467,17 @@ async function cargarYMostrarHistorialExistente() {
           ? ` ⚠️ ${errores.length}/${totalMediciones}`
           : '';
 
-      row.insertCell().textContent = `${promedio} ms${contadorErrores}`;
+      const cellProm = row.insertCell();
+      cellProm.textContent = `${promedio} ms${contadorErrores} ${ultimaMedicion.source === 'direct' ? '🖥️' : '🌐'}`;
+      cellProm.title = ultimaMedicion.source === 'direct' 
+        ? 'Promedio con medición directa desde navegador' 
+        : 'Promedio vía proxy serverless';
 
       const cellEstadoPromedio = row.insertCell();
-      cellEstadoPromedio.textContent = estadoPromedio.text;
+      cellEstadoPromedio.textContent = estadoPromedio.text + (ultimaMedicion.source === 'direct' ? ' 🖥️' : ' 🌐');
+      cellEstadoPromedio.title = ultimaMedicion.source === 'direct' 
+        ? 'Estado promedio con verificación directa' 
+        : 'Estado promedio vía proxy';
       cellEstadoPromedio.className = estadoPromedio.className;
 
       // Hacer clickeable el badge promedio si hay errores y el tema lo permite
