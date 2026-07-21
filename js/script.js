@@ -222,13 +222,21 @@ function actualizarUltimaActualizacion(fecha) {
 function obtenerEstadoVisual(tiempo, estado = 200) {
   const tiempoNum = parseFloat(tiempo);
 
+  // NUEVO: Status 408 (Request Timeout) = sitio lento, no caído
+  if (estado === 408) {
+    return {
+      text: `${window.TEXTOS_ACTUAL.velocidad.RISK} (Timeout)`,
+      className: 'status-risk',
+    };
+  }
+
   if (estado !== 200 || tiempoNum >= UMBRALES_LATENCIA.PENALIZACION_FALLO) {
     const descripcionEstado =
       window.TEXTOS_ACTUAL.httpStatus?.[estado] ||
       window.TEXTOS_ACTUAL.httpStatus?.GENERIC;
 
     const textoFallo =
-      estado !== 200
+      estado !== 200 && estado !== 408
         ? `${window.TEXTOS_ACTUAL.estados.DOWN_ERROR} (${estado} - ${descripcionEstado})`
         : window.TEXTOS_ACTUAL.estados.DOWN_ERROR;
 
@@ -482,7 +490,12 @@ function determinarFalloGlobal(websitesData, resultados) {
   }
 
   resultados.forEach((res) => {
-    if (res.time > UMBRAL_FALLO_GLOBAL_MS) {
+    // Solo contar como fallo crítico si NO es un timeout del proxy (status 408) 
+    // y NO es un error del proxy
+    if (res.time > UMBRAL_FALLO_GLOBAL_MS && 
+        res.status !== 408 && 
+        !res.proxyError && 
+        !res.slowResponse) {
       sitiosEnFalloCritico++;
     }
   });
@@ -517,26 +530,50 @@ async function verificarEstado(url) {
 
     if (!response.ok) {
       console.error(
-        `${window.TEXTOS_ACTUAL.estados.DOWN_ERROR} en la función Serverless para ${url}: ${response.status}`
+        `Error en la función Serverless para ${url}: ${response.status}`
       );
-      // Retornamos un objeto en lugar de lanzar error para que Promise.allSettled
-      // trate todos los servicios de forma consistente
+      // Error del proxy, no del sitio - marcar como indeterminado
       return {
         time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
         status: ESTADO_ERROR_CONEXION,
+        proxyError: true,
+        proxyStatus: response.status,
       };
     }
 
     const data = await response.json();
+
+    // NUEVO: Manejar status 408 (slow response) como latencia alta, no caída
+    if (data.status === 408 && data.errorType === 'SLOW_RESPONSE') {
+      console.warn(`Sitio lento detectado (${url}): ${data.time}ms - ${data.error}`);
+      return {
+        time: data.time || UMBRALES_LATENCIA.RIESGO, // Usar tiempo real medido
+        status: 408, // Status 408 = Request Timeout (el sitio responde pero lento)
+        slowResponse: true,
+        diagnostics: data.diagnostics,
+      };
+    }
+
+    // NUEVO: Si el proxy reporta errorType PROXY_ERROR, es fallo del proxy
+    if (data.errorType === 'PROXY_ERROR') {
+      console.error(`Error del proxy para ${url}: ${data.error}`);
+      return {
+        time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+        status: ESTADO_ERROR_CONEXION,
+        proxyError: true,
+      };
+    }
+
     return data; // Retorna {time, status}
   } catch (error) {
     console.error(
-      `${window.TEXTOS_ACTUAL.estados.DOWN_ERROR} al conectar con el proxy para ${url}:`,
+      `Error al conectar con el proxy para ${url}:`,
       error
     );
     return {
       time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
       status: ESTADO_ERROR_CONEXION,
+      proxyError: true,
     };
   }
 }
@@ -788,8 +825,15 @@ function actualizarFila(web, resultado) {
   // Nota: calcularPromedio() obtiene los datos del historial que ACABA de ser actualizado
   const { promedio, estadoPromedio } = calcularPromedio(web.url);
 
-  // ALERTA: Si hay un error (status 0 o >=400), mostrar alerta solo la primera vez
-  if (resultado && (resultado.status === 0 || resultado.status >= 400)) {
+  // ALERTA: Si hay un error REAL (status 0 o >=400, pero NO 408 slow response)
+  // No alertar por timeouts del proxy o respuestas lentas (408)
+  const esErrorReal = resultado && 
+    (resultado.status === 0 || resultado.status >= 400) && 
+    resultado.status !== 408 && 
+    !resultado.proxyError &&
+    !resultado.slowResponse;
+
+  if (esErrorReal) {
     window.registrarErrorSitio &&
       window.registrarErrorSitio(
         web.nombre || web.url,
@@ -799,8 +843,8 @@ function actualizarFila(web, resultado) {
         resultado.error || '',
         resultado.diagnostics || resultado.attempts || null
       );
-  } else if (resultado && resultado.status === 200) {
-    // Si el sitio se recupera, limpiar el registro para permitir futuras alertas
+  } else if (resultado && (resultado.status === 200 || resultado.status === 408)) {
+    // Si el sitio responde (incluso lento), limpiar el registro para permitir futuras alertas
     window.limpiarErrorSitio && window.limpiarErrorSitio(web.nombre || web.url);
   }
 
