@@ -238,10 +238,10 @@ function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) 
 
     for (const ev of estadosVelocidad) {
       if (tiempoNum <= ev.umbral) {
-        return { text: ev.text + ' ✓', className: ev.className };
+        return { text: ev.text, className: ev.className };
       }
     }
-    return { text: window.TEXTOS_ACTUAL.velocidad.EXTREME_RISK + ' ✓', className: 'status-extreme-risk' };
+    return { text: window.TEXTOS_ACTUAL.velocidad.EXTREME_RISK, className: 'status-extreme-risk' };
   }
 
   if (estado !== 200 || tiempoNum >= UMBRALES_LATENCIA.PENALIZACION_FALLO) {
