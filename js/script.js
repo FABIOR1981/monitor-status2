@@ -219,15 +219,29 @@ function actualizarUltimaActualizacion(fecha) {
   }
 }
 
-function obtenerEstadoVisual(tiempo, estado = 200) {
+function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) {
   const tiempoNum = parseFloat(tiempo);
 
-  // NUEVO: Status 408 (Request Timeout) = sitio lento, no caído
-  if (estado === 408) {
-    return {
-      text: `${window.TEXTOS_ACTUAL.velocidad.RISK} (Timeout)`,
-      className: 'status-risk',
-    };
+  // Si fue verificado directamente y el proxy decía "caído",
+  // pero la verificación directa confirmó que funciona (status 200),
+  // clasificar por velocidad, NO mostrar como caído
+  if (esVerificadoDirecto && estado === 200) {
+    // Clasificar por velocidad como cualquier otro sitio funcional
+    const estadosVelocidad = [
+      { umbral: UMBRALES_LATENCIA.MUY_RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST, className: 'status-very-fast' },
+      { umbral: UMBRALES_LATENCIA.RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.FAST, className: 'status-fast' },
+      { umbral: UMBRALES_LATENCIA.NORMAL, text: window.TEXTOS_ACTUAL.velocidad.NORMAL, className: 'status-normal' },
+      { umbral: UMBRALES_LATENCIA.LENTO, text: window.TEXTOS_ACTUAL.velocidad.SLOW, className: 'status-slow' },
+      { umbral: UMBRALES_LATENCIA.CRITICO, text: window.TEXTOS_ACTUAL.velocidad.CRITICAL, className: 'status-critical' },
+      { umbral: UMBRALES_LATENCIA.RIESGO, text: window.TEXTOS_ACTUAL.velocidad.RISK, className: 'status-risk' },
+    ];
+
+    for (const ev of estadosVelocidad) {
+      if (tiempoNum <= ev.umbral) {
+        return { text: ev.text + ' ✓', className: ev.className };
+      }
+    }
+    return { text: window.TEXTOS_ACTUAL.velocidad.EXTREME_RISK + ' ✓', className: 'status-extreme-risk' };
   }
 
   if (estado !== 200 || tiempoNum >= UMBRALES_LATENCIA.PENALIZACION_FALLO) {
@@ -236,7 +250,7 @@ function obtenerEstadoVisual(tiempo, estado = 200) {
       window.TEXTOS_ACTUAL.httpStatus?.GENERIC;
 
     const textoFallo =
-      estado !== 200 && estado !== 408
+      estado !== 200
         ? `${window.TEXTOS_ACTUAL.estados.DOWN_ERROR} (${estado} - ${descripcionEstado})`
         : window.TEXTOS_ACTUAL.estados.DOWN_ERROR;
 
@@ -490,12 +504,7 @@ function determinarFalloGlobal(websitesData, resultados) {
   }
 
   resultados.forEach((res) => {
-    // Solo contar como fallo crítico si NO es un timeout del proxy (status 408) 
-    // y NO es un error del proxy
-    if (res.time > UMBRAL_FALLO_GLOBAL_MS && 
-        res.status !== 408 && 
-        !res.proxyError && 
-        !res.slowResponse) {
+    if (res.time > UMBRAL_FALLO_GLOBAL_MS) {
       sitiosEnFalloCritico++;
     }
   });
@@ -523,59 +532,110 @@ function determinarFalloGlobal(websitesData, resultados) {
  * Llama al proxy de Netlify para saber el estado y la latencia de una URL.
  */
 async function verificarEstado(url) {
+  // =======================================================
+  // PASO 1: Intentar via proxy (Netlify Function)
+  // =======================================================
   try {
     const response = await fetch(
       `${PROXY_ENDPOINT}?url=${encodeURIComponent(url)}`
     );
 
     if (!response.ok) {
-      console.error(
-        `Error en la función Serverless para ${url}: ${response.status}`
-      );
-      // Error del proxy, no del sitio - marcar como indeterminado
-      return {
-        time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-        status: ESTADO_ERROR_CONEXION,
-        proxyError: true,
-        proxyStatus: response.status,
-      };
+      console.warn(`Proxy error HTTP ${response.status} para ${url}`);
+      // Proxy falló, intentar verificación directa
+      return await verificarDirecto(url);
     }
 
     const data = await response.json();
 
-    // NUEVO: Manejar status 408 (slow response) como latencia alta, no caída
-    if (data.status === 408 && data.errorType === 'SLOW_RESPONSE') {
-      console.warn(`Sitio lento detectado (${url}): ${data.time}ms - ${data.error}`);
-      return {
-        time: data.time || UMBRALES_LATENCIA.RIESGO, // Usar tiempo real medido
-        status: 408, // Status 408 = Request Timeout (el sitio responde pero lento)
-        slowResponse: true,
-        diagnostics: data.diagnostics,
-      };
+    // Si el proxy dice que el sitio está caído (status 0), verificar directamente
+    // porque el proxy puede estar bloqueado por el WAF
+    if (data.status === 0 || data.status === ESTADO_ERROR_CONEXION) {
+      console.log(`Proxy reporta caído para ${url}, verificando directamente...`);
+      return await verificarDirecto(url);
     }
 
-    // NUEVO: Si el proxy reporta errorType PROXY_ERROR, es fallo del proxy
-    if (data.errorType === 'PROXY_ERROR') {
-      console.error(`Error del proxy para ${url}: ${data.error}`);
-      return {
-        time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-        status: ESTADO_ERROR_CONEXION,
-        proxyError: true,
-      };
-    }
+    return data;
 
-    return data; // Retorna {time, status}
   } catch (error) {
-    console.error(
-      `Error al conectar con el proxy para ${url}:`,
-      error
-    );
-    return {
-      time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-      status: ESTADO_ERROR_CONEXION,
-      proxyError: true,
-    };
+    console.warn(`Proxy no disponible para ${url}:`, error.message);
+    return await verificarDirecto(url);
   }
+}
+
+/**
+ * Verificación directa desde el navegador usando una imagen.
+ * El navegador del usuario tiene IP "normal" no bloqueada por WAF.
+ * No hay restricciones CORS para cargar imágenes.
+ */
+async function verificarDirecto(url) {
+  return new Promise((resolve) => {
+    const startTime = performance.now();
+    const img = new Image();
+    let resolved = false;
+
+    // Timeout de 10 segundos para la imagen
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        img.onload = img.onerror = null;
+        // La imagen no cargó en 10s → probablemente caído
+        resolve({
+          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+          status: 0,
+          error: 'Sin respuesta (verificación directa)',
+          verifiedDirect: true,
+        });
+      }
+    }, 10000);
+
+    // La imagen cargó (aunque sea error 404) → el servidor responde
+    img.onload = function() {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
+      const time = Math.round(performance.now() - startTime);
+      console.log(`✅ Verificación directa OK para ${url}: ${time}ms`);
+      resolve({
+        time: time,
+        status: 200,
+        verifiedDirect: true,
+      });
+    };
+
+    // Error al cargar la imagen → puede ser 404 (favicon no existe) pero servidor responde
+    // o puede ser que realmente no hay conexión
+    img.onerror = function() {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
+      const time = Math.round(performance.now() - startTime);
+
+      // Si tardó menos de 8 segundos, probablemente es 404 (favicon no existe)
+      // pero el servidor respondió → el sitio funciona
+      if (time < 8000) {
+        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
+        resolve({
+          time: time,
+          status: 200,
+          verifiedDirect: true,
+        });
+      } else {
+        // Tardó mucho → probablemente timeout real
+        console.log(`❌ Verificación directa falló para ${url}: timeout`);
+        resolve({
+          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+          status: 0,
+          error: 'Timeout en verificación directa',
+          verifiedDirect: true,
+        });
+      }
+    };
+
+    // Usamos favicon.ico con timestamp para evitar cache
+    const faviconUrl = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
+    img.src = faviconUrl;
+  });
 }
 
 /**
@@ -821,19 +881,18 @@ function actualizarFila(web, resultado) {
   if (!row) return;
 
   // --- Lógica de cálculo y estado ---
-  const estadoActual = obtenerEstadoVisual(resultado.time, resultado.status);
+  const estadoActual = obtenerEstadoVisual(resultado.time, resultado.status, resultado.verifiedDirect);
   // Nota: calcularPromedio() obtiene los datos del historial que ACABA de ser actualizado
   const { promedio, estadoPromedio } = calcularPromedio(web.url);
 
-  // ALERTA: Si hay un error REAL (status 0 o >=400, pero NO 408 slow response)
-  // No alertar por timeouts del proxy o respuestas lentas (408)
-  const esErrorReal = resultado && 
-    (resultado.status === 0 || resultado.status >= 400) && 
-    resultado.status !== 408 && 
-    !resultado.proxyError &&
-    !resultado.slowResponse;
+  // ALERTA: Solo alertar si el sitio REALMENTE está caído
+  // No alertar si fue verificado directamente (verifiedDirect: true con status 200)
+  // porque eso significa que el proxy estaba bloqueado pero el sitio funciona
+  const sitioRealmenteCaido = resultado &&
+    (resultado.status === 0 || resultado.status >= 400) &&
+    !resultado.verifiedDirect;
 
-  if (esErrorReal) {
+  if (sitioRealmenteCaido) {
     window.registrarErrorSitio &&
       window.registrarErrorSitio(
         web.nombre || web.url,
@@ -843,8 +902,8 @@ function actualizarFila(web, resultado) {
         resultado.error || '',
         resultado.diagnostics || resultado.attempts || null
       );
-  } else if (resultado && (resultado.status === 200 || resultado.status === 408)) {
-    // Si el sitio responde (incluso lento), limpiar el registro para permitir futuras alertas
+  } else if (resultado && (resultado.status === 200 || resultado.verifiedDirect)) {
+    // Si el sitio funciona (directo o via proxy), limpiar alertas previas
     window.limpiarErrorSitio && window.limpiarErrorSitio(web.nombre || web.url);
   }
 
@@ -1347,7 +1406,8 @@ async function cargarYMostrarHistorialExistente() {
     if (ultimaMedicion) {
       const estadoActual = obtenerEstadoVisual(
         ultimaMedicion.time,
-        ultimaMedicion.status
+        ultimaMedicion.status,
+        ultimaMedicion.verifiedDirect
       );
       const { promedio, estadoPromedio, validCount } = calcularPromedio(
         web.url
