@@ -23,16 +23,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function cargarConfiguracion() {
-  // Usa las mismas constantes que config.js
+  // Usa las mismas constantes que config.js (con fallback)
   if (typeof DURACION_OPCIONES !== 'undefined') {
     duracionSeleccionada = parseInt(localStorage.getItem('duracionSeleccionada')) || 1;
     maxHistorialActual = DURACION_OPCIONES[duracionSeleccionada]?.maxRegistros || 12;
+  } else {
+    // Fallback si config.js no cargó
+    duracionSeleccionada = parseInt(localStorage.getItem('duracionSeleccionada')) || 1;
+    const mapa = { 1: 12, 3: 36, 6: 72, 9: 108 };
+    maxHistorialActual = mapa[duracionSeleccionada] || 12;
   }
 }
 
 async function cargarWebsites() {
   try {
-    const response = await fetch('webs.json');
+    const response = await fetch('data/webs.json');
     websitesData = await response.json();
   } catch (error) {
     console.error('Error cargando webs.json:', error);
@@ -41,12 +46,16 @@ async function cargarWebsites() {
 }
 
 function inicializarDashboard() {
-  // Cargar historial existente desde sessionStorage
+  // Cargar historial existente desde sessionStorage (compartido con tabla)
   websitesData.forEach(web => {
     const key = 'historial_' + web.url;
     const stored = sessionStorage.getItem(key);
     if (stored) {
-      historialStatus[web.url] = JSON.parse(stored);
+      try {
+        historialStatus[web.url] = JSON.parse(stored);
+      } catch(e) {
+        console.warn('Error parseando historial para', web.url, e);
+      }
     }
   });
 
@@ -141,14 +150,18 @@ function clasificarEstado(tiempo, status) {
   if (status >= 400 && status < 600) return 'lento'; // error HTTP pero funciona
 
   const t = parseFloat(tiempo);
-  if (typeof UMBRALES_LATENCIA !== 'undefined') {
-    if (t <= UMBRALES_LATENCIA.MUY_RAPIDO) return 'ok';
-    if (t <= UMBRALES_LATENCIA.RAPIDO) return 'ok';
-    if (t <= UMBRALES_LATENCIA.NORMAL) return 'ok';
-    if (t <= UMBRALES_LATENCIA.LENTO) return 'lento';
-    if (t <= UMBRALES_LATENCIA.CRITICO) return 'critico';
-    if (t <= UMBRALES_LATENCIA.RIESGO) return 'critico';
-  }
+  // Fallback si config.js no cargó
+  const umbrales = (typeof UMBRALES_LATENCIA !== 'undefined') ? UMBRALES_LATENCIA : {
+    MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000
+  };
+
+  if (t <= umbrales.MUY_RAPIDO) return 'ok';
+  if (t <= umbrales.RAPIDO) return 'ok';
+  if (t <= umbrales.NORMAL) return 'ok';
+  if (t <= umbrales.LENTO) return 'lento';
+  if (t <= umbrales.CRITICO) return 'critico';
+  if (t <= umbrales.RIESGO) return 'critico';
+
   return 'caido';
 }
 
