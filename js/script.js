@@ -374,6 +374,8 @@ function calcularPromedio(url) {
   if (historial.length === 0) {
     return {
       promedio: 0,
+      promedioProxy: null,
+      promedioDirecto: null,
       estadoPromedio: obtenerEstadoVisual(0, 200),
       validCount: 0,
       historial: historial,
@@ -381,20 +383,13 @@ function calcularPromedio(url) {
     };
   }
 
-  let totalTime = 0;
-  let medicionesExitosas = 0;
+  // Separar mediciones por fuente
+  const medicionesProxy = [];
+  const medicionesDirectas = [];
   let fallos = 0;
   let ultimoCodigoError = 200;
-  let fuentes = { proxy: 0, direct: 0 };
 
   historial.forEach((entry) => {
-    // Contar fuentes
-    if (entry.source === 'direct') {
-      fuentes.direct++;
-    } else {
-      fuentes.proxy++;
-    }
-
     const esFallo =
       entry.status !== 200 ||
       entry.time >= UMBRALES_LATENCIA.PENALIZACION_FALLO;
@@ -403,18 +398,36 @@ function calcularPromedio(url) {
       fallos++;
       ultimoCodigoError = entry.status;
     } else {
-      // Solo sumar mediciones exitosas para el promedio
-      totalTime += entry.time;
-      medicionesExitosas++;
+      if (entry.source === 'direct') {
+        medicionesDirectas.push(entry.time);
+      } else {
+        medicionesProxy.push(entry.time);
+      }
     }
   });
 
   const validCount = historial.length;
+  const fuentes = {
+    proxy: medicionesProxy.length,
+    direct: medicionesDirectas.length,
+  };
+
+  // Calcular promedios por fuente
+  const calcProm = (arr) => arr.length > 0 ? Math.round(arr.reduce((a,b) => a+b, 0) / arr.length) : null;
+  const promedioProxy = calcProm(medicionesProxy);
+  const promedioDirecto = calcProm(medicionesDirectas);
+
+  // Promedio general (ponderado o solo el que exista)
+  const promedioMs = promedioDirecto !== null && promedioProxy !== null
+    ? Math.round((promedioDirecto + promedioProxy) / 2)
+    : (promedioDirecto !== null ? promedioDirecto : promedioProxy);
 
   // Si más del 50% son fallos, mostrar como caída total
   if (fallos / validCount > 0.5 && validCount > 3) {
     return {
       promedio: 0,
+      promedioProxy: promedioProxy,
+      promedioDirecto: promedioDirecto,
       estadoPromedio: obtenerEstadoVisual(
         UMBRALES_LATENCIA.PENALIZACION_FALLO + 1,
         ultimoCodigoError
@@ -425,14 +438,12 @@ function calcularPromedio(url) {
     };
   }
 
-  // Calcular promedio solo de mediciones exitosas
-  const promedioMs =
-    medicionesExitosas > 0 ? Math.round(totalTime / medicionesExitosas) : 0;
-
   // Si no hay mediciones exitosas (todas fallaron), mostrar como error
-  if (medicionesExitosas === 0) {
+  if (promedioMs === null || promedioMs === undefined) {
     return {
       promedio: 0,
+      promedioProxy: null,
+      promedioDirecto: null,
       estadoPromedio: obtenerEstadoVisual(
         UMBRALES_LATENCIA.PENALIZACION_FALLO + 1,
         ultimoCodigoError
@@ -445,6 +456,8 @@ function calcularPromedio(url) {
 
   return {
     promedio: promedioMs,
+    promedioProxy: promedioProxy,
+    promedioDirecto: promedioDirecto,
     estadoPromedio: obtenerEstadoVisual(promedioMs, 200),
     validCount: validCount,
     historial: historial,
@@ -892,10 +905,19 @@ function actualizarFila(web, resultado) {
 
   if (!row) return;
 
+  // Borde izquierdo azul para mediciones directas (red interna)
+  if (resultado.verifiedDirect) {
+    row.style.borderLeft = '4px solid #3498db';
+    row.title = 'Medición directa desde navegador (red interna)';
+  } else {
+    row.style.borderLeft = '';
+    row.title = '';
+  }
+
   // --- Lógica de cálculo y estado ---
   const estadoActual = obtenerEstadoVisual(resultado.time, resultado.status, resultado.verifiedDirect);
   // Nota: calcularPromedio() obtiene los datos del historial que ACABA de ser actualizado
-  const { promedio, estadoPromedio } = calcularPromedio(web.url);
+  const { promedio, promedioProxy, promedioDirecto, estadoPromedio, fuentes } = calcularPromedio(web.url);
 
   // ALERTA: Solo alertar si el sitio REALMENTE está caído
   // No alertar si fue verificado directamente (verifiedDirect: true con status 200)
@@ -928,7 +950,7 @@ function actualizarFila(web, resultado) {
     : 'Medición vía proxy serverless (internet)';
 
   // Columna 4: Estado Actual (índice 3)
-  row.cells[3].textContent = estadoActual.text + (resultado.verifiedDirect ? ' 🖥️' : ' 🌐');
+  row.cells[3].textContent = estadoActual.text;
   row.cells[3].title = resultado.verifiedDirect 
     ? 'Estado verificado directamente desde navegador' 
     : 'Estado vía proxy serverless';
@@ -952,19 +974,39 @@ function actualizarFila(web, resultado) {
   }
 
   // Columna 5: Promedio (ms) (índice 4)
+  // Mostrar promedios separados por fuente si hay mediciones mixtas
+  let textoPromedio = '';
+  let tooltipPromedio = '';
+
+  if (promedioProxy !== null && promedioDirecto !== null) {
+    // Hay mediciones mixtas: mostrar ambos promedios
+    textoPromedio = `${promedioProxy} ms 🌐 / ${promedioDirecto} ms 🖥️`;
+    tooltipPromedio = `Promedio proxy: ${promedioProxy}ms (${fuentes.proxy} mediciones) | Promedio directo: ${promedioDirecto}ms (${fuentes.direct} mediciones)`;
+  } else if (promedioDirecto !== null) {
+    // Solo mediciones directas
+    textoPromedio = `${promedioDirecto} ms 🖥️`;
+    tooltipPromedio = `Promedio directo: ${promedioDirecto}ms (${fuentes.direct} mediciones)`;
+  } else if (promedioProxy !== null) {
+    // Solo mediciones proxy
+    textoPromedio = `${promedioProxy} ms 🌐`;
+    tooltipPromedio = `Promedio proxy: ${promedioProxy}ms (${fuentes.proxy} mediciones)`;
+  } else {
+    // Sin mediciones exitosas
+    textoPromedio = '0 ms';
+    tooltipPromedio = 'Sin mediciones exitosas';
+  }
+
   // Agregar contador de errores si existen y el tema lo permite
   const totalMediciones = (historialStatus[web.url] || []).length;
   const contadorErrores =
     errores.length > 0 && permiteExpansion
       ? ` ⚠️ ${errores.length}/${totalMediciones}`
       : '';
-  row.cells[4].textContent = `${promedio} ms${contadorErrores} ${resultado.verifiedDirect ? '🖥️' : '🌐'}`;
-  row.cells[4].title = resultado.verifiedDirect 
-    ? 'Promedio con medición directa desde navegador' 
-    : 'Promedio vía proxy serverless';
+  row.cells[4].textContent = textoPromedio + contadorErrores;
+  row.cells[4].title = tooltipPromedio;
 
   // Columna 6: Estado Promedio (índice 5)
-  row.cells[5].textContent = estadoPromedio.text + (resultado.verifiedDirect ? ' 🖥️' : ' 🌐');
+  row.cells[5].textContent = estadoPromedio.text;
   row.cells[5].title = resultado.verifiedDirect 
     ? 'Estado promedio con verificación directa' 
     : 'Estado promedio vía proxy';
@@ -1407,6 +1449,12 @@ async function cargarYMostrarHistorialExistente() {
     const row = tbody.insertRow();
     row.setAttribute('data-url', web.url);
 
+    // Borde izquierdo azul para mediciones directas
+    if (ultimaMedicion.source === 'direct') {
+      row.style.borderLeft = '4px solid #3498db';
+      row.title = 'Medición directa desde navegador (red interna)';
+    }
+
     const cellNombre = row.insertCell();
     cellNombre.textContent = web.nombre;
 
@@ -1448,7 +1496,7 @@ async function cargarYMostrarHistorialExistente() {
         : 'Medición vía proxy serverless (internet)';
 
       const cellEstadoActual = row.insertCell();
-      cellEstadoActual.textContent = estadoActual.text + (ultimaMedicion.source === 'direct' ? ' 🖥️' : ' 🌐');
+      cellEstadoActual.textContent = estadoActual.text;
       cellEstadoActual.title = ultimaMedicion.source === 'direct' 
         ? 'Estado verificado directamente desde navegador' 
         : 'Estado vía proxy serverless';
@@ -1476,7 +1524,7 @@ async function cargarYMostrarHistorialExistente() {
         : 'Promedio vía proxy serverless';
 
       const cellEstadoPromedio = row.insertCell();
-      cellEstadoPromedio.textContent = estadoPromedio.text + (ultimaMedicion.source === 'direct' ? ' 🖥️' : ' 🌐');
+      cellEstadoPromedio.textContent = estadoPromedio.text;
       cellEstadoPromedio.title = ultimaMedicion.source === 'direct' 
         ? 'Estado promedio con verificación directa' 
         : 'Estado promedio vía proxy';
