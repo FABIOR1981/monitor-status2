@@ -14,6 +14,9 @@ Un sistema de monitoreo en tiempo real que verifica automáticamente cada 5 minu
 - 🚨 **Detección inteligente** de fallos globales vs individuales
 - 📱 **Diseño responsive** para cualquier dispositivo
 - 🔍 **Expansión de errores** con detalles completos (temas avanzados)
+- 🛡️ **Verificación dual**: proxy serverless + verificación directa por navegador
+- 🌐/🖥️ **Indicadores de fuente**: distingue mediciones por proxy (internet) vs directas (red interna)
+- 🧱 **Manejo de WAF**: detecta y evita falsos positivos por bloqueos de firewall
 
 ---
 
@@ -43,6 +46,21 @@ Inicio rápido
 1. Agrega tus servicios en `data/webs.json` (nombre, URL, grupo, orden).
 2. Despliega en Netlify (o abre `index.html` localmente) y accede al tablero.
 3. Para cambiar tema o idioma usa los parámetros `?tema=` y `?lang=` en la URL.
+
+### ¿Cómo funciona la verificación dual?
+
+El monitor intenta verificar tus servicios de **dos formas**:
+
+1. **Proxy serverless** (🌐): desde los servidores de Netlify en internet pública.
+2. **Verificación directa** (🖥️): desde tu navegador, por la red interna.
+
+**¿Por qué dos?** Algunos sitios usan WAF (firewall) que bloquea requests desde servidores cloud como Netlify. Cuando el proxy falla, el sistema verifica directamente desde tu navegador para confirmar si el sitio realmente está caído o solo bloqueó el proxy.
+
+**Indicadores visuales:**
+- 🌐 = Medición vía proxy (internet pública)
+- 🖥️ = Medición directa desde tu navegador (red interna)
+- Borde azul izquierdo en la fila = última medición fue directa
+- Promedios separados: si hay mediciones mixtas, muestra ambos
 
 Ejemplo de acceso:
 

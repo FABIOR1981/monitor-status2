@@ -12,6 +12,12 @@ Valores por defecto (milisegundos)
 - RIESGO: 5000
 - PENALIZACION_FALLO: 99999 (valor simbólico para errores)
 
+Nuevos estados de conexión
+
+- **Status 408 (SLOW_RESPONSE)**: el sitio responde pero tarda más de 25 segundos. No es una caída, es un rendimiento extremadamente lento.
+- **Status 403/429 (WAF_BLOCK)**: el servidor responde pero bloqueó el request (firewall). El sitio funciona para usuarios normales.
+- **Status 0 (REALMENTE CAÍDO)**: sin respuesta HTTP. Solo se marca como caído si tanto el proxy como la verificación directa fallan.
+
 Principio general
 
 - La escala combina criterios de experiencia de usuario (qué percibe una persona) y prácticas de rendimiento web.
@@ -25,11 +31,17 @@ Qué significa cada nivel (resumen)
 - CRÍTICO (1.500–3.000 ms): riesgo de abandono; prioridad alta.
 - RIESGO (3.000–5.000 ms): comportamiento inestable o fallas parciales.
 - RIESGO EXTREMO (> 5.000 ms): casi timeout; requiere acción inmediata.
-- CAÍDA / ERROR (valor de penalización): falla o respuesta inválida.
+- SLOW_RESPONSE (status 408, > 25.000 ms): el sitio responde pero extremadamente lento. No es caída, pero requiere atención.
+- CAÍDA / ERROR (status 0): sin respuesta HTTP del servidor. Solo se marca como caído si tanto el proxy como la verificación directa fallan.
+- WAF_BLOCK (status 403/429): el sitio funciona pero bloqueó el proxy. Se verifica directamente desde el navegador para confirmar.
 
 Notas operativas
 
-- Los fallos (códigos 4xx/5xx o timeouts) se marcan con una penalización y no se incluyen en el cálculo del promedio histórico (para evitar distorsión).
-- Si más del 50% de las mediciones fallan, el estado promedio se marca como "CAÍDA/ERROR".
+- **Mediciones de diferentes fuentes**: el sistema guarda si cada medición vino del proxy (internet) o de verificación directa (navegador/red interna). Las latencias pueden diferir significativamente:
+  - Proxy (internet): típicamente 50-500 ms para sitios externos.
+  - Directo (red interna): típicamente 5-50 ms para sitios en la misma red.
+- **Promedios separados**: si hay mediciones mixtas, se calculan promedios por fuente y se muestran ambos en la columna "Promedio".
+- **Fallos y penalización**: los códigos 4xx/5xx o timeouts se marcan con penalización, pero **solo se consideran caída real si el status es 0** (sin respuesta HTTP). Los status 403/429 indican bloqueo WAF, no caída.
+- Si más del 50% de las mediciones **reales** (status 0) fallan, el estado promedio se marca como "CAÍDA/ERROR". Los status 408 (slow) no cuentan como caída.
 
 Si necesitás adaptar la escala a un entorno específico (red interna, API externa), podés ajustar los valores en `js/config.js`.

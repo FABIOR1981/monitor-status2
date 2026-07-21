@@ -50,11 +50,19 @@ o la ruta de invocación es incorrecta.
 
 ---
 
-### Problema 2.1: Un sitio reporta "CAÍDA 🔴" (Estado 0 o 599)
+### Problema 2.1: Un sitio reporta "CAÍDA 🔴" (Estado 0) pero sé que está en línea.
 
-aunque sé que está en línea.
+**Causa A: El proxy está bloqueado por el WAF del sitio (MÁS COMÚN).**
 
-**Causa A: Fallo de Conexión / DNS.**
+- **Diagnóstico:** El proxy de Netlify hace requests desde servidores en internet pública. Muchos sitios usan WAF (Web Application Firewall) que bloquea IPs de servicios cloud como Netlify. El WAF devuelve 403/429 al proxy, pero el sitio funciona perfectamente para usuarios normales.
+- **Síntomas:**
+  - El sitio abre rápido en tu navegador.
+  - En la tabla aparece "CAÍDA/ERROR (0 - Sin conexión)" con latencia 99999 ms.
+  - La consola del navegador muestra que el proxy falló pero la verificación directa funcionó.
+- **Solución:** El sistema ya maneja esto automáticamente. Cuando el proxy falla, el frontend intenta verificar directamente cargando `favicon.ico` desde tu navegador. Si funciona, el sitio se marca como operativo con icono 🖥️ (medición directa).
+- **Si sigue apareciendo caído:** Forzar refresh con `Ctrl+F5` para limpiar cache, o verificar que `check-status.js` y `script.js` estén desplegados correctamente.
+
+**Causa B: Fallo de Conexión / DNS.**
 
 - **Diagnóstico:** El entorno Node.js del Serverless no pudo
   resolver el nombre de host o establecer la conexión.
@@ -62,20 +70,17 @@ aunque sé que está en línea.
   y confirme que la URL esté escrita perfectamente (incluyendo
   `http://` o `https://`).
 
-**Causa B: Timeout del Proxy.**
+**Causa C: Timeout del Proxy.**
 
 - **Diagnóstico:** La función Serverless (`check-status.js`)
-  tiene un límite de 9 segundos (9000 ms) antes de que se
-  cierre la conexión. Si el servidor de destino tarda más
-  de ese tiempo en enviar los encabezados, la función devuelve
-  un `status: 0`.
-- **Solución:** Es una **caída por rendimiento**. El servidor
-  está demasiado lento. La solución es optimizar el
-  servidor de destino. Nota: El proxy ignora errores de
-  certificado SSL para poder medir disponibilidad de servicios
-  con certificados autofirmados o expirados.
+  tiene un timeout de 25 segundos. Si el servidor de destino no responde
+  en ese tiempo, la función devuelve `status: 0`. Pero si el sitio
+  responde lentamente (más de 25s), se marca como `status: 408` (SLOW_RESPONSE),
+  no como caído.
+- **Solución:** Si ves `status: 408`, el sitio funciona pero es extremadamente lento.
+  Si ves `status: 0` y la verificación directa también falla, el sitio realmente está caído.
 
-**Causa C: Demasiados Redirects (Redirecciones).**
+**Causa D: Demasiados Redirects (Redirecciones).**
 
 - **Diagnóstico:** El `check-status.js` tiene un límite de
   seguimiento de redirecciones (`follow: 20`). Si la URL
@@ -94,6 +99,23 @@ ajustada o el servidor está bajo carga.
 2.  **Ajuste:** Si el rendimiento del servidor no puede mejorar,
     considere ajustar los valores en `script.js` (si no están
     centralizados) para que se adapten a la realidad operativa.
+
+
+### Problema 2.3: No entiendo los iconos 🌐 y 🖥️ en la tabla.
+
+- **🌐 (mundo)** = Medición vía proxy serverless (desde internet pública).
+- **🖥️ (monitor)** = Medición directa desde tu navegador (red interna/local).
+- **¿Por qué hay dos?** Algunos sitios bloquean el proxy con WAF. Cuando eso pasa, el sistema verifica directamente desde tu navegador para confirmar si realmente están caídos.
+- **Borde azul izquierdo** en la fila = indica que la última medición fue directa.
+- **Promedios separados**: si hay mediciones mixtas (algunas proxy, otras directas), la columna "Promedio" muestra ambos: `120 ms 🌐 / 45 ms 🖥️`.
+
+### Problema 2.4: Un sitio aparece como "MUY LENTO" (status 408) pero funciona bien.
+
+- **Diagnóstico:** `status: 408` significa que el sitio responde pero tarda más de 25 segundos en responder al proxy. Esto puede deberse a:
+  - Servidor sobrecargado.
+  - WAF que retrasa intencionalmente las respuestas a bots.
+  - Problemas de red entre Netlify y el servidor destino.
+- **Solución:** El status 408 NO es una caída — el sitio funciona pero es muy lento. Si la latencia es crítica para tu operación, investiga el rendimiento del servidor.
 
 ---
 

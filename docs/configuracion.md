@@ -44,11 +44,28 @@ Cuándo cambiar:
 
 Ver `docs/justificacion_rangos_latencia.md` para la base de estas cifras.
 
-## 3 — Intervalo de monitoreo
+### Nuevos estados de conexión
+
+El sistema ahora distingue entre diferentes tipos de "fallo":
+
+- **Status 200-399**: Funciona correctamente.
+- **Status 403/429**: El sitio funciona pero bloqueó el proxy (WAF). Se verifica directamente desde el navegador.
+- **Status 408**: El sitio responde pero extremadamente lento (>25s). No es caída, es un problema de rendimiento.
+- **Status 0**: Realmente caído (sin respuesta HTTP). Solo se marca así si tanto el proxy como la verificación directa fallan.
+
+## 3 — Intervalo de monitoreo y timeout del proxy
 
 Por defecto: 5 minutos. Se controla desde la invocación de la función serverless (Netlify Scheduled Functions o un trigger externo).
 
 Recomendación: 3–10 minutos. Intervalos menores pueden alcanzar límites de funciones o sobrecargar servicios.
+
+### Timeout del proxy (`check-status.js`)
+
+- **Timeout del proxy**: 25 segundos (configurable en `netlify/functions/check-status.js`).
+- **Timeout de verificación directa**: 10 segundos (en el navegador, en `js/script.js`).
+- **Estrategia de reintentos**: HEAD con headers mínimos → GET con headers mínimos → GET completo. User-Agent rotativo para evitar bloqueos.
+
+Si necesitás ajustar el timeout del proxy (por ejemplo, para servicios muy lentos o para acelerar el monitoreo), editá la constante `TIMEOUT_MS` en `check-status.js`.
 
 ## 4 — Idiomas (i18n)
 
@@ -97,6 +114,14 @@ netlify functions:serve
 ## 9 — Historial y límites
 
 El historial por defecto permite hasta 9 horas (108 registros). Si necesitás más, ajustá el límite en `js/script.js`, pero considerá el impacto en `sessionStorage` y rendimiento.
+
+### Mediciones con fuente
+
+Cada medición en el historial guarda su fuente:
+- `source: 'proxy'` = medición vía proxy serverless (internet pública).
+- `source: 'direct'` = medición directa desde el navegador (red interna).
+
+Esto permite calcular promedios separados por fuente y detectar si un sitio bloquea el proxy pero funciona en la red interna.
 
 ## 10 — Personalizar textos
 
