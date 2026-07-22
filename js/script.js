@@ -1564,7 +1564,7 @@ function crearTarjetaHTML(web, ultima, estado, historial) {
 
   // Obtener promedio
   const { promedio, estadoPromedio, validCount } = calcularPromedio(web.url);
-  const promedioTexto = validCount > 0 ? `${promedio} ms` : 'Sin datos';
+  const promedioTexto = validCount > 0 ? `${promedio} ms [${validCount}/${maxHistorialActual}]` : 'Sin datos';
 
   // Obtener errores
   const errores = obtenerHistorialErrores(web.url);
