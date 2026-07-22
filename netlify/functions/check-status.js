@@ -18,7 +18,6 @@ const httpAgent = new http.Agent({
 
 const TIMEOUT_MS = 25000;
 
-// Rotar User-Agents para evitar fingerprinting
 const USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
@@ -121,7 +120,7 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // PASO 2: HEAD con headers mínimos (menos sospechoso para WAF)
+  // PASO 2: HEAD con headers mínimos
   let result = await tryFetch(targetUrl, 'HEAD', true, 1);
   diagnostics.attempts.push(result);
 
@@ -146,7 +145,7 @@ exports.handler = async (event, context) => {
     }
   }
 
-  // PASO 4: GET con headers completos (último intento)
+  // PASO 4: GET con headers completos
   if (result.errorType === 'TIMEOUT' || result.errorType === 'CONN_TIMEOUT') {
     await new Promise(r => setTimeout(r, 1000));
     result = await tryFetch(targetUrl, 'GET', false, 3);
@@ -162,6 +161,19 @@ exports.handler = async (event, context) => {
 
   // CAÍDO REAL
   const lastAttempt = diagnostics.attempts[diagnostics.attempts.length - 1];
+
+  // CORREGIDO: Si el último intento fue DNS_ERROR, reportar como caído definitivo
+  if (lastAttempt.errorType === 'DNS_ERROR') {
+    return {
+      statusCode: 200, headers,
+      body: JSON.stringify({
+        status: 0, time: 99999,
+        error: 'Dominio no resuelve (DNS_ERROR)',
+        errorType: 'DNS_ERROR',
+        down: true, diagnostics,
+      }),
+    };
+  }
 
   if (lastAttempt.errorType === 'TIMEOUT' && lastAttempt.elapsed >= TIMEOUT_MS - 1000) {
     return {

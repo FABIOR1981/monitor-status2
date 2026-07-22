@@ -60,7 +60,6 @@ function inicializarSelectorDuracion() {
     const nuevaDuracion = e.target.value;
     guardarDuracionSeleccionada(nuevaDuracion);
     maxHistorialActual = DURACION_OPCIONES[nuevaDuracion].mediciones;
-    // Borramos el historial porque los datos viejos ya no sirven si cambiaste la duración
     historialStatus = {};
     guardarHistorial();
     monitorearTodosWebsites();
@@ -189,10 +188,7 @@ function inicializarEtiquetas() {
 
   actualizarUltimaActualizacion(null);
 
-  // Mostrar/ocultar enlace ABM según el tema
   actualizarVisibilidadABM();
-
-  // Mostrar/ocultar columna de acción según el tema
   actualizarVisibilidadColumnaAccion();
 }
 
@@ -222,11 +218,7 @@ function actualizarUltimaActualizacion(fecha) {
 function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) {
   const tiempoNum = parseFloat(tiempo);
 
-  // Si fue verificado directamente y el proxy decía "caído",
-  // pero la verificación directa confirmó que funciona (status 200),
-  // clasificar por velocidad, NO mostrar como caído
   if (esVerificadoDirecto && estado === 200) {
-    // Clasificar por velocidad como cualquier otro sitio funcional
     const estadosVelocidad = [
       { umbral: UMBRALES_LATENCIA.MUY_RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST, className: 'status-very-fast' },
       { umbral: UMBRALES_LATENCIA.RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.FAST, className: 'status-fast' },
@@ -261,36 +253,12 @@ function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) 
   }
 
   const estadosVelocidad = [
-    {
-      umbral: UMBRALES_LATENCIA.MUY_RAPIDO,
-      text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST,
-      className: 'status-very-fast',
-    },
-    {
-      umbral: UMBRALES_LATENCIA.RAPIDO,
-      text: window.TEXTOS_ACTUAL.velocidad.FAST,
-      className: 'status-fast',
-    },
-    {
-      umbral: UMBRALES_LATENCIA.NORMAL,
-      text: window.TEXTOS_ACTUAL.velocidad.NORMAL,
-      className: 'status-normal',
-    },
-    {
-      umbral: UMBRALES_LATENCIA.LENTO,
-      text: window.TEXTOS_ACTUAL.velocidad.SLOW,
-      className: 'status-slow',
-    },
-    {
-      umbral: UMBRALES_LATENCIA.CRITICO,
-      text: window.TEXTOS_ACTUAL.velocidad.CRITICAL,
-      className: 'status-critical',
-    },
-    {
-      umbral: UMBRALES_LATENCIA.RIESGO,
-      text: window.TEXTOS_ACTUAL.velocidad.RISK,
-      className: 'status-risk',
-    },
+    { umbral: UMBRALES_LATENCIA.MUY_RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST, className: 'status-very-fast' },
+    { umbral: UMBRALES_LATENCIA.RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.FAST, className: 'status-fast' },
+    { umbral: UMBRALES_LATENCIA.NORMAL, text: window.TEXTOS_ACTUAL.velocidad.NORMAL, className: 'status-normal' },
+    { umbral: UMBRALES_LATENCIA.LENTO, text: window.TEXTOS_ACTUAL.velocidad.SLOW, className: 'status-slow' },
+    { umbral: UMBRALES_LATENCIA.CRITICO, text: window.TEXTOS_ACTUAL.velocidad.CRITICAL, className: 'status-critical' },
+    { umbral: UMBRALES_LATENCIA.RIESGO, text: window.TEXTOS_ACTUAL.velocidad.RISK, className: 'status-risk' },
   ];
 
   for (const estadoVelocidad of estadosVelocidad) {
@@ -307,9 +275,8 @@ function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) 
     className: 'status-extreme-risk',
   };
 }
-// Ordena los servicios: primero los críticos (orden=1), después el resto en orden alfabético
+
 function ordenarServiciosPersonalizado(servicios) {
-  // Los críticos van primero, el resto se ordena por nombre para que sea fácil de encontrar
   const fijos = servicios.filter((servicio) => servicio.orden === 1);
   const ordenables = servicios.filter((servicio) => servicio.orden !== 1);
 
@@ -339,7 +306,6 @@ function guardarHistorial() {
 }
 
 function historialCompleto() {
-  // Verificar si al menos un servicio alcanzó el máximo de monitoreos
   for (const url in historialStatus) {
     if (
       historialStatus[url] &&
@@ -356,7 +322,6 @@ function actualizarHistorial(url, time, status, source = 'proxy') {
     historialStatus[url] = [];
   }
 
-  // No agregar si ya alcanzamos el máximo configurado
   if (historialStatus[url].length >= maxHistorialActual) {
     return;
   }
@@ -366,8 +331,6 @@ function actualizarHistorial(url, time, status, source = 'proxy') {
   guardarHistorial();
 }
 
-// Calcula el promedio de latencia, pero solo cuenta los éxitos (status 200)
-// Los fallos (99999ms) no afectan el promedio
 function calcularPromedio(url) {
   const historial = historialStatus[url] || [];
 
@@ -383,7 +346,6 @@ function calcularPromedio(url) {
     };
   }
 
-  // Separar mediciones por fuente
   const medicionesProxy = [];
   const medicionesDirectas = [];
   let fallos = 0;
@@ -412,17 +374,14 @@ function calcularPromedio(url) {
     direct: medicionesDirectas.length,
   };
 
-  // Calcular promedios por fuente
   const calcProm = (arr) => arr.length > 0 ? Math.round(arr.reduce((a,b) => a+b, 0) / arr.length) : null;
   const promedioProxy = calcProm(medicionesProxy);
   const promedioDirecto = calcProm(medicionesDirectas);
 
-  // Promedio general (ponderado o solo el que exista)
   const promedioMs = promedioDirecto !== null && promedioProxy !== null
     ? Math.round((promedioDirecto + promedioProxy) / 2)
     : (promedioDirecto !== null ? promedioDirecto : promedioProxy);
 
-  // Si más del 50% son fallos, mostrar como caída total
   if (fallos / validCount > 0.5 && validCount > 3) {
     return {
       promedio: 0,
@@ -438,7 +397,6 @@ function calcularPromedio(url) {
     };
   }
 
-  // Si no hay mediciones exitosas (todas fallaron), mostrar como error
   if (promedioMs === null || promedioMs === undefined) {
     return {
       promedio: 0,
@@ -549,17 +507,7 @@ function determinarFalloGlobal(websitesData, resultados) {
   return { esFallo: false, motivo: '' };
 }
 
-// =======================================================
-// 5. LÓGICA PRINCIPAL DE MONITOREO Y RENDERING ASÍNCRONO
-// =======================================================
-
-/**
- * Llama al proxy de Netlify para saber el estado y la latencia de una URL.
- */
 async function verificarEstado(url) {
-  // =======================================================
-  // PASO 1: Intentar via proxy (Netlify Function)
-  // =======================================================
   try {
     const response = await fetch(
       `${PROXY_ENDPOINT}?url=${encodeURIComponent(url)}`
@@ -567,14 +515,11 @@ async function verificarEstado(url) {
 
     if (!response.ok) {
       console.warn(`Proxy error HTTP ${response.status} para ${url}`);
-      // Proxy falló, intentar verificación directa
       return await verificarDirecto(url);
     }
 
     const data = await response.json();
 
-    // Si el proxy dice que el sitio está caído (status 0), verificar directamente
-    // porque el proxy puede estar bloqueado por el WAF
     if (data.status === 0 || data.status === ESTADO_ERROR_CONEXION) {
       console.log(`Proxy reporta caído para ${url}, verificando directamente...`);
       return await verificarDirecto(url);
@@ -590,8 +535,8 @@ async function verificarEstado(url) {
 
 /**
  * Verificación directa desde el navegador usando una imagen.
- * El navegador del usuario tiene IP "normal" no bloqueada por WAF.
- * No hay restricciones CORS para cargar imágenes.
+ * CORREGIDO: onerror SIEMPRE = caído. No asumir que error rápido = OK.
+ * Solo onload (imagen cargó) = OK.
  */
 async function verificarDirecto(url) {
   return new Promise((resolve) => {
@@ -599,12 +544,10 @@ async function verificarDirecto(url) {
     const img = new Image();
     let resolved = false;
 
-    // Timeout de 10 segundos para la imagen
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
         img.onload = img.onerror = null;
-        // La imagen no cargó en 10s → probablemente caído
         resolve({
           time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
           status: 0,
@@ -614,7 +557,7 @@ async function verificarDirecto(url) {
       }
     }, 10000);
 
-    // La imagen cargó (aunque sea error 404) → el servidor responde
+    // Solo si la imagen CARGA realmente → OK
     img.onload = function() {
       if (resolved) return;
       resolved = true;
@@ -628,97 +571,56 @@ async function verificarDirecto(url) {
       });
     };
 
-    // Error al cargar la imagen → puede ser 404 (favicon no existe) pero servidor responde
-    // o puede ser que realmente no hay conexión
+    // onerror = el navegador no pudo cargar la imagen (DNS fail, conexión rechazada, etc.)
+    // SIEMPRE es caído/error, sin importar cuánto tardó
     img.onerror = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
       const time = Math.round(performance.now() - startTime);
-
-      // Si tardó menos de 8 segundos, probablemente es 404 (favicon no existe)
-      // pero el servidor respondió → el sitio funciona
-      if (time < 8000) {
-        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
-        resolve({
-          time: time,
-          status: 200,
-          verifiedDirect: true,
-        });
-      } else {
-        // Tardó mucho → probablemente timeout real
-        console.log(`❌ Verificación directa falló para ${url}: timeout`);
-        resolve({
-          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-          status: 0,
-          error: 'Timeout en verificación directa',
-          verifiedDirect: true,
-        });
-      }
+      console.log(`❌ Verificación directa falló para ${url}: error de carga (${time}ms)`);
+      resolve({
+        time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+        status: 0,
+        error: 'Error de carga (verificación directa)',
+        verifiedDirect: true,
+      });
     };
 
-    // Usamos favicon.ico con timestamp para evitar cache
     const faviconUrl = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
     img.src = faviconUrl;
   });
 }
 
-/**
- * Dibuja las filas iniciales con los datos de carga (placeholders).
- */
 function dibujarFilasIniciales(servicios) {
   const tbody = document.getElementById('status-table-body');
-  tbody.innerHTML = ''; // Limpiar tabla
+  tbody.innerHTML = '';
 
-  // Calcular el conteo máximo del historial para actualizar el encabezado
   let maxValidCount = 0;
   servicios.forEach((web) => {
     const { validCount } = calcularPromedio(web.url);
     maxValidCount = Math.max(maxValidCount, validCount);
 
     const row = tbody.insertRow();
-    // ID que nos permite encontrar la fila para la actualización asíncrona
     row.dataset.url = web.url;
 
-    // Columna 1: Servicio (AHORA CON HIPERVÍNCULO)
     row.insertCell().innerHTML = `<a href="${web.url}" target="_blank">${web.nombre}</a>`;
-
-    // Columna 2: URL (Oculta en styles.css)
     row.insertCell().innerHTML = `<a href="${web.url}" target="_blank">${web.url}</a>`;
-
-    // Columna 3: Latencia Actual (Placeholder)
     row.insertCell().textContent = window.TEXTOS_ACTUAL.general.LOADING;
-
-    // Columna 4: Estado Actual (Placeholder)
     row.insertCell().textContent = window.TEXTOS_ACTUAL.general.LOADING;
-
-    // Columna 5: Promedio (ms) - Placeholder
     row.insertCell().textContent = window.TEXTOS_ACTUAL.general.LOADING;
-
-    // Columna 6: Estado Promedio (Placeholder)
     row.insertCell().textContent = window.TEXTOS_ACTUAL.general.LOADING;
-
-    // Columna 7: Acción (Placeholder)
     row.insertCell().textContent = '';
 
-    // Accesibilidad: añadir aria-label y role a las celdas de estado (placeholders)
-    // (Es más robusto añadirlo aquí para que estén presentes antes de la actualización)
-    // Aplicar atributos de accesibilidad a las celdas de estado en la fila
     aplicarAccesibilidadEstadoEnFila(row, {
       actual: window.TEXTOS_ACTUAL.general.LOADING,
       promedio: window.TEXTOS_ACTUAL.general.LOADING,
     });
   });
 
-  // Actualizar el encabezado una vez con el historial guardado (puede ser 0/12 si está vacío)
   actualizarEncabezadoPromedio(maxValidCount);
 }
 
-/**
- * [Accesibilidad] Agrega roles y etiquetas ARIA a las celdas de estado de una fila.
- * @param {HTMLTableRowElement} row - Fila de la tabla con celdas de estado en las posiciones 3 y 5.
- * @param {Object} labels - Opcional: {actual: string, promedio: string} con textos accesibles.
- */
 function aplicarAccesibilidadEstadoEnFila(row, labels = {}) {
   if (!row) return;
   const statusActual = row.cells[3];
@@ -753,9 +655,6 @@ function aplicarAccesibilidadEstadoEnFila(row, labels = {}) {
   }
 }
 
-/**
- * Devuelve la lista de errores del historial para una URL
- */
 function obtenerHistorialErrores(url) {
   const historial = historialStatus[url] || [];
   return historial.filter(
@@ -764,9 +663,6 @@ function obtenerHistorialErrores(url) {
   );
 }
 
-/**
- * Convierte un timestamp a un formato fácil de leer: "14/12 10:45"
- */
 function formatearFecha(timestamp) {
   const fecha = new Date(timestamp);
   const dia = String(fecha.getDate()).padStart(2, '0');
@@ -776,9 +672,6 @@ function formatearFecha(timestamp) {
   return `${dia}/${mes} ${hora}:${min}`;
 }
 
-/**
- * Muestra u oculta el detalle de errores en una fila
- */
 function toggleErroresDetalle(url) {
   const tbody = document.getElementById('status-table-body');
   const row = tbody.querySelector(`tr[data-url="${CSS.escape(url)}"]`);
@@ -786,7 +679,6 @@ function toggleErroresDetalle(url) {
 
   const toggleBtn = row.querySelector('.toggle-errors-button');
 
-  // Buscar si ya existe una fila de detalle para esta URL
   let detalleRow = null;
   let nextRow = row.nextElementSibling;
   if (
@@ -797,7 +689,6 @@ function toggleErroresDetalle(url) {
     detalleRow = nextRow;
   }
 
-  // Si ya existe la fila de detalle, colapsar
   if (detalleRow) {
     detalleRow.classList.remove('expanded');
     if (toggleBtn) toggleBtn.textContent = '▼';
@@ -805,21 +696,19 @@ function toggleErroresDetalle(url) {
       if (detalleRow && detalleRow.parentNode) {
         detalleRow.remove();
       }
-    }, 200); // Esperar animación
+    }, 200);
     return;
   }
 
-  // Crear nueva fila de detalle
   const errores = obtenerHistorialErrores(url);
   if (errores.length === 0) return;
 
-  // Crear fila usando createElement para mejor control
   const newRow = document.createElement('tr');
   newRow.classList.add('error-detail-row');
   newRow.setAttribute('data-parent-url', url);
 
   const cell = document.createElement('td');
-  cell.colSpan = 7; // Todas las columnas
+  cell.colSpan = 7;
 
   const maxErrores = 10;
   const erroresLimitados = errores.slice(-maxErrores);
@@ -855,26 +744,19 @@ function toggleErroresDetalle(url) {
   cell.innerHTML = html;
   newRow.appendChild(cell);
 
-  // Insertar la fila inmediatamente después de la fila padre
   if (row.nextSibling) {
     tbody.insertBefore(newRow, row.nextSibling);
   } else {
     tbody.appendChild(newRow);
   }
 
-  // Cambiar ícono del botón a expandido
   if (toggleBtn) toggleBtn.textContent = '▲';
 
-  // Trigger animación
   setTimeout(() => newRow.classList.add('expanded'), 10);
 }
 
-// Hacer función accesible globalmente
 window.toggleErroresDetalle = toggleErroresDetalle;
 
-/**
- * Devuelve un mensaje entendible para cada código de error
- */
 function obtenerMensajeError(codigo) {
   const mensajes = {
     0: 'Sin conexión',
@@ -895,17 +777,12 @@ function obtenerMensajeError(codigo) {
   return mensajes[codigo] || `Error ${codigo}`;
 }
 
-/**
- * Actualiza una fila de la tabla con los datos reales.
- */
 function actualizarFila(web, resultado) {
   const tbody = document.getElementById('status-table-body');
-  // Escapar caracteres especiales en la URL para la selección del atributo data-url
   const row = tbody.querySelector(`tr[data-url="${CSS.escape(web.url)}"]`);
 
   if (!row) return;
 
-  // Borde izquierdo azul para mediciones directas (red interna)
   if (resultado.verifiedDirect) {
     row.style.borderLeft = '4px solid #3498db';
     row.title = 'Medición directa desde navegador (red interna)';
@@ -914,14 +791,9 @@ function actualizarFila(web, resultado) {
     row.title = '';
   }
 
-  // --- Lógica de cálculo y estado ---
   const estadoActual = obtenerEstadoVisual(resultado.time, resultado.status, resultado.verifiedDirect);
-  // Nota: calcularPromedio() obtiene los datos del historial que ACABA de ser actualizado
   const { promedio, promedioProxy, promedioDirecto, estadoPromedio, fuentes } = calcularPromedio(web.url);
 
-  // ALERTA: Solo alertar si el sitio REALMENTE está caído
-  // No alertar si fue verificado directamente (verifiedDirect: true con status 200)
-  // porque eso significa que el proxy estaba bloqueado pero el sitio funciona
   const sitioRealmenteCaido = resultado &&
     (resultado.status === 0 || resultado.status >= 400) &&
     !resultado.verifiedDirect;
@@ -937,32 +809,25 @@ function actualizarFila(web, resultado) {
         resultado.diagnostics || resultado.attempts || null
       );
   } else if (resultado && (resultado.status === 200 || resultado.verifiedDirect)) {
-    // Si el sitio funciona (directo o via proxy), limpiar alertas previas
     window.limpiarErrorSitio && window.limpiarErrorSitio(web.nombre || web.url);
   }
 
-  // --- Actualización de celdas (Columnas 3 a 7) ---
-
-  // Columna 3: Latencia Actual (índice 2)
   row.cells[2].textContent = `${resultado.time} ms ${resultado.verifiedDirect ? '🖥️' : '🌐'}`;
   row.cells[2].title = resultado.verifiedDirect 
     ? 'Medición directa desde navegador (red interna)' 
     : 'Medición vía proxy serverless (internet)';
 
-  // Columna 4: Estado Actual (índice 3)
   row.cells[3].textContent = estadoActual.text;
   row.cells[3].title = resultado.verifiedDirect 
     ? 'Estado verificado directamente desde navegador' 
     : 'Estado vía proxy serverless';
   row.cells[3].className = estadoActual.className;
 
-  // Obtener tema actual y verificar si permite expansión (todos menos DEF y OSC)
   const params = new URLSearchParams(window.location.search);
   const temaActual = params.get('tema') || TEMA_DEFAULT;
   const permiteExpansion = !TEMAS_BASICOS.includes(temaActual);
-
-  // Hacer clickeable el badge si hay errores y el tema lo permite
   const errores = obtenerHistorialErrores(web.url);
+
   if (errores.length > 0 && permiteExpansion) {
     row.cells[3].style.cursor = 'pointer';
     row.cells[3].title = 'Click para ver detalles de errores';
@@ -973,30 +838,23 @@ function actualizarFila(web, resultado) {
     row.cells[3].onclick = null;
   }
 
-  // Columna 5: Promedio (ms) (índice 4)
-  // Mostrar promedios separados por fuente si hay mediciones mixtas
   let textoPromedio = '';
   let tooltipPromedio = '';
 
   if (promedioProxy !== null && promedioDirecto !== null) {
-    // Hay mediciones mixtas: mostrar ambos promedios
     textoPromedio = `${promedioProxy} ms 🌐 / ${promedioDirecto} ms 🖥️`;
     tooltipPromedio = `Promedio proxy: ${promedioProxy}ms (${fuentes.proxy} mediciones) | Promedio directo: ${promedioDirecto}ms (${fuentes.direct} mediciones)`;
   } else if (promedioDirecto !== null) {
-    // Solo mediciones directas
     textoPromedio = `${promedioDirecto} ms 🖥️`;
     tooltipPromedio = `Promedio directo: ${promedioDirecto}ms (${fuentes.direct} mediciones)`;
   } else if (promedioProxy !== null) {
-    // Solo mediciones proxy
     textoPromedio = `${promedioProxy} ms 🌐`;
     tooltipPromedio = `Promedio proxy: ${promedioProxy}ms (${fuentes.proxy} mediciones)`;
   } else {
-    // Sin mediciones exitosas
     textoPromedio = '0 ms';
     tooltipPromedio = 'Sin mediciones exitosas';
   }
 
-  // Agregar contador de errores si existen y el tema lo permite
   const totalMediciones = (historialStatus[web.url] || []).length;
   const contadorErrores =
     errores.length > 0 && permiteExpansion
@@ -1005,14 +863,12 @@ function actualizarFila(web, resultado) {
   row.cells[4].textContent = textoPromedio + contadorErrores;
   row.cells[4].title = tooltipPromedio;
 
-  // Columna 6: Estado Promedio (índice 5)
   row.cells[5].textContent = estadoPromedio.text;
   row.cells[5].title = resultado.verifiedDirect 
     ? 'Estado promedio con verificación directa' 
     : 'Estado promedio vía proxy';
   row.cells[5].className = estadoPromedio.className;
 
-  // Hacer clickeable el badge promedio si hay errores y el tema lo permite
   if (errores.length > 0 && permiteExpansion) {
     row.cells[5].style.cursor = 'pointer';
     row.cells[5].title = 'Click para ver detalles de errores';
@@ -1023,34 +879,24 @@ function actualizarFila(web, resultado) {
     row.cells[5].onclick = null;
   }
 
-  // Accesibilidad: actualizar atributos de forma consistente después de actualizar el texto
   aplicarAccesibilidadEstadoEnFila(row, {
     actual: estadoActual.text,
     promedio: estadoPromedio.text,
   });
 
-  // Columna 7: Acción (índice 6)
   let actionsHTML = '';
-
-  // Botón PSI (solo en temas PRO/MIN)
   if (permiteExpansion) {
     actionsHTML += `<button class="psi-button" onclick="window.open('https://pagespeed.web.dev/report?url=${web.url}', '_blank')" title="PageSpeed Insights">PSI</button>`;
   }
-
   row.cells[6].innerHTML = actionsHTML;
 }
 
-/**
- * Función principal: pide los datos al proxy, procesa los resultados y actualiza la pantalla.
- */
 async function monitorearTodosWebsites() {
-  // 0. Limpiar el temporizador anterior
   if (window.monitorTimeout) {
     clearTimeout(window.monitorTimeout);
     window.monitorTimeout = null;
   }
 
-  // 1. Cargar la lista de websites desde data/webs.json y ordenar
   try {
     const response = await fetch('data/webs.json');
     websitesData = await response.json();
@@ -1073,16 +919,13 @@ async function monitorearTodosWebsites() {
     return;
   }
 
-  // Dibuja los placeholders y pone 'Cargando...'
   websitesData = ordenarServiciosPersonalizado(websitesData);
   dibujarFilasIniciales(websitesData);
   actualizarUltimaActualizacion(null);
 
-  // Usamos Promise.allSettled para que si un servicio falla, no corte el monitoreo de los otros
   const promesas = websitesData.map((web) => verificarEstado(web.url));
   const allResults = await Promise.allSettled(promesas);
 
-  // Convertimos los resultados a un formato simple para analizar si hay fallo global
   const resultadosMonitoreo = [];
   allResults.forEach((result, index) => {
     const web = websitesData[index];
@@ -1091,8 +934,6 @@ async function monitorearTodosWebsites() {
     if (result.status === 'fulfilled') {
       res = result.value;
     } else {
-      // Penalizamos con PENALIZACION_FALLO para que los errores de red
-      // aparezcan claramente como servicios caídos en la UI
       res = {
         time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
         status: ESTADO_ERROR_CONEXION,
@@ -1100,7 +941,6 @@ async function monitorearTodosWebsites() {
       };
     }
 
-    // Agregar al array para el análisis global
     resultadosMonitoreo.push({
       url: web.url,
       time: res.time,
@@ -1109,10 +949,6 @@ async function monitorearTodosWebsites() {
     });
   });
 
-  // =======================================================
-  // 3. LÓGICA DE FALLO GLOBAL
-  // =======================================================
-  //const esFalloCritico = determinarFalloGlobal(websitesData, resultadosMonitoreo);
   const { esFallo: esFalloCritico, motivo: motivoFallo } =
     determinarFalloGlobal(websitesData, resultadosMonitoreo);
   mostrarAdvertenciaGlobal(esFalloCritico);
@@ -1131,10 +967,8 @@ async function monitorearTodosWebsites() {
       'Se detectó un Fallo Global Crítico. Se omite la actualización de la tabla y historial con estos datos. El usuario verá el aviso.'
     );
 
-    // Solo actualizamos el timestamp. La tabla mantiene los datos del historial ANTERIOR
     actualizarUltimaActualizacion(new Date());
 
-    // Programar la próxima ejecución y retornar
     window.monitorTimeout = setTimeout(
       monitorearTodosWebsites,
       FRECUENCIA_MONITOREO_MS
@@ -1142,36 +976,25 @@ async function monitorearTodosWebsites() {
     return;
   }
 
-  // =======================================================
-  // 4. SI NO ES CRÍTICO, APLICAR DATOS Y ACTUALIZAR UI NORMALMENTE
-  // =======================================================
   let maxValidCount = 0;
 
-  // Recorremos los resultados y actualizamos historial y tabla
   resultadosMonitoreo.forEach((res) => {
     const web = websitesData.find((w) => w.url === res.url);
 
-    // 4.1. Guardar el historial (con fuente: proxy o direct)
     actualizarHistorial(res.url, res.time, res.status, res.verifiedDirect ? 'direct' : 'proxy');
-
-    // 4.2. Actualizar la fila en la pantalla
     actualizarFila(web, res);
 
-    // 4.3. Recalcular el contador para el encabezado
     const { validCount } = calcularPromedio(res.url);
     maxValidCount = Math.max(maxValidCount, validCount);
   });
 
-  // 5. Terminar y programar el próximo monitoreo
   actualizarEncabezadoPromedio(maxValidCount);
   actualizarUltimaActualizacion(new Date());
 
-  // NUEVO: Si la vista de tarjetas está activa, actualizarla también
   if (vistaActual === 'tarjetas') {
     renderizarTarjetas();
   }
 
-  // Solo programamos el siguiente monitoreo si todavía no llegamos al máximo
   if (!historialCompleto()) {
     window.monitorTimeout = setTimeout(
       monitorearTodosWebsites,
@@ -1184,14 +1007,6 @@ async function monitorearTodosWebsites() {
   }
 }
 
-// ===============================
-// 6. Temas y arranque de la app
-// ===============================
-
-/**
- * Obtiene el tema de los parámetros de la URL.
- * @returns {string | null} El nombre del tema o null.
- */
 function obtenerTemaDeURL() {
   const params = new URLSearchParams(window.location.search);
   const tema = params.get('tema');
@@ -1203,50 +1018,37 @@ function obtenerTemaDeURL() {
   return null;
 }
 
-/**
- * Lógica de cambio de tema: Prioriza la URL. Si no hay parámetro,
- * usa TEMA_DEFAULT.
- */
 function inicializarTema() {
   const estiloPrincipal = document.getElementById('estilo-principal');
   let temaFinal = TEMA_DEFAULT;
 
-  // 1. Intentar obtener el tema de la URL (MÁXIMA PRIORIDAD)
   const temaUrl = obtenerTemaDeURL();
 
   if (temaUrl) {
     temaFinal = temaUrl;
   }
 
-  // 2. Aplicar el tema
   if (TEMA_FILES[temaFinal]) {
     estiloPrincipal.href = TEMA_FILES[temaFinal];
     temaProActivo = temaFinal !== TEMA_DEFAULT;
   } else {
-    // Fallback de seguridad
     estiloPrincipal.href = TEMA_FILES[TEMA_DEFAULT];
     temaProActivo = false;
   }
 
-  // 3. Actualizar el botón toggle
   actualizarBotonToggle(temaFinal);
 }
 
-/**
- * Actualiza el icono del botón toggle según el tema actual
- * Oculta el botón si el tema no tiene pareja de alternancia
- */
 function actualizarBotonToggle(temaActual) {
   const themeIcon = document.getElementById('theme-icon');
   const themeBtn = document.getElementById('theme-toggle-btn');
 
   if (!themeBtn) return;
-  // Normalizar temaActual: aceptar 'theme-xxx', rutas CSS o claves
+
   let tema = temaActual || '';
   if (typeof tema === 'string' && tema.startsWith('theme-')) {
     tema = tema.replace('theme-', '');
   }
-  // Si nos pasaron una ruta CSS, buscar la clave correspondiente
   if (
     typeof tema === 'string' &&
     (tema.indexOf('/') !== -1 || tema.indexOf('.css') !== -1)
@@ -1262,7 +1064,6 @@ function actualizarBotonToggle(temaActual) {
     }
   }
 
-  // Verificar si el tema actual tiene pareja de alternancia
   const tieneParejaToggle =
     typeof TEMA_TOGGLE_PAIRS !== 'undefined' &&
     TEMA_TOGGLE_PAIRS.hasOwnProperty(tema);
@@ -1275,7 +1076,6 @@ function actualizarBotonToggle(temaActual) {
   themeBtn.style.display = 'block';
   if (!themeIcon) return;
 
-  // Determinar tema destino (acción) y mostrar ícono según la acción
   const temaDestino = TEMA_TOGGLE_PAIRS[tema];
   if (!temaDestino) {
     themeIcon.textContent = '🔄';
@@ -1283,7 +1083,6 @@ function actualizarBotonToggle(temaActual) {
     return;
   }
 
-  // Si el tema destino es oscuro, mostrar luna (acción: pasar a oscuro)
   const destinosOscuros = [TEMA_OSC, TEMA_PRO];
   if (destinosOscuros.includes(temaDestino)) {
     themeIcon.textContent = '🌙';
@@ -1292,7 +1091,6 @@ function actualizarBotonToggle(temaActual) {
       `Cambiar a modo oscuro (${temaDestino.toUpperCase()})`
     );
   } else {
-    // Tema destino claro -> mostrar sol
     themeIcon.textContent = '☀️';
     themeBtn.setAttribute(
       'title',
@@ -1301,50 +1099,34 @@ function actualizarBotonToggle(temaActual) {
   }
 }
 
-/**
- * Alterna entre temas configurados en TEMA_TOGGLE_PAIRS
- */
 function toggleDarkMode() {
   const estiloPrincipal = document.getElementById('estilo-principal');
   const params = new URLSearchParams(window.location.search);
   const temaUrl = params.get('tema');
 
-  // Determinar tema actual: priorizar URL, luego tomar el default
   let temaActual = TEMA_DEFAULT;
   if (temaUrl && TEMA_FILES[temaUrl]) {
     temaActual = temaUrl;
   }
 
-  // Obtener la pareja del tema actual
   const nuevoTema = TEMA_TOGGLE_PAIRS[temaActual];
 
-  // Si no hay pareja configurada, no hacer nada
   if (!nuevoTema) return;
 
-  // Aplicar el nuevo tema
   if (TEMA_FILES[nuevoTema]) {
     estiloPrincipal.href = TEMA_FILES[nuevoTema];
     temaProActivo = nuevoTema !== TEMA_DEFAULT;
 
-    // Actualizar la URL con el nuevo tema
     params.set('tema', nuevoTema);
     const nuevaUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, '', nuevaUrl);
     actualizarVisibilidadABM();
-
-    // Actualizar visibilidad de columna acción
     actualizarVisibilidadColumnaAccion();
-
-    // Actualizar enlace de leyenda con nuevo tema
     configurarEnlaceLeyenda();
-    // Actualizar el icono del botón toggle para reflejar la nueva acción
     actualizarBotonToggle(nuevoTema);
   }
 }
 
-/**
- * Muestra u oculta el enlace ABM según el tema activo
- */
 function actualizarVisibilidadABM() {
   const enlaceABM = document.getElementById('enlace-abm');
   if (!enlaceABM) return;
@@ -1352,17 +1134,13 @@ function actualizarVisibilidadABM() {
   const params = new URLSearchParams(window.location.search);
   const temaActual = params.get('tema') || TEMA_DEFAULT;
 
-  // Ocultar solo en temas básicos: def y osc
-  if (temaActual === TEMA_DEFAULT || temaActual === TEMA_OSC) {
+  if (TEMAS_BASICOS.includes(temaActual)) {
     enlaceABM.style.display = 'none';
   } else {
     enlaceABM.style.display = 'inline-flex';
   }
 }
 
-/**
- * Muestra u oculta la columna de acción según el tema activo
- */
 function actualizarVisibilidadColumnaAccion() {
   const params = new URLSearchParams(window.location.search);
   const temaUrl = params.get('tema');
@@ -1375,14 +1153,8 @@ function actualizarVisibilidadColumnaAccion() {
   const headerAccion = document.getElementById('header-action');
   const tabla = document.getElementById('monitor-table');
 
-  // Ocultar columna en temas básicos: def y osc
-  if (temaActual === TEMA_DEFAULT || temaActual === TEMA_OSC) {
-    // Ocultar header
-    if (headerAccion) {
-      headerAccion.style.display = 'none';
-    }
-
-    // Ocultar todas las celdas de acción (7ma columna)
+  if (TEMAS_BASICOS.includes(temaActual)) {
+    if (headerAccion) headerAccion.style.display = 'none';
     if (tabla) {
       const rows = tabla.querySelectorAll('tr');
       rows.forEach((row) => {
@@ -1393,11 +1165,7 @@ function actualizarVisibilidadColumnaAccion() {
       });
     }
   } else {
-    // Mostrar columna en temas avanzados
-    if (headerAccion) {
-      headerAccion.style.display = '';
-    }
-
+    if (headerAccion) headerAccion.style.display = '';
     if (tabla) {
       const rows = tabla.querySelectorAll('tr');
       rows.forEach((row) => {
@@ -1411,11 +1179,9 @@ function actualizarVisibilidadColumnaAccion() {
 }
 
 function reiniciarMonitoreo() {
-  // Limpiar historial
   historialStatus = {};
   guardarHistorial();
 
-  // Cancelar timeout pendiente si existe
   if (window.monitorTimeout) {
     clearTimeout(window.monitorTimeout);
   }
@@ -1425,13 +1191,8 @@ function reiniciarMonitoreo() {
     tbody.innerHTML = '';
   }
 
-  // Reiniciar monitoreo
   monitorearTodosWebsites();
 }
-
-// =======================================================
-// NUEVO: VISTA DE TARJETAS
-// =======================================================
 
 let vistaActual = 'tabla';
 
@@ -1447,7 +1208,6 @@ function cambiarVista(vista) {
   vistaActual = vista;
   localStorage.setItem('vistaMonitor', vista);
   aplicarVista(vista);
-  // Re-renderizar según la vista
   if (vista === 'tarjetas') {
     renderizarTarjetas();
   }
@@ -1554,7 +1314,6 @@ function renderizarTarjetas() {
 
   grid.innerHTML = tarjetas;
 
-  // Actualizar contadores superiores
   document.getElementById('contador-ok').textContent = contadores.ok;
   document.getElementById('contador-lento').textContent = contadores.lento;
   document.getElementById('contador-critico').textContent = contadores.critico;
@@ -1567,18 +1326,15 @@ function crearTarjetaHTML(web, ultima, estado, historial) {
   const tendencia = calcularTendencia(historial);
   const estadoInfo = obtenerInfoEstado(estado);
 
-  // Obtener promedio
   const { promedio, estadoPromedio, validCount } = calcularPromedio(web.url);
   const promedioTexto = validCount > 0 ? `${promedio}ms [${validCount}/${maxHistorialActual}]` : 'Sin datos';
 
-  // Obtener errores
   const errores = obtenerHistorialErrores(web.url);
   const totalMediciones = historial.length;
   const erroresHTML = errores.length > 0
     ? `<span class="tarjeta-errores" onclick="toggleErroresDetalle('${web.url}')" title="Ver errores">⚠️${errores.length}/${totalMediciones}</span>`
     : '';
 
-  // Botón PSI (solo en temas avanzados)
   const params = new URLSearchParams(window.location.search);
   const temaActual = params.get('tema') || TEMA_DEFAULT;
   const permiteExpansion = !TEMAS_BASICOS.includes(temaActual);
@@ -1615,37 +1371,34 @@ function crearTarjetaHTML(web, ultima, estado, historial) {
   `;
 }
 
-// =======================================================
-// FIN NUEVO: VISTA DE TARJETAS
-// =======================================================
-
 async function cargarYMostrarHistorialExistente() {
-  // Cargar lista de websites
-  let websitesData = [];
+  let websitesDataLocal = [];
   try {
     const response = await fetch(WEBSITES_FILE);
-    websitesData = await response.json();
+    websitesDataLocal = await response.json();
   } catch (e) {
     console.error('Error al cargar data/webs.json.', e);
     return;
   }
 
-  if (websitesData.length === 0) return;
+  if (websitesDataLocal.length === 0) return;
 
-  websitesData = ordenarServiciosPersonalizado(websitesData);
+  websitesDataLocal = ordenarServiciosPersonalizado(websitesDataLocal);
 
-  // Dibujar filas con datos del historial existente
   const tbody = document.getElementById('status-table-body');
   tbody.innerHTML = '';
 
   let maxValidCount = 0;
 
-  websitesData.forEach((web) => {
+  websitesDataLocal.forEach((web) => {
     const row = tbody.insertRow();
     row.setAttribute('data-url', web.url);
 
-    // Borde izquierdo azul para mediciones directas
-    if (ultimaMedicion.source === 'direct') {
+    // CORREGIDO: obtener historial PRIMERO, luego usar ultimaMedicion
+    const historial = historialStatus[web.url] || [];
+    const ultimaMedicion = historial.length > 0 ? historial[historial.length - 1] : null;
+
+    if (ultimaMedicion && ultimaMedicion.source === 'direct') {
       row.style.borderLeft = '4px solid #3498db';
       row.title = 'Medición directa desde navegador (red interna)';
     }
@@ -1661,12 +1414,6 @@ async function cargarYMostrarHistorialExistente() {
     a.textContent = web.url;
     cellUrl.appendChild(a);
 
-    // Obtener última medición del historial
-    const historial = historialStatus[web.url] || [];
-    const ultimaMedicion =
-      historial.length > 0 ? historial[historial.length - 1] : null;
-
-    // Obtener tema actual y verificar si permite expansión (todos menos DEF y OSC)
     const params = new URLSearchParams(window.location.search);
     const temaActual = params.get('tema') || TEMA_DEFAULT;
     const permiteExpansion = !TEMAS_BASICOS.includes(temaActual);
@@ -1678,9 +1425,7 @@ async function cargarYMostrarHistorialExistente() {
         ultimaMedicion.status,
         ultimaMedicion.verifiedDirect
       );
-      const { promedio, estadoPromedio, validCount } = calcularPromedio(
-        web.url
-      );
+      const { promedio, estadoPromedio, validCount } = calcularPromedio(web.url);
 
       maxValidCount = Math.max(maxValidCount, validCount);
 
@@ -1697,14 +1442,12 @@ async function cargarYMostrarHistorialExistente() {
         : 'Estado vía proxy serverless';
       cellEstadoActual.className = estadoActual.className;
 
-      // Hacer clickeable el badge si hay errores y el tema lo permite
       if (errores.length > 0 && permiteExpansion) {
         cellEstadoActual.style.cursor = 'pointer';
         cellEstadoActual.title = 'Click para ver detalles de errores';
         cellEstadoActual.onclick = () => toggleErroresDetalle(web.url);
       }
 
-      // Agregar contador de errores si existen y el tema lo permite
       const totalMediciones = historial.length;
 
       const contadorErrores =
@@ -1725,7 +1468,6 @@ async function cargarYMostrarHistorialExistente() {
         : 'Estado promedio vía proxy';
       cellEstadoPromedio.className = estadoPromedio.className;
 
-      // Hacer clickeable el badge promedio si hay errores y el tema lo permite
       if (errores.length > 0 && permiteExpansion) {
         cellEstadoPromedio.style.cursor = 'pointer';
         cellEstadoPromedio.title = 'Click para ver detalles de errores';
@@ -1741,7 +1483,6 @@ async function cargarYMostrarHistorialExistente() {
     const cellAccion = row.insertCell();
     let actionsHTML = '';
 
-    // Botón PSI (solo en temas PRO/MIN)
     if (permiteExpansion) {
       actionsHTML += `<button class="psi-button" onclick="window.open('https://pagespeed.web.dev/report?url=${web.url}', '_blank')" title="PageSpeed Insights">PSI</button>`;
     }
@@ -1751,21 +1492,18 @@ async function cargarYMostrarHistorialExistente() {
 
   actualizarEncabezadoPromedio(maxValidCount);
 
-  // NUEVO: Renderizar tarjetas si está activa esa vista
   if (vistaActual === 'tarjetas') {
     renderizarTarjetas();
   }
 
-  // NO actualizar la fecha de última actualización - mantener la guardada
-  // Buscar la última fecha en el historial
   let ultimaFecha = null;
   for (const url in historialStatus) {
     const historial = historialStatus[url];
     if (historial && historial.length > 0) {
-      const ultimaMedicion = historial[historial.length - 1];
-      if (ultimaMedicion.timestamp) {
-        if (!ultimaFecha || ultimaMedicion.timestamp > ultimaFecha) {
-          ultimaFecha = ultimaMedicion.timestamp;
+      const ultimaMedicionHist = historial[historial.length - 1];
+      if (ultimaMedicionHist.timestamp) {
+        if (!ultimaFecha || ultimaMedicionHist.timestamp > ultimaFecha) {
+          ultimaFecha = ultimaMedicionHist.timestamp;
         }
       }
     }
@@ -1776,7 +1514,6 @@ async function cargarYMostrarHistorialExistente() {
   }
 }
 
-// Cuando se carga la página, arranca todo el sistema
 document.addEventListener('DOMContentLoaded', async () => {
   inicializarTema();
   cargarHistorial();
@@ -1784,22 +1521,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   inicializarVista();
 
   try {
-    // 1. Cargar dinámicamente el diccionario de idioma
     await cargarIdioma();
 
-    // 2. Inicializar elementos estáticos AHORA que TEXTOS_ACTUAL tiene valor
     inicializarEtiquetas();
     inicializarSelectorDuracion();
 
-    // 3. Verificar si el historial ya está completo
     if (historialCompleto()) {
-      // Si está completo, solo cargar y mostrar datos existentes
       console.log(
         'Historial completo detectado. Mostrando datos guardados sin nuevas mediciones.'
       );
       await cargarYMostrarHistorialExistente();
     } else {
-      // Si no está completo, iniciar el monitoreo normal
       monitorearTodosWebsites();
     }
   } catch (e) {
