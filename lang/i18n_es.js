@@ -1,4 +1,6 @@
 // Archivo de traducción - Español
+// Este archivo solo contiene los textos en español
+// No debe contener lógica, solo datos
 const TEXTOS_ES = {
   general: {
     PAGE_TITLE: 'Monitor de Estado de Servicios',
@@ -39,7 +41,7 @@ const TEXTOS_ES = {
       code: 0,
       label: 'Sin conexión',
       description:
-        'Fallo de red, DNS, timeout, bloqueo CORS, o el servidor no respondió.',
+        'No se pudo establecer conexión con el servidor (timeout, DNS, red).',
     },
     {
       code: 301,
@@ -153,6 +155,8 @@ const TEXTOS_ES = {
   ],
 };
 
+// Construir el objeto httpStatus automáticamente desde el array de códigos
+// Esto evita duplicar la información y mantiene todo sincronizado
 TEXTOS_ES.httpStatus = {};
 TEXTOS_ES.httpCodes.forEach((item) => {
   TEXTOS_ES.httpStatus[item.code] = item.label;
@@ -160,12 +164,11 @@ TEXTOS_ES.httpCodes.forEach((item) => {
 TEXTOS_ES.httpStatus.GENERIC = 'Error HTTP';
 
 TEXTOS_ES.tabla = {
-  // CORREGIDO: sin espacio trailing
   HEADER_SERVICE: 'Servicio',
   HEADER_URL: 'URL',
   HEADER_LATENCY_ACTUAL: 'Latencia Actual',
   HEADER_STATUS_ACTUAL: 'Estado Actual',
-  HEADER_PROMEDIO_MS: 'Promedio',
+  HEADER_PROMEDIO_MS: 'Promedio ',
   HEADER_PROMEDIO_STATUS: 'Estado Promedio',
   HEADER_ACTION: 'Acción',
 };
@@ -282,4 +285,6 @@ TEXTOS_ES.httpCodes
     });
   });
 
+// Solo asignar los textos a la variable global
+// La lógica de carga está en i18n.js
 window.TEXTOS_ACTUAL = TEXTOS_ES;

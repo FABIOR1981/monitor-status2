@@ -1,19 +1,6 @@
 const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
-  // CORREGIDO: CORS preflight PRIMERO
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      },
-      body: '',
-    };
-  }
-
   // Solo permitir POST
   if (event.httpMethod !== 'POST') {
     return {
@@ -23,6 +10,19 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ error: 'Método no permitido' }),
+    };
+  }
+
+  // Manejar CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      },
+      body: '',
     };
   }
 
@@ -40,6 +40,7 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Validar que sea un array válido
     if (!Array.isArray(data)) {
       return {
         statusCode: 400,
@@ -51,6 +52,7 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Validar estructura de cada elemento
     for (const item of data) {
       if (!item.nombre || !item.url) {
         return {
@@ -66,6 +68,7 @@ exports.handler = async (event, context) => {
       }
     }
 
+    // Token de GitHub (debe estar en variables de entorno de Netlify)
     const githubToken = process.env.GITHUB_TOKEN || token;
     const repo = process.env.GITHUB_REPO || 'FABIOR1981/monitor-status-test';
     const branch = process.env.GITHUB_BRANCH || 'main';
@@ -85,6 +88,7 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // 1. Obtener el SHA actual del archivo
     const fileUrl = `https://api.github.com/repos/${repo}/contents/${filePath}?ref=${branch}`;
     const fileResponse = await fetch(fileUrl, {
       headers: {
@@ -111,9 +115,11 @@ exports.handler = async (event, context) => {
     const fileData = await fileResponse.json();
     const currentSha = fileData.sha;
 
+    // 2. Preparar el nuevo contenido
     const newContent = JSON.stringify(data, null, 2);
     const encodedContent = Buffer.from(newContent).toString('base64');
 
+    // 3. Actualizar el archivo en GitHub
     const updateResponse = await fetch(fileUrl, {
       method: 'PUT',
       headers: {

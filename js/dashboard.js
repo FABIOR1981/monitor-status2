@@ -1,15 +1,16 @@
 // =======================================================
 // DASHBOARD.JS — Vista alternativa de tarjetas
 // Comparte: config.js, i18n, sessionStorage (historial)
+// NO modifica script.js ni index.html
 // =======================================================
 
 let websitesData = [];
 let historialStatus = {};
-let maxHistorialActual = 12;
+let maxHistorialActual = 12; // 1 hora por defecto
 let duracionSeleccionada = 1;
 let intervaloMonitoreo = null;
 let countdownInterval = null;
-let countdownValue = 300;
+let countdownValue = 300; // 5 minutos
 
 // =======================================================
 // INICIALIZACIÓN
@@ -18,11 +19,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarConfiguracion();
   await cargarWebsites();
   inicializarDashboard();
+  // FIX: Primera carga de datos ANTES de iniciar el intervalo
   await monitorearTodos();
   iniciarMonitoreo();
 });
 
 async function cargarConfiguracion() {
+  // FIX: Usar la clave correcta con "h" para DURACION_OPCIONES
   const duracionGuardada = localStorage.getItem('duracionSeleccionada');
   duracionSeleccionada = duracionGuardada ? parseInt(duracionGuardada) : 1;
 
@@ -30,6 +33,7 @@ async function cargarConfiguracion() {
     const duracionKey = duracionSeleccionada + 'h';
     maxHistorialActual = DURACION_OPCIONES[duracionKey]?.mediciones || 12;
   } else {
+    // Fallback si config.js no cargó
     const mapa = { 1: 12, 2: 24, 3: 36, 4: 48, 5: 60, 6: 72, 7: 84, 8: 96, 9: 108 };
     maxHistorialActual = mapa[duracionSeleccionada] || 12;
   }
@@ -46,17 +50,20 @@ async function cargarWebsites() {
 }
 
 function inicializarDashboard() {
-  // CORREGIDO: Usar la MISMA clave de sessionStorage que script.js
-  const stored = sessionStorage.getItem('monitorStatusHistorial');
-  if (stored) {
-    try {
-      historialStatus = JSON.parse(stored);
-    } catch(e) {
-      console.warn('Error parseando historial compartido', e);
-      historialStatus = {};
+  // Cargar historial existente desde sessionStorage (compartido con tabla)
+  websitesData.forEach(web => {
+    const key = 'historial_' + web.url;
+    const stored = sessionStorage.getItem(key);
+    if (stored) {
+      try {
+        historialStatus[web.url] = JSON.parse(stored);
+      } catch(e) {
+        console.warn('Error parseando historial para', web.url, e);
+      }
     }
-  }
+  });
 
+  // Selector de duración
   const selector = document.getElementById('duracion-selector');
   if (selector) {
     selector.value = duracionSeleccionada;
@@ -77,11 +84,13 @@ function inicializarDashboard() {
     });
   }
 
+  // Mostrar el contenedor y ocultar mensaje de carga
   const mensajeCarga = document.getElementById('mensaje-carga');
   const contenidoDashboard = document.getElementById('contenido-dashboard');
   if (mensajeCarga) mensajeCarga.style.display = 'none';
   if (contenidoDashboard) contenidoDashboard.style.display = 'block';
 
+  // Renderizar con datos existentes (puede estar vacío al inicio)
   renderizarDashboard();
 }
 
@@ -92,6 +101,7 @@ function renderizarDashboard() {
   const grid = document.getElementById('grid-dashboard');
   if (!grid) return;
 
+  // Calcular contadores
   const contadores = { ok: 0, lento: 0, critico: 0, caido: 0 };
 
   const tarjetas = websitesData.map(web => {
@@ -106,11 +116,13 @@ function renderizarDashboard() {
 
   grid.innerHTML = tarjetas;
 
+  // Actualizar contadores superiores
   document.getElementById('contador-ok').textContent = contadores.ok;
   document.getElementById('contador-lento').textContent = contadores.lento;
   document.getElementById('contador-critico').textContent = contadores.critico;
   document.getElementById('contador-caido').textContent = contadores.caido;
 
+  // Actualizar última actualización
   const ultimaActualizacion = document.getElementById('ultima-actualizacion');
   if (ultimaActualizacion) {
     ultimaActualizacion.textContent = 'Última actualización: ' + new Date().toLocaleTimeString();
@@ -147,16 +159,17 @@ function crearTarjeta(web, ultima, estado, historial) {
 }
 
 // =======================================================
-// CLASIFICAR ESTADO
+// CLASIFICAR ESTADO (usa mismos umbrales que config.js)
 // =======================================================
 function clasificarEstado(tiempo, status) {
   if (status === 0 || status === 599) return 'caido';
-  if (status === 408) return 'critico';
-  if (status >= 400 && status < 600) return 'lento';
+  if (status === 408) return 'critico'; // muy lento
+  if (status >= 400 && status < 600) return 'lento'; // error HTTP pero funciona
 
   const t = parseFloat(tiempo);
   if (isNaN(t) || t <= 0) return 'caido';
 
+  // Fallback si config.js no cargó
   const umbrales = (typeof UMBRALES_LATENCIA !== 'undefined') ? UMBRALES_LATENCIA : {
     MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000
   };
@@ -182,7 +195,7 @@ function obtenerInfoEstado(estado) {
 }
 
 // =======================================================
-// TENDENCIA
+// TENDENCIA (últimas 3 mediciones)
 // =======================================================
 function calcularTendencia(historial) {
   if (!historial || historial.length < 2) {
@@ -202,32 +215,53 @@ function calcularTendencia(historial) {
   const porcentaje = primera > 0 ? Math.round((diff / primera) * 100) : 0;
 
   if (diff > 100) {
-    return { flechas: '▲▲▲', tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)` };
+    return {
+      flechas: '▲▲▲',
+      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)`
+    };
   }
   if (diff > 50) {
-    return { flechas: '▲▲', tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)` };
+    return {
+      flechas: '▲▲',
+      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)`
+    };
   }
   if (diff > 10) {
-    return { flechas: '▲', tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)` };
+    return {
+      flechas: '▲',
+      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)`
+    };
   }
   if (diff < -100) {
-    return { flechas: '▼▼▼', tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)` };
+    return {
+      flechas: '▼▼▼',
+      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)`
+    };
   }
   if (diff < -50) {
-    return { flechas: '▼▼', tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)` };
+    return {
+      flechas: '▼▼',
+      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)`
+    };
   }
   if (diff < -10) {
-    return { flechas: '▼', tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)` };
+    return {
+      flechas: '▼',
+      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)`
+    };
   }
 
-  return { flechas: '─', tooltip: `Estable (${primera}ms → ${ultima}ms)` };
+  return {
+    flechas: '─',
+    tooltip: `Estable (${primera}ms → ${ultima}ms)`
+  };
 }
 
 // =======================================================
-// MONITOREO
+// MONITOREO (comparte sessionStorage con tabla)
 // =======================================================
 function iniciarMonitoreo() {
-  intervaloMonitoreo = setInterval(monitorearTodos, 300000);
+  intervaloMonitoreo = setInterval(monitorearTodos, 300000); // 5 minutos
   iniciarCountdown();
 }
 
@@ -262,6 +296,7 @@ async function monitorearTodos() {
       res = { time: 99999, status: 0 };
     }
 
+    // FIX: Siempre agregar al historial y recortar si excede el máximo
     if (!historialStatus[web.url]) historialStatus[web.url] = [];
 
     historialStatus[web.url].push({
@@ -271,61 +306,100 @@ async function monitorearTodos() {
       timestamp: Date.now()
     });
 
+    // Recortar si excede el máximo
     if (historialStatus[web.url].length > maxHistorialActual) {
       historialStatus[web.url] = historialStatus[web.url].slice(-maxHistorialActual);
     }
-  });
 
-  // CORREGIDO: Guardar con la MISMA clave que usa script.js
-  sessionStorage.setItem('monitorStatusHistorial', JSON.stringify(historialStatus));
+    sessionStorage.setItem('historial_' + web.url, JSON.stringify(historialStatus[web.url]));
+  });
 
   renderizarDashboard();
   countdownValue = 300;
 }
 
 // =======================================================
-// VERIFICAR ESTADO
+// VERIFICAR ESTADO (misma función que script.js)
 // =======================================================
 async function verificarEstado(url) {
   const PROXY_ENDPOINT = '/.netlify/functions/check-status';
 
   try {
     const response = await fetch(`${PROXY_ENDPOINT}?url=${encodeURIComponent(url)}`);
-    if (!response.ok) {
-      try {
-        return await response.json();
-      } catch {
-        return { time: 99999, status: 0 };
-      }
-    }
-    return await response.json();
+    if (!response.ok) return await verificarDirecto(url);
+
+    const data = await response.json();
+    if (data.status === 0) return await verificarDirecto(url);
+
+    return data;
   } catch (error) {
-    return { time: 99999, status: 0, error: error.message };
+    return await verificarDirecto(url);
   }
 }
 
-/**
- * CORREGIDO: onerror SIEMPRE = caído. Solo onload = OK.
- */
-async // =======================================================
+function verificarDirecto(url) {
+  return new Promise((resolve) => {
+    const startTime = performance.now();
+    const img = new Image();
+    let resolved = false;
+
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        resolve({ time: 99999, status: 0, verifiedDirect: true });
+      }
+    }, 10000);
+
+    img.onload = function() {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
+      resolve({
+        time: Math.round(performance.now() - startTime),
+        status: 200,
+        verifiedDirect: true
+      });
+    };
+
+    img.onerror = function() {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
+      const time = Math.round(performance.now() - startTime);
+      if (time < 8000) {
+        resolve({ time: time, status: 200, verifiedDirect: true });
+      } else {
+        resolve({ time: 99999, status: 0, verifiedDirect: true });
+      }
+    };
+
+    img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
+  });
+}
+
+// =======================================================
 // UTILIDADES
 // =======================================================
 function recortarHistorial() {
   Object.keys(historialStatus).forEach(url => {
     if (historialStatus[url].length > maxHistorialActual) {
       historialStatus[url] = historialStatus[url].slice(-maxHistorialActual);
+      sessionStorage.setItem('historial_' + url, JSON.stringify(historialStatus[url]));
     }
   });
-  sessionStorage.setItem('monitorStatusHistorial', JSON.stringify(historialStatus));
 }
 
 function reiniciarMonitoreo() {
   historialStatus = {};
-  sessionStorage.removeItem('monitorStatusHistorial');
+  Object.keys(sessionStorage).forEach(key => {
+    if (key.startsWith('historial_')) sessionStorage.removeItem(key);
+  });
   renderizarDashboard();
+  // FIX: Reiniciar también el monitoreo inmediato
   monitorearTodos();
 }
 
+// Toggle modo oscuro (comparte con tabla)
 function toggleDarkMode() {
   document.body.classList.toggle('dark-mode');
 }
