@@ -12,20 +12,17 @@
     <style>
       body {
         margin: 0;
-        padding: 10px 5px;
+        padding: 20px;
       }
       .container {
-        max-width: 100%;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 10px 20px;
+        padding: 30px;
         min-height: 60vh;
-        width: 100%;
-        box-sizing: border-box;
       }
       h1 {
         text-align: center;
-        margin-bottom: 2px;
-        margin-top: 5px;
+        margin-bottom: 5px;
       }
       .info-bar {
         text-align: center;
@@ -69,63 +66,27 @@
       /* =======================================================
          NUEVO: ESTILOS PARA VISTA DE TARJETAS
          ======================================================= */
-
-      /* Barra de controles principal - todo en una fila */
-      .barra-controles {
+      .vista-toggle-container {
         display: flex;
         justify-content: center;
-        align-items: center;
         gap: 10px;
-        margin-bottom: 8px;
-        padding: 6px;
-        flex-wrap: wrap;
-      }
-
-      .grupo-control {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .grupo-control label {
-        font-size: 0.9em;
-        color: #555;
-        white-space: nowrap;
-      }
-
-      .grupo-control select {
-        padding: 5px 10px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        font-size: 0.9em;
-        cursor: pointer;
-      }
-
-      .btn-reiniciar-compacto {
-        padding: 5px 12px !important;
-        font-size: 0.9em !important;
-        border-radius: 6px !important;
-      }
-
-      .vista-toggle-container-inline {
-        display: flex;
-        gap: 6px;
+        margin-bottom: 20px;
+        padding: 10px;
       }
 
       .vista-toggle-btn {
-        padding: 5px 14px;
-        border-radius: 16px;
+        padding: 8px 20px;
+        border-radius: 20px;
         border: 2px solid #007bff;
         background: white;
         color: #007bff;
         font-weight: 600;
-        font-size: 0.9em;
+        font-size: 0.95em;
         cursor: pointer;
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        white-space: nowrap;
+        gap: 6px;
       }
 
       .vista-toggle-btn:hover {
@@ -143,34 +104,12 @@
         background: #0056b3;
       }
 
-      /* Links inline (Leyenda, ABM) */
-      .menu-item-inline {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 5px 12px;
-        font-size: 0.9em;
-        color: #007bff;
-        text-decoration: none;
-        border-radius: 16px;
-        background-color: rgba(0, 123, 255, 0.05);
-        border: 1px solid rgba(0, 123, 255, 0.2);
-        transition: all 0.2s ease;
-        white-space: nowrap;
-      }
-
-      .menu-item-inline:hover {
-        background-color: rgba(0, 123, 255, 0.1);
-        border-color: rgba(0, 123, 255, 0.4);
-        transform: translateY(-1px);
-      }
-
       /* Grid de tarjetas - COMPACTO */
       .grid-tarjetas {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 8px;
-        margin-bottom: 8px;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
         display: none;
       }
 
@@ -180,13 +119,13 @@
 
       .tarjeta-servicio {
         background: white;
-        border-radius: 8px;
-        padding: 8px 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        border-left: 3px solid;
+        border-radius: 10px;
+        padding: 12px 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        border-left: 4px solid;
         transition: transform 0.15s, box-shadow 0.15s;
         position: relative;
-        font-size: 0.88em;
+        font-size: 0.9em;
       }
 
       .tarjeta-servicio:hover {
@@ -208,14 +147,14 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         border-bottom: 1px solid rgba(0,0,0,0.06);
-        padding-bottom: 3px;
+        padding-bottom: 5px;
       }
 
       .tarjeta-nombre-compacto {
         font-weight: 700;
-        font-size: 1.05em;
+        font-size: 0.95em;
         color: #333;
         white-space: nowrap;
         overflow: hidden;
@@ -230,7 +169,7 @@
 
       /* Body compacto */
       .tarjeta-body-compacto {
-        margin-bottom: 4px;
+        margin-bottom: 6px;
       }
 
       .tarjeta-latencia-compacto {
@@ -241,7 +180,7 @@
       }
 
       .latencia-numero {
-        font-size: 2.2em;
+        font-size: 1.8em;
         font-weight: 700;
         color: #333;
         line-height: 1.1;
@@ -264,7 +203,7 @@
         align-items: center;
         gap: 8px;
         flex-wrap: wrap;
-        font-size: 0.9em;
+        font-size: 0.8em;
         line-height: 1.4;
         margin-bottom: 2px;
       }
@@ -306,8 +245,8 @@
         justify-content: space-between;
         align-items: center;
         border-top: 1px solid rgba(0,0,0,0.06);
-        padding-top: 3px;
-        font-size: 0.8em;
+        padding-top: 5px;
+        font-size: 0.75em;
       }
 
       .tarjeta-footer-compacto a {
@@ -333,78 +272,8 @@
       .resumen-superior {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-bottom: 8px;
-        display: none;
-      }
-
-      .resumen-superior.visible {
-        display: grid;
-      }
-
-      .contador {
-        background: white;
-        border-radius: 6px;
-        padding: 5px 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        border-top: 3px solid;
-        transition: transform 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        min-height: 32px;
-      }
-
-      .contador:hover {
-        transform: translateY(-1px);
-      }
-
-      .contador.ok { border-top-color: #4caf50; }
-      .contador.ok .contador-numero { color: #4caf50; }
-      .contador.lento { border-top-color: #ff9800; }
-      .contador.lento .contador-numero { color: #ff9800; }
-      .contador.critico { border-top-color: #f44336; }
-      .contador.critico .contador-numero { color: #f44336; }
-      .contador.caido { border-top-color: #9e9e9e; }
-      .contador.caido .contador-numero { color: #9e9e9e; }
-
-      .contador-numero {
-        font-size: 1.2em;
-        font-weight: 700;
-        line-height: 1;
-      }
-
-      .contador-label {
-        font-size: 0.85em;
-        color: #666;
-        font-weight: 500;
-        white-space: nowrap;
-      }
-
-      /* Info de actualización en una sola línea */
-      .info-actualizacion-linea {
-        text-align: center;
-        margin-bottom: 6px;
-        font-size: 0.85em;
-        color: #666;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .info-separador {
-        color: #ccc;
-      }
-
-      /* Contadores superiores ultra-compactos - una sola línea */
-      .resumen-superior {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 15px;
         display: none;
       }
 
@@ -414,87 +283,12 @@
 
       .contador {
         background: white;
-        border-radius: 20px;
-        padding: 6px 12px;
+        border-radius: 8px;
+        padding: 10px 8px;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        border: 2px solid;
-        transition: transform 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        min-height: 36px;
-      }
-
-      .contador:hover {
-        transform: translateY(-1px);
-      }
-
-      .contador.ok { border-color: #4caf50; background: #f0f9f0; }
-      .contador.ok .contador-numero { color: #4caf50; }
-      .contador.lento { border-color: #ff9800; background: #fff8f0; }
-      .contador.lento .contador-numero { color: #ff9800; }
-      .contador.critico { border-color: #f44336; background: #fff5f5; }
-      .contador.critico .contador-numero { color: #f44336; }
-      .contador.caido { border-color: #9e9e9e; background: #f9f9f9; }
-      .contador.caido .contador-numero { color: #9e9e9e; }
-
-      .contador-numero {
-        font-size: 1.3em;
-        font-weight: 700;
-        line-height: 1;
-      }
-
-      .contador-label {
-        font-size: 0.85em;
-        color: #444;
-        font-weight: 500;
-        white-space: nowrap;
-      }
-
-      /* Info de actualización compacta en un solo renglón */
-      .info-actualizacion-compacta {
-        text-align: center;
-        margin-bottom: 8px;
-        font-size: 0.85em;
-        color: #666;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .info-actualizacion-compacta .info-separador {
-        margin: 0 8px;
-        color: #ccc;
-      }
-
-      /* Contadores de resumen en una sola línea */
-      .resumen-superior {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-bottom: 10px;
-        display: none;
-      }
-
-      .resumen-superior.visible {
-        display: grid;
-      }
-
-      .contador {
-        background: white;
-        border-radius: 6px;
-        padding: 6px 8px;
-        text-align: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         border-top: 3px solid;
         transition: transform 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        min-height: 36px;
       }
 
       .contador:hover {
@@ -511,16 +305,17 @@
       .contador.caido .contador-numero { color: #9e9e9e; }
 
       .contador-numero {
-        font-size: 1.3em;
+        display: block;
+        font-size: 1.6em;
         font-weight: 700;
         line-height: 1;
+        margin-bottom: 2px;
       }
 
       .contador-label {
-        font-size: 0.85em;
+        font-size: 0.75em;
         color: #666;
         font-weight: 500;
-        white-space: nowrap;
       }
 
       /* Ocultar tabla cuando tarjetas están activas */
@@ -562,61 +357,56 @@
       <div class="container">
         <h1 id="titulo-principal">Monitor de Estado de Servicios</h1>
 
-        <!-- Barra de controles principal: todo en una fila -->
-        <div class="barra-controles">
-          <div class="grupo-control">
-            <label for="duracion-selector">Duración:</label>
-            <select id="duracion-selector" aria-label="Seleccionar duración del historial"></select>
-          </div>
+        <div style="text-align: center; margin-bottom: 15px">
+          <label
+            for="duracion-selector"
+            style="font-size: 0.9em; margin-right: 8px"
+            >Duración del historial:</label
+          >
+          <select
+            id="duracion-selector"
+            style="
+              padding: 5px 10px;
+              border-radius: 4px;
+              border: 1px solid #ccc;
+              font-size: 0.9em;
+              cursor: pointer;
+            "
+            aria-label="Seleccionar duración del historial"
+          ></select>
           <button
             id="btn-reiniciar"
-            class="btn-primary btn-reiniciar-compacto"
+            class="btn-primary"
+            style="margin-left: 15px; padding: 5px 15px; font-size: 0.9em"
             onclick="reiniciarMonitoreo()"
             aria-label="Reiniciar monitoreo de servicios"
           >
             <span aria-hidden="true">🔄</span>
-            <span id="texto-btn-reiniciar">Reiniciar</span>
+            <span id="texto-btn-reiniciar">Reiniciar Monitoreo</span>
           </button>
-          <div class="vista-toggle-container-inline">
-            <button
-              id="btn-vista-tabla"
-              class="vista-toggle-btn activo"
-              onclick="cambiarVista('tabla')"
-              title="Ver como tabla"
-            >
-              📋 Tabla
-            </button>
-            <button
-              id="btn-vista-tarjetas"
-              class="vista-toggle-btn"
-              onclick="cambiarVista('tarjetas')"
-              title="Ver como tarjetas"
-            >
-              🎯 Tarjetas
-            </button>
-          </div>
-          <a
-            href="leyenda.html"
-            id="enlace-leyenda"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="menu-item-inline"
-            title="Ver rangos y colores de latencia"
-          >
-            📊 Leyenda
-          </a>
-          <a
-            href="abm-webs.html"
-            id="enlace-abm"
-            class="menu-item-inline"
-            style="display: none"
-            title="Administrar sitios web monitoreados"
-          >
-            ⚙️ ABM
-          </a>
         </div>
 
-        <!-- Resumen superior (solo visible en vista tarjetas) -->
+        <!-- NUEVO: Toggle Vista Tabla / Tarjetas -->
+        <div class="vista-toggle-container">
+          <button
+            id="btn-vista-tabla"
+            class="vista-toggle-btn activo"
+            onclick="cambiarVista('tabla')"
+            title="Ver como tabla"
+          >
+            📋 Tabla
+          </button>
+          <button
+            id="btn-vista-tarjetas"
+            class="vista-toggle-btn"
+            onclick="cambiarVista('tarjetas')"
+            title="Ver como tarjetas"
+          >
+            🎯 Tarjetas
+          </button>
+        </div>
+
+        <!-- NUEVO: Resumen superior (solo visible en vista tarjetas) -->
         <div id="resumen-superior" class="resumen-superior">
           <div class="contador ok" data-estado="ok">
             <span class="contador-numero" id="contador-ok">0</span>
@@ -636,11 +426,43 @@
           </div>
         </div>
 
-        <div class="info-actualizacion-linea">
-          <span id="info-bar-msg">Actualización automática cada 5 minutos vía Proxy Serverless</span>
-          <span class="info-separador">|</span>
-          <span id="ultima-actualizacion"></span>
+        <div
+          class="info-bar"
+          id="info-bar-msg"
+          role="status"
+          aria-live="polite"
+        ></div>
+
+        <div style="text-align: center; margin-bottom: 10px">
+          <div class="menu-horizontal">
+            <a
+              href="leyenda.html"
+              id="enlace-leyenda"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="menu-item"
+              title="Ver rangos y colores de latencia"
+            >
+              📊 Leyenda
+            </a>
+            <a
+              href="abm-webs.html"
+              id="enlace-abm"
+              class="menu-item"
+              style="display: none"
+              title="Administrar sitios web monitoreados"
+            >
+              ⚙️ ABM Webs
+            </a>
+          </div>
         </div>
+
+        <div
+          class="update-info"
+          id="ultima-actualizacion"
+          role="status"
+          aria-live="polite"
+        ></div>
 
         <!-- Los filtros se insertarán aquí dinámicamente -->
 

@@ -6,12 +6,6 @@
     "grupo": "CRITICO"
   },
   {
-    "nombre": "Gcaida",
-    "url": "https://caida.caida.com.uy",
-    "orden": 1,
-    "grupo": "CRITICO"
-  },
-  {
     "nombre": "AhiVa",
     "url": "https://ahiva.correo.com.uy"
   },

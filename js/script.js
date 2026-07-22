@@ -15,11 +15,6 @@ function configurarEnlaceLeyenda() {
   if (enlaceLeyenda) {
     enlaceLeyenda.href = `leyenda.html${window.location.search}`;
   }
-  // También actualizar enlace ABM si existe
-  const enlaceABM = document.getElementById('enlace-abm');
-  if (enlaceABM) {
-    enlaceABM.href = `abm-webs.html${window.location.search}`;
-  }
 }
 
 function obtenerDuracionSeleccionada() {
@@ -601,110 +596,74 @@ async function verificarEstado(url) {
 async function verificarDirecto(url) {
   return new Promise((resolve) => {
     const startTime = performance.now();
+    const img = new Image();
     let resolved = false;
 
-    const resolver = (resultado) => {
+    // Timeout de 10 segundos para la imagen
+    const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        resolve(resultado);
-      }
-    };
-
-    // Estrategia:
-    // 1. Intentar fetch HEAD no-cors
-    //    - Si funciona → OK (hay conexión, aunque sea 404)
-    //    - Si timeout (>5s) → caído
-    //    - Si falla por cualquier otro error → intentar Image
-    // 2. Intentar Image(favicon)
-    //    - Si onload → OK
-    //    - Si onerror → CAÍDO (no importa el tiempo, si falla es caído)
-    //    - Si timeout (>8s) → caído
-
-    const intentarImage = () => {
-      const img = new Image();
-
-      const imgTimeout = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          img.onload = img.onerror = null;
-          console.log(`❌ Verificación directa Image timeout para ${url}`);
-          resolver({
-            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-            status: 0,
-            error: 'Timeout en verificación directa (Image)',
-            verifiedDirect: true,
-          });
-        }
-      }, 8000);
-
-      img.onload = function() {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(imgTimeout);
-        const time = Math.round(performance.now() - startTime);
-        console.log(`✅ Verificación directa Image OK para ${url}: ${time}ms`);
-        resolver({ time: time, status: 200, verifiedDirect: true });
-      };
-
-      img.onerror = function() {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(imgTimeout);
-        const time = Math.round(performance.now() - startTime);
-        console.log(`❌ Verificación directa Image error para ${url}: ${time}ms`);
-        resolver({
+        img.onload = img.onerror = null;
+        // La imagen no cargó en 10s → probablemente caído
+        resolve({
           time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
           status: 0,
-          error: 'Error en verificación directa (Image)',
+          error: 'Sin respuesta (verificación directa)',
           verifiedDirect: true,
         });
-      };
+      }
+    }, 10000);
 
-      img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
+    // La imagen cargó (aunque sea error 404) → el servidor responde
+    img.onload = function() {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
+      const time = Math.round(performance.now() - startTime);
+      console.log(`✅ Verificación directa OK para ${url}: ${time}ms`);
+      resolve({
+        time: time,
+        status: 200,
+        verifiedDirect: true,
+      });
     };
 
-    const intentarFetch = async () => {
-      try {
-        const controller = new AbortController();
-        const fetchTimeout = setTimeout(() => controller.abort(), 5000);
+    // Error al cargar la imagen → puede ser 404 (favicon no existe) pero servidor responde
+    // o puede ser que realmente no hay conexión
+    img.onerror = function() {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
+      const time = Math.round(performance.now() - startTime);
 
-        await fetch(url, {
-          method: 'HEAD',
-          mode: 'no-cors',
-          cache: 'no-store',
-          signal: controller.signal,
-          redirect: 'follow',
+      // Si tardó menos de 8 segundos, probablemente es 404 (favicon no existe)
+      // pero el servidor respondió → el sitio funciona
+      if (time < 8000) {
+        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
+        resolve({
+          time: time,
+          status: 200,
+          verifiedDirect: true,
         });
-
-        clearTimeout(fetchTimeout);
-        const time = Math.round(performance.now() - startTime);
-        console.log(`✅ Verificación directa fetch OK para ${url}: ${time}ms`);
-        resolver({ time: time, status: 200, verifiedDirect: true });
-      } catch (fetchError) {
-        const time = Math.round(performance.now() - startTime);
-
-        if (fetchError.name === 'AbortError') {
-          // Timeout del fetch → sitio no responde
-          console.log(`❌ Verificación directa fetch timeout para ${url}: ${time}ms`);
-          resolver({
-            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-            status: 0,
-            error: 'Timeout en verificación directa',
-            verifiedDirect: true,
-          });
-        } else {
-          // Cualquier otro error (DNS, CORS, red, etc.) → intentar Image
-          // Si Image también falla, entonces sí está caído
-          console.log(`⚠️ Fetch falló para ${url}: ${fetchError.name || fetchError.message}, intentando Image...`);
-          intentarImage();
-        }
+      } else {
+        // Tardó mucho → probablemente timeout real
+        console.log(`❌ Verificación directa falló para ${url}: timeout`);
+        resolve({
+          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+          status: 0,
+          error: 'Timeout en verificación directa',
+          verifiedDirect: true,
+        });
       }
     };
 
-    // Iniciar
-    intentarFetch();
+    // Usamos favicon.ico con timestamp para evitar cache
+    const faviconUrl = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
+    img.src = faviconUrl;
   });
-}/**
+}
+
+/**
  * Dibuja las filas iniciales con los datos de carga (placeholders).
  */
 function dibujarFilasIniciales(servicios) {
