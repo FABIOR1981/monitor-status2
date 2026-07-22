@@ -15,6 +15,11 @@ function configurarEnlaceLeyenda() {
   if (enlaceLeyenda) {
     enlaceLeyenda.href = `leyenda.html${window.location.search}`;
   }
+  // También actualizar enlace ABM si existe
+  const enlaceABM = document.getElementById('enlace-abm');
+  if (enlaceABM) {
+    enlaceABM.href = `abm-webs.html${window.location.search}`;
+  }
 }
 
 function obtenerDuracionSeleccionada() {
