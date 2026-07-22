@@ -19,18 +19,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarConfiguracion();
   await cargarWebsites();
   inicializarDashboard();
+  // FIX: Primera carga de datos ANTES de iniciar el intervalo
+  await monitorearTodos();
   iniciarMonitoreo();
 });
 
 async function cargarConfiguracion() {
-  // Usa las mismas constantes que config.js (con fallback)
+  // FIX: Usar la clave correcta con "h" para DURACION_OPCIONES
+  const duracionGuardada = localStorage.getItem('duracionSeleccionada');
+  duracionSeleccionada = duracionGuardada ? parseInt(duracionGuardada) : 1;
+
   if (typeof DURACION_OPCIONES !== 'undefined') {
-    duracionSeleccionada = parseInt(localStorage.getItem('duracionSeleccionada')) || 1;
-    maxHistorialActual = DURACION_OPCIONES[duracionSeleccionada]?.maxRegistros || 12;
+    const duracionKey = duracionSeleccionada + 'h';
+    maxHistorialActual = DURACION_OPCIONES[duracionKey]?.mediciones || 12;
   } else {
     // Fallback si config.js no cargó
-    duracionSeleccionada = parseInt(localStorage.getItem('duracionSeleccionada')) || 1;
-    const mapa = { 1: 12, 3: 36, 6: 72, 9: 108 };
+    const mapa = { 1: 12, 2: 24, 3: 36, 4: 48, 5: 60, 6: 72, 7: 84, 8: 96, 9: 108 };
     maxHistorialActual = mapa[duracionSeleccionada] || 12;
   }
 }
@@ -66,14 +70,27 @@ function inicializarDashboard() {
     selector.addEventListener('change', (e) => {
       duracionSeleccionada = parseInt(e.target.value);
       localStorage.setItem('duracionSeleccionada', duracionSeleccionada);
+
       if (typeof DURACION_OPCIONES !== 'undefined') {
-        maxHistorialActual = DURACION_OPCIONES[duracionSeleccionada]?.maxRegistros || 12;
+        const duracionKey = duracionSeleccionada + 'h';
+        maxHistorialActual = DURACION_OPCIONES[duracionKey]?.mediciones || 12;
+      } else {
+        const mapa = { 1: 12, 2: 24, 3: 36, 4: 48, 5: 60, 6: 72, 7: 84, 8: 96, 9: 108 };
+        maxHistorialActual = mapa[duracionSeleccionada] || 12;
       }
+
       recortarHistorial();
       renderizarDashboard();
     });
   }
 
+  // Mostrar el contenedor y ocultar mensaje de carga
+  const mensajeCarga = document.getElementById('mensaje-carga');
+  const contenidoDashboard = document.getElementById('contenido-dashboard');
+  if (mensajeCarga) mensajeCarga.style.display = 'none';
+  if (contenidoDashboard) contenidoDashboard.style.display = 'block';
+
+  // Renderizar con datos existentes (puede estar vacío al inicio)
   renderizarDashboard();
 }
 
@@ -90,7 +107,7 @@ function renderizarDashboard() {
   const tarjetas = websitesData.map(web => {
     const historial = historialStatus[web.url] || [];
     const ultima = historial[historial.length - 1];
-    const estado = ultima ? clasificarEstado(ultima.time, ultima.status) : 'ok';
+    const estado = ultima ? clasificarEstado(ultima.time, ultima.status) : 'caido';
 
     contadores[estado]++;
 
@@ -150,6 +167,8 @@ function clasificarEstado(tiempo, status) {
   if (status >= 400 && status < 600) return 'lento'; // error HTTP pero funciona
 
   const t = parseFloat(tiempo);
+  if (isNaN(t) || t <= 0) return 'caido';
+
   // Fallback si config.js no cargó
   const umbrales = (typeof UMBRALES_LATENCIA !== 'undefined') ? UMBRALES_LATENCIA : {
     MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000
@@ -196,45 +215,45 @@ function calcularTendencia(historial) {
   const porcentaje = primera > 0 ? Math.round((diff / primera) * 100) : 0;
 
   if (diff > 100) {
-    return { 
-      flechas: '▲▲▲', 
-      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)` 
+    return {
+      flechas: '▲▲▲',
+      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)`
     };
   }
   if (diff > 50) {
-    return { 
-      flechas: '▲▲', 
-      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)` 
+    return {
+      flechas: '▲▲',
+      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)`
     };
   }
   if (diff > 10) {
-    return { 
-      flechas: '▲', 
-      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)` 
+    return {
+      flechas: '▲',
+      tooltip: `Empeorando +${porcentaje}% (${primera}ms → ${ultima}ms)`
     };
   }
   if (diff < -100) {
-    return { 
-      flechas: '▼▼▼', 
-      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)` 
+    return {
+      flechas: '▼▼▼',
+      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)`
     };
   }
   if (diff < -50) {
-    return { 
-      flechas: '▼▼', 
-      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)` 
+    return {
+      flechas: '▼▼',
+      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)`
     };
   }
   if (diff < -10) {
-    return { 
-      flechas: '▼', 
-      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)` 
+    return {
+      flechas: '▼',
+      tooltip: `Mejorando ${porcentaje}% (${primera}ms → ${ultima}ms)`
     };
   }
 
-  return { 
-    flechas: '─', 
-    tooltip: `Estable (${primera}ms → ${ultima}ms)` 
+  return {
+    flechas: '─',
+    tooltip: `Estable (${primera}ms → ${ultima}ms)`
   };
 }
 
@@ -242,7 +261,6 @@ function calcularTendencia(historial) {
 // MONITOREO (comparte sessionStorage con tabla)
 // =======================================================
 function iniciarMonitoreo() {
-  monitorearTodos();
   intervaloMonitoreo = setInterval(monitorearTodos, 300000); // 5 minutos
   iniciarCountdown();
 }
@@ -278,17 +296,22 @@ async function monitorearTodos() {
       res = { time: 99999, status: 0 };
     }
 
-    // Guardar en historial (mismo formato que script.js)
+    // FIX: Siempre agregar al historial y recortar si excede el máximo
     if (!historialStatus[web.url]) historialStatus[web.url] = [];
-    if (historialStatus[web.url].length < maxHistorialActual) {
-      historialStatus[web.url].push({
-        time: res.time,
-        status: res.status,
-        source: res.verifiedDirect ? 'direct' : 'proxy',
-        timestamp: Date.now()
-      });
-      sessionStorage.setItem('historial_' + web.url, JSON.stringify(historialStatus[web.url]));
+
+    historialStatus[web.url].push({
+      time: res.time,
+      status: res.status,
+      source: res.verifiedDirect ? 'direct' : 'proxy',
+      timestamp: Date.now()
+    });
+
+    // Recortar si excede el máximo
+    if (historialStatus[web.url].length > maxHistorialActual) {
+      historialStatus[web.url] = historialStatus[web.url].slice(-maxHistorialActual);
     }
+
+    sessionStorage.setItem('historial_' + web.url, JSON.stringify(historialStatus[web.url]));
   });
 
   renderizarDashboard();
@@ -331,10 +354,10 @@ function verificarDirecto(url) {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
-      resolve({ 
-        time: Math.round(performance.now() - startTime), 
-        status: 200, 
-        verifiedDirect: true 
+      resolve({
+        time: Math.round(performance.now() - startTime),
+        status: 200,
+        verifiedDirect: true
       });
     };
 
@@ -372,10 +395,11 @@ function reiniciarMonitoreo() {
     if (key.startsWith('historial_')) sessionStorage.removeItem(key);
   });
   renderizarDashboard();
+  // FIX: Reiniciar también el monitoreo inmediato
+  monitorearTodos();
 }
 
 // Toggle modo oscuro (comparte con tabla)
 function toggleDarkMode() {
-  // Implementación mínima — en producción usaría la misma que script.js
   document.body.classList.toggle('dark-mode');
 }
