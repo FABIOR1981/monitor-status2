@@ -633,33 +633,22 @@ async function verificarDirecto(url) {
       });
     };
 
-    // Error al cargar la imagen → puede ser 404 (favicon no existe) pero servidor responde
-    // o puede ser que realmente no hay conexión
+    // Error al cargar la imagen → el sitio puede estar caído o el favicon no existe
+    // No podemos distinguir entre 404 y conexión fallida con Image()
+    // Por seguridad, marcamos como caído. Si el sitio funciona, el proxy lo detectará.
     img.onerror = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
       const time = Math.round(performance.now() - startTime);
 
-      // Si tardó menos de 8 segundos, probablemente es 404 (favicon no existe)
-      // pero el servidor respondió → el sitio funciona
-      if (time < 8000) {
-        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
-        resolve({
-          time: time,
-          status: 200,
-          verifiedDirect: true,
-        });
-      } else {
-        // Tardó mucho → probablemente timeout real
-        console.log(`❌ Verificación directa falló para ${url}: timeout`);
-        resolve({
-          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-          status: 0,
-          error: 'Timeout en verificación directa',
-          verifiedDirect: true,
-        });
-      }
+      console.log(`❌ Verificación directa falló para ${url}: error de carga`);
+      resolve({
+        time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+        status: 0,
+        error: 'Error en verificación directa (favicon no cargó)',
+        verifiedDirect: true,
+      });
     };
 
     // Usamos favicon.ico con timestamp para evitar cache

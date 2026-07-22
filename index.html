@@ -12,13 +12,15 @@
     <style>
       body {
         margin: 0;
-        padding: 20px;
+        padding: 10px 5px;
       }
       .container {
-        max-width: 95vw;
+        max-width: 100%;
         margin: 0 auto;
-        padding: 20px 40px;
+        padding: 20px 30px;
         min-height: 60vh;
+        width: 100%;
+        box-sizing: border-box;
       }
       h1 {
         text-align: center;
@@ -165,8 +167,8 @@
       /* Grid de tarjetas - COMPACTO */
       .grid-tarjetas {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
         margin-bottom: 20px;
         display: none;
       }
@@ -212,7 +214,7 @@
 
       .tarjeta-nombre-compacto {
         font-weight: 700;
-        font-size: 0.95em;
+        font-size: 1.05em;
         color: #333;
         white-space: nowrap;
         overflow: hidden;
@@ -238,7 +240,7 @@
       }
 
       .latencia-numero {
-        font-size: 1.8em;
+        font-size: 2.2em;
         font-weight: 700;
         color: #333;
         line-height: 1.1;
@@ -261,7 +263,7 @@
         align-items: center;
         gap: 8px;
         flex-wrap: wrap;
-        font-size: 0.8em;
+        font-size: 0.9em;
         line-height: 1.4;
         margin-bottom: 2px;
       }
@@ -304,7 +306,7 @@
         align-items: center;
         border-top: 1px solid rgba(0,0,0,0.06);
         padding-top: 5px;
-        font-size: 0.75em;
+        font-size: 0.85em;
       }
 
       .tarjeta-footer-compacto a {

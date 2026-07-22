@@ -365,12 +365,8 @@ function verificarDirecto(url) {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
-      const time = Math.round(performance.now() - startTime);
-      if (time < 8000) {
-        resolve({ time: time, status: 200, verifiedDirect: true });
-      } else {
-        resolve({ time: 99999, status: 0, verifiedDirect: true });
-      }
+      console.log(`❌ Verificación directa falló para ${url}: error de carga`);
+      resolve({ time: 99999, status: 0, verifiedDirect: true });
     };
 
     img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();

@@ -6,8 +6,10 @@
     "grupo": "CRITICO"
   },
   {
-    "nombre": "caida",
-    "url": "https://caida.caida.com.uy"
+    "nombre": "Gcaida",
+    "url": "https://caida.caida.com.uy",
+    "orden": 1,
+    "grupo": "CRITICO"
   },
   {
     "nombre": "AhiVa",
