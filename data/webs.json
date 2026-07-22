@@ -6,6 +6,12 @@
     "grupo": "CRITICO"
   },
   {
+    "nombre": "GInventada",
+    "url": "https://www.InventoCaida.com",
+    "orden": 1,
+    "grupo": "CRITICO"
+  },
+  {
     "nombre": "AhiVa",
     "url": "https://ahiva.correo.com.uy"
   },
