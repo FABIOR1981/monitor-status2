@@ -1166,6 +1166,11 @@ async function monitorearTodosWebsites() {
   actualizarEncabezadoPromedio(maxValidCount);
   actualizarUltimaActualizacion(new Date());
 
+  // NUEVO: Si la vista de tarjetas está activa, actualizarla también
+  if (vistaActual === 'tarjetas') {
+    renderizarTarjetas();
+  }
+
   // Solo programamos el siguiente monitoreo si todavía no llegamos al máximo
   if (!historialCompleto()) {
     window.monitorTimeout = setTimeout(
@@ -1424,7 +1429,196 @@ function reiniciarMonitoreo() {
   monitorearTodosWebsites();
 }
 
-async function cargarYMostrarHistorialExistente() {
+async 
+// =======================================================
+// NUEVO: VISTA DE TARJETAS
+// =======================================================
+
+let vistaActual = 'tabla';
+
+function inicializarVista() {
+  const guardada = localStorage.getItem('vistaMonitor');
+  if (guardada === 'tarjetas') {
+    vistaActual = 'tarjetas';
+  }
+  aplicarVista(vistaActual);
+}
+
+function cambiarVista(vista) {
+  vistaActual = vista;
+  localStorage.setItem('vistaMonitor', vista);
+  aplicarVista(vista);
+  // Re-renderizar según la vista
+  if (vista === 'tarjetas') {
+    renderizarTarjetas();
+  }
+}
+
+function aplicarVista(vista) {
+  const btnTabla = document.getElementById('btn-vista-tabla');
+  const btnTarjetas = document.getElementById('btn-vista-tarjetas');
+  const tablaContainer = document.getElementById('tabla-container');
+  const gridTarjetas = document.getElementById('grid-tarjetas');
+  const resumenSuperior = document.getElementById('resumen-superior');
+
+  if (vista === 'tabla') {
+    btnTabla?.classList.add('activo');
+    btnTarjetas?.classList.remove('activo');
+    tablaContainer?.classList.remove('tarjetas-activas');
+    gridTarjetas?.classList.remove('visible');
+    resumenSuperior?.classList.remove('visible');
+  } else {
+    btnTabla?.classList.remove('activo');
+    btnTarjetas?.classList.add('activo');
+    tablaContainer?.classList.add('tarjetas-activas');
+    gridTarjetas?.classList.add('visible');
+    resumenSuperior?.classList.add('visible');
+  }
+}
+
+function clasificarEstadoDashboard(tiempo, status) {
+  if (status === 0 || status === 599) return 'caido';
+  if (status === 408) return 'critico';
+  if (status >= 400 && status < 600) return 'lento';
+
+  const t = parseFloat(tiempo);
+  if (isNaN(t) || t <= 0) return 'caido';
+
+  const umbrales = (typeof UMBRALES_LATENCIA !== 'undefined') ? UMBRALES_LATENCIA : {
+    MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000
+  };
+
+  if (t <= umbrales.MUY_RAPIDO) return 'ok';
+  if (t <= umbrales.RAPIDO) return 'ok';
+  if (t <= umbrales.NORMAL) return 'ok';
+  if (t <= umbrales.LENTO) return 'lento';
+  if (t <= umbrales.CRITICO) return 'critico';
+  if (t <= umbrales.RIESGO) return 'critico';
+  return 'caido';
+}
+
+function calcularTendencia(historial) {
+  if (!historial || historial.length < 2) {
+    return { flechas: '─', tooltip: 'Sin datos suficientes' };
+  }
+
+  const ultimas = historial.slice(-3);
+  const tiempos = ultimas.map(h => h.time).filter(t => t > 0 && t < 99999);
+
+  if (tiempos.length < 2) {
+    return { flechas: '─', tooltip: 'Datos insuficientes' };
+  }
+
+  const primera = tiempos[0];
+  const ultima = tiempos[tiempos.length - 1];
+  const diff = ultima - primera;
+  const porcentaje = primera > 0 ? Math.round((diff / primera) * 100) : 0;
+
+  if (diff > 100) return { flechas: '▲▲▲', tooltip: `Empeorando +${porcentaje}%` };
+  if (diff > 50) return { flechas: '▲▲', tooltip: `Empeorando +${porcentaje}%` };
+  if (diff > 10) return { flechas: '▲', tooltip: `Empeorando +${porcentaje}%` };
+  if (diff < -100) return { flechas: '▼▼▼', tooltip: `Mejorando ${porcentaje}%` };
+  if (diff < -50) return { flechas: '▼▼', tooltip: `Mejorando ${porcentaje}%` };
+  if (diff < -10) return { flechas: '▼', tooltip: `Mejorando ${porcentaje}%` };
+  return { flechas: '─', tooltip: 'Estable' };
+}
+
+function obtenerInfoEstado(estado) {
+  const mapa = {
+    ok: { icono: '🟢', texto: 'OK', color: '#4caf50' },
+    lento: { icono: '🟡', texto: 'LENTO', color: '#ff9800' },
+    critico: { icono: '🔴', texto: 'CRÍTICO', color: '#f44336' },
+    caido: { icono: '⚫', texto: 'CAÍDO', color: '#9e9e9e' },
+  };
+  return mapa[estado] || mapa.ok;
+}
+
+function renderizarTarjetas() {
+  const grid = document.getElementById('grid-tarjetas');
+  if (!grid) return;
+
+  const contadores = { ok: 0, lento: 0, critico: 0, caido: 0 };
+
+  const tarjetas = websitesData.map(web => {
+    const historial = historialStatus[web.url] || [];
+    const ultima = historial[historial.length - 1];
+    const estado = ultima ? clasificarEstadoDashboard(ultima.time, ultima.status) : 'caido';
+    contadores[estado]++;
+
+    return crearTarjetaHTML(web, ultima, estado, historial);
+  }).join('');
+
+  grid.innerHTML = tarjetas;
+
+  // Actualizar contadores superiores
+  document.getElementById('contador-ok').textContent = contadores.ok;
+  document.getElementById('contador-lento').textContent = contadores.lento;
+  document.getElementById('contador-critico').textContent = contadores.critico;
+  document.getElementById('contador-caido').textContent = contadores.caido;
+}
+
+function crearTarjetaHTML(web, ultima, estado, historial) {
+  const tiempo = ultima ? ultima.time : '--';
+  const esDirecto = ultima && ultima.source === 'direct';
+  const tendencia = calcularTendencia(historial);
+  const estadoInfo = obtenerInfoEstado(estado);
+
+  // Obtener promedio
+  const { promedio, estadoPromedio, validCount } = calcularPromedio(web.url);
+  const promedioTexto = validCount > 0 ? `${promedio} ms` : 'Sin datos';
+
+  // Obtener errores
+  const errores = obtenerHistorialErrores(web.url);
+  const totalMediciones = historial.length;
+  const erroresHTML = errores.length > 0
+    ? `<div class="tarjeta-errores" onclick="toggleErroresDetalle('${web.url}')">⚠️ ${errores.length} errores de ${totalMediciones}</div>`
+    : '';
+
+  // Botón PSI (solo en temas avanzados)
+  const params = new URLSearchParams(window.location.search);
+  const temaActual = params.get('tema') || TEMA_DEFAULT;
+  const permiteExpansion = !TEMAS_BASICOS.includes(temaActual);
+
+  let accionesHTML = '';
+  if (permiteExpansion) {
+    accionesHTML = `<button class="psi-button" onclick="window.open('https://pagespeed.web.dev/report?url=${web.url}', '_blank')" title="PageSpeed Insights">PSI</button>`;
+  }
+
+  return `
+    <div class="tarjeta-servicio estado-${estado} ${esDirecto ? 'directo' : ''}">
+      <div class="tarjeta-header">
+        <span class="tarjeta-nombre">${web.nombre}</span>
+        ${esDirecto ? '<span class="tarjeta-fuente" title="Medición directa (red interna)">🖥️</span>' : '<span class="tarjeta-fuente" title="Medición vía proxy">🌐</span>'}
+      </div>
+      <div class="tarjeta-latencia">
+        ${tiempo} <span class="tarjeta-unidad">ms</span>
+      </div>
+      <div class="tarjeta-promedio">
+        Promedio: ${promedioTexto} | Estado: ${estadoPromedio.text}
+      </div>
+      <div class="tarjeta-tendencia" title="${tendencia.tooltip}">
+        ${tendencia.flechas}
+      </div>
+      <div class="tarjeta-estado">
+        <span class="tarjeta-estado-icono">${estadoInfo.icono}</span>
+        <span class="tarjeta-estado-texto" style="color:${estadoInfo.color}">${estadoInfo.texto}</span>
+      </div>
+      ${erroresHTML}
+      <div class="tarjeta-url">
+        <a href="${web.url}" target="_blank" rel="noopener">${web.url}</a>
+      </div>
+      <div class="tarjeta-acciones">
+        ${accionesHTML}
+      </div>
+    </div>
+  `;
+}
+
+// =======================================================
+// FIN NUEVO: VISTA DE TARJETAS
+// =======================================================
+
+function cargarYMostrarHistorialExistente() {
   // Cargar lista de websites
   let websitesData = [];
   try {
@@ -1556,6 +1750,11 @@ async function cargarYMostrarHistorialExistente() {
 
   actualizarEncabezadoPromedio(maxValidCount);
 
+  // NUEVO: Renderizar tarjetas si está activa esa vista
+  if (vistaActual === 'tarjetas') {
+    renderizarTarjetas();
+  }
+
   // NO actualizar la fecha de última actualización - mantener la guardada
   // Buscar la última fecha en el historial
   let ultimaFecha = null;
@@ -1581,6 +1780,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   inicializarTema();
   cargarHistorial();
   configurarEnlaceLeyenda();
+  inicializarVista();
 
   try {
     // 1. Cargar dinámicamente el diccionario de idioma
