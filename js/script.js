@@ -1618,7 +1618,7 @@ function crearTarjetaHTML(web, ultima, estado, historial) {
 // FIN NUEVO: VISTA DE TARJETAS
 // =======================================================
 
-function cargarYMostrarHistorialExistente() {
+async function cargarYMostrarHistorialExistente() {
   // Cargar lista de websites
   let websitesData = [];
   try {
