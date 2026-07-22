@@ -603,71 +603,120 @@ async function verificarDirecto(url) {
     const startTime = performance.now();
     let resolved = false;
 
-    // Umbral para distinguir 404 rápido vs timeout/caído
-    // Un 404 típico responde en < 500ms. Un timeout de DNS o conexión tarda > 3s
-    const UMBRAL_ERROR_RAPIDO = 3000; // 3 segundos
-
-    const img = new Image();
-
-    const timeout = setTimeout(() => {
+    const resolver = (resultado) => {
       if (!resolved) {
         resolved = true;
-        img.onload = img.onerror = null;
-        resolve({
-          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-          status: 0,
-          error: 'Sin respuesta (verificación directa)',
-          verifiedDirect: true,
-        });
-      }
-    }, 10000);
-
-    img.onload = function() {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timeout);
-      const time = Math.round(performance.now() - startTime);
-      console.log(`✅ Verificación directa OK para ${url}: ${time}ms`);
-      resolve({
-        time: time,
-        status: 200,
-        verifiedDirect: true,
-      });
-    };
-
-    img.onerror = function() {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timeout);
-      const time = Math.round(performance.now() - startTime);
-
-      if (time < UMBRAL_ERROR_RAPIDO) {
-        // Error rápido (< 3s): probablemente 404 (favicon no existe)
-        // pero el servidor respondió → sitio funciona
-        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
-        resolve({
-          time: time,
-          status: 200,
-          verifiedDirect: true,
-        });
-      } else {
-        // Error lento (> 3s): probablemente timeout de conexión/DNS → sitio caído
-        console.log(`❌ Verificación directa falló para ${url}: timeout (${time}ms)`);
-        resolve({
-          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-          status: 0,
-          error: 'Timeout en verificación directa',
-          verifiedDirect: true,
-        });
+        resolve(resultado);
       }
     };
 
-    const faviconUrl = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
-    img.src = faviconUrl;
+    // Estrategia mejorada: usar fetch con no-cors primero
+    // Si fetch responde (cualquier cosa) → sitio accesible
+    // Si fetch falla por error de red → sitio caído
+    // Si fetch aborta por timeout → sitio caído o muy lento
+    const intentarFetch = async () => {
+      try {
+        const controller = new AbortController();
+        const fetchTimeout = setTimeout(() => controller.abort(), 5000);
+
+        // Intentar HEAD primero (más ligero)
+        await fetch(url, {
+          method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: controller.signal,
+          redirect: 'follow',
+        });
+
+        clearTimeout(fetchTimeout);
+        const time = Math.round(performance.now() - startTime);
+        console.log(`✅ Verificación directa fetch OK para ${url}: ${time}ms`);
+        resolver({ time: time, status: 200, verifiedDirect: true });
+      } catch (fetchError) {
+        const time = Math.round(performance.now() - startTime);
+
+        if (fetchError.name === 'AbortError') {
+          // Timeout del fetch → sitio no responde
+          console.log(`❌ Verificación directa fetch timeout para ${url}: ${time}ms`);
+          resolver({
+            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+            status: 0,
+            error: 'Timeout en verificación directa',
+            verifiedDirect: true,
+          });
+        } else if (fetchError.name === 'TypeError' && time < 3000) {
+          // TypeError rápido: probablemente bloqueo CORS o red no disponible
+          // Intentar con Image como fallback
+          console.log(`⚠️ Fetch falló rápido para ${url}: ${time}ms, intentando Image...`);
+          intentarImage();
+        } else {
+          // Otro error o timeout largo → caído
+          console.log(`❌ Verificación directa fetch error para ${url}: ${time}ms`);
+          resolver({
+            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+            status: 0,
+            error: 'Error en verificación directa',
+            verifiedDirect: true,
+          });
+        }
+      }
+    };
+
+    const intentarImage = () => {
+      const imgStartTime = performance.now();
+      const img = new Image();
+
+      const imgTimeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          img.onload = img.onerror = null;
+          resolver({
+            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+            status: 0,
+            error: 'Sin respuesta (verificación directa)',
+            verifiedDirect: true,
+          });
+        }
+      }, 8000);
+
+      img.onload = function() {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(imgTimeout);
+        const time = Math.round(performance.now() - startTime);
+        console.log(`✅ Verificación directa Image OK para ${url}: ${time}ms`);
+        resolver({ time: time, status: 200, verifiedDirect: true });
+      };
+
+      img.onerror = function() {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(imgTimeout);
+        const imgTime = Math.round(performance.now() - imgStartTime);
+        const totalTime = Math.round(performance.now() - startTime);
+
+        // Si la imagen falló rápido (< 1.5s): probablemente 404 real
+        if (imgTime < 1500) {
+          console.log(`✅ Verificación directa OK (404) para ${url}: ${totalTime}ms`);
+          resolver({ time: totalTime, status: 200, verifiedDirect: true });
+        } else {
+          console.log(`❌ Verificación directa falló para ${url}: ${totalTime}ms`);
+          resolver({
+            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+            status: 0,
+            error: 'Error en verificación directa',
+            verifiedDirect: true,
+          });
+        }
+      };
+
+      img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
+    };
+
+    // Iniciar con fetch
+    intentarFetch();
   });
-}
-
-/**
+}/**
  * Dibuja las filas iniciales con los datos de carga (placeholders).
  */
 function dibujarFilasIniciales(servicios) {
