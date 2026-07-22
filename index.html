@@ -17,14 +17,15 @@
       .container {
         max-width: 100%;
         margin: 0 auto;
-        padding: 20px 30px;
+        padding: 10px 20px;
         min-height: 60vh;
         width: 100%;
         box-sizing: border-box;
       }
       h1 {
         text-align: center;
-        margin-bottom: 5px;
+        margin-bottom: 2px;
+        margin-top: 5px;
       }
       .info-bar {
         text-align: center;
@@ -74,9 +75,9 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 15px;
-        padding: 10px;
+        gap: 10px;
+        margin-bottom: 8px;
+        padding: 6px;
         flex-wrap: wrap;
       }
 
@@ -167,9 +168,9 @@
       /* Grid de tarjetas - COMPACTO */
       .grid-tarjetas {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
-        margin-bottom: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 8px;
+        margin-bottom: 8px;
         display: none;
       }
 
@@ -179,13 +180,13 @@
 
       .tarjeta-servicio {
         background: white;
-        border-radius: 10px;
-        padding: 12px 14px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        border-left: 4px solid;
+        border-radius: 8px;
+        padding: 8px 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border-left: 3px solid;
         transition: transform 0.15s, box-shadow 0.15s;
         position: relative;
-        font-size: 0.9em;
+        font-size: 0.88em;
       }
 
       .tarjeta-servicio:hover {
@@ -207,9 +208,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         border-bottom: 1px solid rgba(0,0,0,0.06);
-        padding-bottom: 5px;
+        padding-bottom: 3px;
       }
 
       .tarjeta-nombre-compacto {
@@ -229,7 +230,7 @@
 
       /* Body compacto */
       .tarjeta-body-compacto {
-        margin-bottom: 6px;
+        margin-bottom: 4px;
       }
 
       .tarjeta-latencia-compacto {
@@ -305,8 +306,8 @@
         justify-content: space-between;
         align-items: center;
         border-top: 1px solid rgba(0,0,0,0.06);
-        padding-top: 5px;
-        font-size: 0.85em;
+        padding-top: 3px;
+        font-size: 0.8em;
       }
 
       .tarjeta-footer-compacto a {
@@ -332,8 +333,8 @@
       .resumen-superior {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        margin-bottom: 15px;
+        gap: 8px;
+        margin-bottom: 8px;
         display: none;
       }
 
@@ -343,12 +344,16 @@
 
       .contador {
         background: white;
-        border-radius: 8px;
-        padding: 10px 8px;
-        text-align: center;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        border-radius: 6px;
+        padding: 5px 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         border-top: 3px solid;
         transition: transform 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 32px;
       }
 
       .contador:hover {
@@ -365,17 +370,157 @@
       .contador.caido .contador-numero { color: #9e9e9e; }
 
       .contador-numero {
-        display: block;
-        font-size: 1.6em;
+        font-size: 1.2em;
         font-weight: 700;
         line-height: 1;
-        margin-bottom: 2px;
       }
 
       .contador-label {
-        font-size: 0.75em;
+        font-size: 0.85em;
         color: #666;
         font-weight: 500;
+        white-space: nowrap;
+      }
+
+      /* Info de actualización en una sola línea */
+      .info-actualizacion-linea {
+        text-align: center;
+        margin-bottom: 6px;
+        font-size: 0.85em;
+        color: #666;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .info-separador {
+        color: #ccc;
+      }
+
+      /* Contadores superiores ultra-compactos - una sola línea */
+      .resumen-superior {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+        display: none;
+      }
+
+      .resumen-superior.visible {
+        display: grid;
+      }
+
+      .contador {
+        background: white;
+        border-radius: 20px;
+        padding: 6px 12px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border: 2px solid;
+        transition: transform 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 36px;
+      }
+
+      .contador:hover {
+        transform: translateY(-1px);
+      }
+
+      .contador.ok { border-color: #4caf50; background: #f0f9f0; }
+      .contador.ok .contador-numero { color: #4caf50; }
+      .contador.lento { border-color: #ff9800; background: #fff8f0; }
+      .contador.lento .contador-numero { color: #ff9800; }
+      .contador.critico { border-color: #f44336; background: #fff5f5; }
+      .contador.critico .contador-numero { color: #f44336; }
+      .contador.caido { border-color: #9e9e9e; background: #f9f9f9; }
+      .contador.caido .contador-numero { color: #9e9e9e; }
+
+      .contador-numero {
+        font-size: 1.3em;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .contador-label {
+        font-size: 0.85em;
+        color: #444;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      /* Info de actualización compacta en un solo renglón */
+      .info-actualizacion-compacta {
+        text-align: center;
+        margin-bottom: 8px;
+        font-size: 0.85em;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .info-actualizacion-compacta .info-separador {
+        margin: 0 8px;
+        color: #ccc;
+      }
+
+      /* Contadores de resumen en una sola línea */
+      .resumen-superior {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 10px;
+        display: none;
+      }
+
+      .resumen-superior.visible {
+        display: grid;
+      }
+
+      .contador {
+        background: white;
+        border-radius: 6px;
+        padding: 6px 8px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border-top: 3px solid;
+        transition: transform 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 36px;
+      }
+
+      .contador:hover {
+        transform: translateY(-1px);
+      }
+
+      .contador.ok { border-top-color: #4caf50; }
+      .contador.ok .contador-numero { color: #4caf50; }
+      .contador.lento { border-top-color: #ff9800; }
+      .contador.lento .contador-numero { color: #ff9800; }
+      .contador.critico { border-top-color: #f44336; }
+      .contador.critico .contador-numero { color: #f44336; }
+      .contador.caido { border-top-color: #9e9e9e; }
+      .contador.caido .contador-numero { color: #9e9e9e; }
+
+      .contador-numero {
+        font-size: 1.3em;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .contador-label {
+        font-size: 0.85em;
+        color: #666;
+        font-weight: 500;
+        white-space: nowrap;
       }
 
       /* Ocultar tabla cuando tarjetas están activas */
@@ -491,19 +636,11 @@
           </div>
         </div>
 
-        <div
-          class="info-bar"
-          id="info-bar-msg"
-          role="status"
-          aria-live="polite"
-        ></div>
-
-        <div
-          class="update-info"
-          id="ultima-actualizacion"
-          role="status"
-          aria-live="polite"
-        ></div>
+        <div class="info-actualizacion-linea">
+          <span id="info-bar-msg">Actualización automática cada 5 minutos vía Proxy Serverless</span>
+          <span class="info-separador">|</span>
+          <span id="ultima-actualizacion"></span>
+        </div>
 
         <!-- Los filtros se insertarán aquí dinámicamente -->
 
