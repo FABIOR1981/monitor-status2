@@ -291,118 +291,23 @@ async function verificarEstado(url) {
 
   try {
     const response = await fetch(`${PROXY_ENDPOINT}?url=${encodeURIComponent(url)}`);
-    if (!response.ok) return await verificarDirecto(url);
-
-    const data = await response.json();
-    if (data.status === 0) return await verificarDirecto(url);
-
-    return data;
+    if (!response.ok) {
+      try {
+        return await response.json();
+      } catch {
+        return { time: 99999, status: 0 };
+      }
+    }
+    return await response.json();
   } catch (error) {
-    return await verificarDirecto(url);
+    return { time: 99999, status: 0, error: error.message };
   }
 }
 
 /**
  * CORREGIDO: onerror SIEMPRE = caído. Solo onload = OK.
  */
-async function verificarDirecto(url) {
-  const CORS_PROXIES = [
-    'https://api.allorigins.win/get?url=',
-    'https://api.codetabs.com/v1/proxy?quest=',
-  ];
-
-  const imgResult = await verificarDirectoImg(url);
-  if (imgResult.status === 200) {
-    return imgResult;
-  }
-
-  for (const proxyUrl of CORS_PROXIES) {
-    try {
-      const startTime = performance.now();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-      const response = await fetch(proxyUrl + encodeURIComponent(url), {
-        method: 'GET',
-        signal: controller.signal,
-        cache: 'no-store',
-      });
-
-      clearTimeout(timeoutId);
-      const time = Math.round(performance.now() - startTime);
-
-      if (response.ok) {
-        return {
-          time: time,
-          status: 200,
-          verifiedDirect: true,
-          via: 'cors-proxy',
-        };
-      }
-    } catch (e) {
-      // intentar siguiente proxy
-    }
-  }
-
-  return {
-    time: 99999,
-    status: 0,
-    error: 'Sin conexión (todos los métodos fallaron)',
-    verifiedDirect: true,
-  };
-}
-
-async function verificarDirectoImg(url) {
-  return new Promise((resolve) => {
-    const startTime = performance.now();
-    const img = new Image();
-    let resolved = false;
-
-    const timeout = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve({ time: 99999, status: 0, verifiedDirect: true });
-      }
-    }, 8000);
-
-    img.onload = function() {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timeout);
-      resolve({
-        time: Math.round(performance.now() - startTime),
-        status: 200,
-        verifiedDirect: true
-      });
-    };
-
-    img.onerror = function() {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timeout);
-      const time = Math.round(performance.now() - startTime);
-
-      if (time > 1000) {
-        resolve({
-          time: time,
-          status: 200,
-          verifiedDirect: true
-        });
-      } else {
-        resolve({
-          time: time,
-          status: 0,
-          error: 'Img falló rápido',
-          verifiedDirect: true
-        });
-      }
-    };
-
-    img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
-  });
-}
-
-// =======================================================
+async // =======================================================
 // UTILIDADES
 // =======================================================
 function recortarHistorial() {

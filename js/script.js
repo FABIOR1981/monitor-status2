@@ -508,6 +508,14 @@ function determinarFalloGlobal(websitesData, resultados) {
 }
 
 async function verificarEstado(url) {
+  // El navegador está detrás de un proxy corporativo que bloquea
+  // todas las conexiones directas. La verificación directa (img/favicon,
+  // fetch no-cors, CORS proxies públicos) falla para TODOS los sitios.
+  // 
+  // SOLUCIÓN: Confiamos ÚNICAMENTE en el proxy de Netlify.
+  // Si el proxy dice caído, es caído. Si da falsos positivos,
+  // eso se arregla en check-status.js (servidor), no aquí.
+
   try {
     const response = await fetch(
       `${PROXY_ENDPOINT}?url=${encodeURIComponent(url)}`
@@ -515,144 +523,31 @@ async function verificarEstado(url) {
 
     if (!response.ok) {
       console.warn(`Proxy error HTTP ${response.status} para ${url}`);
-      return await verificarDirecto(url);
+      // Proxy respondió con error HTTP → usar resultado del proxy (puede ser info útil)
+      try {
+        return await response.json();
+      } catch {
+        return {
+          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+          status: 0,
+          error: `Proxy error HTTP ${response.status}`,
+        };
+      }
     }
 
     const data = await response.json();
-
-    if (data.status === 0 || data.status === ESTADO_ERROR_CONEXION) {
-      console.log(`Proxy reporta caído para ${url}, verificando directamente...`);
-      return await verificarDirecto(url);
-    }
-
     return data;
 
   } catch (error) {
     console.warn(`Proxy no disponible para ${url}:`, error.message);
-    return await verificarDirecto(url);
-  }
-}
-
-/**
- * Verificación directa desde el navegador usando una imagen.
- * CORREGIDO: onerror SIEMPRE = caído. No asumir que error rápido = OK.
- * Solo onload (imagen cargó) = OK.
- */
-async function verificarDirecto(url) {
-  // SOLUCIÓN: Si el navegador está detrás de un proxy corporativo que bloquea
-  // conexiones directas, el img/favicon y fetch no-cors fallarán para TODOS los
-  // sitios. Usamos un CORS proxy público alternativo como fallback final.
-
-  // CORS proxies públicos (rotar si uno falla)
-  const CORS_PROXIES = [
-    'https://api.allorigins.win/get?url=',
-    'https://api.codetabs.com/v1/proxy?quest=',
-  ];
-
-  // 1) Intentar img/favicon (rápido, sin CORS)
-  const imgResult = await verificarDirectoImg(url);
-  if (imgResult.status === 200) {
-    return imgResult;
-  }
-
-  // 2) Si img falló rápido, intentar CORS proxy alternativo
-  // (esto bypassearía el proxy corporativo del navegador)
-  console.log(`⚠️ Directo bloqueado para ${url}, probando CORS proxy alternativo...`);
-
-  for (const proxyUrl of CORS_PROXIES) {
-    try {
-      const startTime = performance.now();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-      const response = await fetch(proxyUrl + encodeURIComponent(url), {
-        method: 'GET',
-        signal: controller.signal,
-        cache: 'no-store',
-      });
-
-      clearTimeout(timeoutId);
-      const time = Math.round(performance.now() - startTime);
-
-      if (response.ok) {
-        console.log(`✅ CORS proxy OK para ${url}: ${time}ms`);
-        return {
-          time: time,
-          status: 200,
-          verifiedDirect: true,
-          via: 'cors-proxy',
-        };
-      }
-    } catch (e) {
-      console.log(`❌ CORS proxy falló para ${url}: ${e.message}`);
-    }
-  }
-
-  // 3) Nada funcionó → realmente caído
-  console.log(`❌ Todos los métodos fallaron para ${url}`);
-  return {
-    time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-    status: 0,
-    error: 'Sin conexión (todos los métodos fallaron)',
-    verifiedDirect: true,
-  };
-}
-
-async function verificarDirectoImg(url) {
-  return new Promise((resolve) => {
-    const startTime = performance.now();
-    const img = new Image();
-    let resolved = false;
-
-    const timeout = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve({
-          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-          status: 0,
-          error: 'Timeout img',
-          verifiedDirect: true,
-        });
-      }
-    }, 8000);
-
-    img.onload = function() {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timeout);
-      resolve({
-        time: Math.round(performance.now() - startTime),
-        status: 200,
-        verifiedDirect: true,
-      });
+    // Proxy no respondió en absoluto (error de red)
+    return {
+      time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+      status: ESTADO_ERROR_CONEXION,
+      error: 'Proxy no disponible: ' + error.message,
+      proxyError: true,
     };
-
-    img.onerror = function() {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timeout);
-      const time = Math.round(performance.now() - startTime);
-
-      // Si tardó > 1s, probablemente el servidor respondió (404 favicon)
-      if (time > 1000) {
-        resolve({
-          time: time,
-          status: 200,
-          verifiedDirect: true,
-        });
-      } else {
-        // Falló rápido: DNS fail o proxy bloqueó
-        resolve({
-          time: time,
-          status: 0,
-          error: 'Img falló rápido',
-          verifiedDirect: true,
-        });
-      }
-    };
-
-    img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
-  });
+  }
 }
 
 function dibujarFilasIniciales(servicios) {
