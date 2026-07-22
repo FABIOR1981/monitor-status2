@@ -557,7 +557,7 @@ async function verificarDirecto(url) {
       }
     }, 10000);
 
-    // Solo si la imagen CARGA realmente → OK
+    // La imagen cargó → servidor responde OK
     img.onload = function() {
       if (resolved) return;
       resolved = true;
@@ -571,20 +571,33 @@ async function verificarDirecto(url) {
       });
     };
 
-    // onerror = el navegador no pudo cargar la imagen (DNS fail, conexión rechazada, etc.)
-    // SIEMPRE es caído/error, sin importar cuánto tardó
+    // onerror: distinguir entre DNS fail rápido vs servidor que responde 404
+    // - < 300ms: probablemente DNS no resuelve o conexión rechazada inmediatamente → CAÍDO
+    // - >= 300ms: el servidor estableció conexión y respondió (404 del favicon) → OK
     img.onerror = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
       const time = Math.round(performance.now() - startTime);
-      console.log(`❌ Verificación directa falló para ${url}: error de carga (${time}ms)`);
-      resolve({
-        time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-        status: 0,
-        error: 'Error de carga (verificación directa)',
-        verifiedDirect: true,
-      });
+
+      if (time < 300) {
+        // Muy rápido = DNS fail o conexión rechazada inmediatamente
+        console.log(`❌ Verificación directa: DNS/conn fail rápido para ${url}: ${time}ms`);
+        resolve({
+          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+          status: 0,
+          error: 'Sin conexión (DNS/conn fail rápido)',
+          verifiedDirect: true,
+        });
+      } else {
+        // Tardó lo suficiente: TCP establecido, servidor respondió (404 favicon)
+        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
+        resolve({
+          time: time,
+          status: 200,
+          verifiedDirect: true,
+        });
+      }
     };
 
     const faviconUrl = new URL('/favicon.ico', url).href + '?_t=' + Date.now();

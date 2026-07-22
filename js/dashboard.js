@@ -329,16 +329,29 @@ function verificarDirecto(url) {
       });
     };
 
+    // onerror: distinguir entre DNS fail rápido vs servidor que responde 404
+    // - < 300ms: probablemente DNS no resuelve → CAÍDO
+    // - >= 300ms: servidor respondió (404 favicon) → OK
     img.onerror = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
-      resolve({
-        time: 99999,
-        status: 0,
-        error: 'Error de carga (verificación directa)',
-        verifiedDirect: true
-      });
+      const time = Math.round(performance.now() - startTime);
+
+      if (time < 300) {
+        resolve({
+          time: 99999,
+          status: 0,
+          error: 'Sin conexión (DNS/conn fail rápido)',
+          verifiedDirect: true
+        });
+      } else {
+        resolve({
+          time: time,
+          status: 200,
+          verifiedDirect: true
+        });
+      }
     };
 
     img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
