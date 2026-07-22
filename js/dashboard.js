@@ -305,7 +305,54 @@ async function verificarEstado(url) {
 /**
  * CORREGIDO: onerror SIEMPRE = caído. Solo onload = OK.
  */
-function verificarDirecto(url) {
+async function verificarDirecto(url) {
+  const CORS_PROXIES = [
+    'https://api.allorigins.win/get?url=',
+    'https://api.codetabs.com/v1/proxy?quest=',
+  ];
+
+  const imgResult = await verificarDirectoImg(url);
+  if (imgResult.status === 200) {
+    return imgResult;
+  }
+
+  for (const proxyUrl of CORS_PROXIES) {
+    try {
+      const startTime = performance.now();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const response = await fetch(proxyUrl + encodeURIComponent(url), {
+        method: 'GET',
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+
+      clearTimeout(timeoutId);
+      const time = Math.round(performance.now() - startTime);
+
+      if (response.ok) {
+        return {
+          time: time,
+          status: 200,
+          verifiedDirect: true,
+          via: 'cors-proxy',
+        };
+      }
+    } catch (e) {
+      // intentar siguiente proxy
+    }
+  }
+
+  return {
+    time: 99999,
+    status: 0,
+    error: 'Sin conexión (todos los métodos fallaron)',
+    verifiedDirect: true,
+  };
+}
+
+async function verificarDirectoImg(url) {
   return new Promise((resolve) => {
     const startTime = performance.now();
     const img = new Image();
@@ -316,7 +363,7 @@ function verificarDirecto(url) {
         resolved = true;
         resolve({ time: 99999, status: 0, verifiedDirect: true });
       }
-    }, 10000);
+    }, 8000);
 
     img.onload = function() {
       if (resolved) return;
@@ -329,26 +376,23 @@ function verificarDirecto(url) {
       });
     };
 
-    // onerror: distinguir entre DNS fail rápido vs servidor que responde 404
-    // - < 300ms: probablemente DNS no resuelve → CAÍDO
-    // - >= 300ms: servidor respondió (404 favicon) → OK
     img.onerror = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
       const time = Math.round(performance.now() - startTime);
 
-      if (time < 300) {
+      if (time > 1000) {
         resolve({
-          time: 99999,
-          status: 0,
-          error: 'Sin conexión (DNS/conn fail rápido)',
+          time: time,
+          status: 200,
           verifiedDirect: true
         });
       } else {
         resolve({
           time: time,
-          status: 200,
+          status: 0,
+          error: 'Img falló rápido',
           verifiedDirect: true
         });
       }

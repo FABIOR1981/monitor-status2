@@ -539,6 +539,66 @@ async function verificarEstado(url) {
  * Solo onload (imagen cargó) = OK.
  */
 async function verificarDirecto(url) {
+  // SOLUCIÓN: Si el navegador está detrás de un proxy corporativo que bloquea
+  // conexiones directas, el img/favicon y fetch no-cors fallarán para TODOS los
+  // sitios. Usamos un CORS proxy público alternativo como fallback final.
+
+  // CORS proxies públicos (rotar si uno falla)
+  const CORS_PROXIES = [
+    'https://api.allorigins.win/get?url=',
+    'https://api.codetabs.com/v1/proxy?quest=',
+  ];
+
+  // 1) Intentar img/favicon (rápido, sin CORS)
+  const imgResult = await verificarDirectoImg(url);
+  if (imgResult.status === 200) {
+    return imgResult;
+  }
+
+  // 2) Si img falló rápido, intentar CORS proxy alternativo
+  // (esto bypassearía el proxy corporativo del navegador)
+  console.log(`⚠️ Directo bloqueado para ${url}, probando CORS proxy alternativo...`);
+
+  for (const proxyUrl of CORS_PROXIES) {
+    try {
+      const startTime = performance.now();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const response = await fetch(proxyUrl + encodeURIComponent(url), {
+        method: 'GET',
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+
+      clearTimeout(timeoutId);
+      const time = Math.round(performance.now() - startTime);
+
+      if (response.ok) {
+        console.log(`✅ CORS proxy OK para ${url}: ${time}ms`);
+        return {
+          time: time,
+          status: 200,
+          verifiedDirect: true,
+          via: 'cors-proxy',
+        };
+      }
+    } catch (e) {
+      console.log(`❌ CORS proxy falló para ${url}: ${e.message}`);
+    }
+  }
+
+  // 3) Nada funcionó → realmente caído
+  console.log(`❌ Todos los métodos fallaron para ${url}`);
+  return {
+    time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+    status: 0,
+    error: 'Sin conexión (todos los métodos fallaron)',
+    verifiedDirect: true,
+  };
+}
+
+async function verificarDirectoImg(url) {
   return new Promise((resolve) => {
     const startTime = performance.now();
     const img = new Image();
@@ -547,61 +607,51 @@ async function verificarDirecto(url) {
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        img.onload = img.onerror = null;
         resolve({
           time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
           status: 0,
-          error: 'Sin respuesta (verificación directa)',
+          error: 'Timeout img',
           verifiedDirect: true,
         });
       }
-    }, 10000);
+    }, 8000);
 
-    // La imagen cargó → servidor responde OK
     img.onload = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
-      const time = Math.round(performance.now() - startTime);
-      console.log(`✅ Verificación directa OK para ${url}: ${time}ms`);
       resolve({
-        time: time,
+        time: Math.round(performance.now() - startTime),
         status: 200,
         verifiedDirect: true,
       });
     };
 
-    // onerror: distinguir entre DNS fail rápido vs servidor que responde 404
-    // - < 300ms: probablemente DNS no resuelve o conexión rechazada inmediatamente → CAÍDO
-    // - >= 300ms: el servidor estableció conexión y respondió (404 del favicon) → OK
     img.onerror = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
       const time = Math.round(performance.now() - startTime);
 
-      if (time < 300) {
-        // Muy rápido = DNS fail o conexión rechazada inmediatamente
-        console.log(`❌ Verificación directa: DNS/conn fail rápido para ${url}: ${time}ms`);
-        resolve({
-          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-          status: 0,
-          error: 'Sin conexión (DNS/conn fail rápido)',
-          verifiedDirect: true,
-        });
-      } else {
-        // Tardó lo suficiente: TCP establecido, servidor respondió (404 favicon)
-        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
+      // Si tardó > 1s, probablemente el servidor respondió (404 favicon)
+      if (time > 1000) {
         resolve({
           time: time,
           status: 200,
           verifiedDirect: true,
         });
+      } else {
+        // Falló rápido: DNS fail o proxy bloqueó
+        resolve({
+          time: time,
+          status: 0,
+          error: 'Img falló rápido',
+          verifiedDirect: true,
+        });
       }
     };
 
-    const faviconUrl = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
-    img.src = faviconUrl;
+    img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
   });
 }
 
