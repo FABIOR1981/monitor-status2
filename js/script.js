@@ -610,16 +610,64 @@ async function verificarDirecto(url) {
       }
     };
 
-    // Estrategia mejorada: usar fetch con no-cors primero
-    // Si fetch responde (cualquier cosa) → sitio accesible
-    // Si fetch falla por error de red → sitio caído
-    // Si fetch aborta por timeout → sitio caído o muy lento
+    // Estrategia:
+    // 1. Intentar fetch HEAD no-cors
+    //    - Si funciona → OK (hay conexión, aunque sea 404)
+    //    - Si timeout (>5s) → caído
+    //    - Si falla por cualquier otro error → intentar Image
+    // 2. Intentar Image(favicon)
+    //    - Si onload → OK
+    //    - Si onerror → CAÍDO (no importa el tiempo, si falla es caído)
+    //    - Si timeout (>8s) → caído
+
+    const intentarImage = () => {
+      const img = new Image();
+
+      const imgTimeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          img.onload = img.onerror = null;
+          console.log(`❌ Verificación directa Image timeout para ${url}`);
+          resolver({
+            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+            status: 0,
+            error: 'Timeout en verificación directa (Image)',
+            verifiedDirect: true,
+          });
+        }
+      }, 8000);
+
+      img.onload = function() {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(imgTimeout);
+        const time = Math.round(performance.now() - startTime);
+        console.log(`✅ Verificación directa Image OK para ${url}: ${time}ms`);
+        resolver({ time: time, status: 200, verifiedDirect: true });
+      };
+
+      img.onerror = function() {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(imgTimeout);
+        const time = Math.round(performance.now() - startTime);
+        console.log(`❌ Verificación directa Image error para ${url}: ${time}ms`);
+        resolver({
+          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+          status: 0,
+          error: 'Error en verificación directa (Image)',
+          verifiedDirect: true,
+        });
+      };
+
+      img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
+    };
+
     const intentarFetch = async () => {
       try {
         const controller = new AbortController();
         const fetchTimeout = setTimeout(() => controller.abort(), 5000);
 
-        // Intentar HEAD primero (más ligero)
         await fetch(url, {
           method: 'HEAD',
           mode: 'no-cors',
@@ -644,76 +692,16 @@ async function verificarDirecto(url) {
             error: 'Timeout en verificación directa',
             verifiedDirect: true,
           });
-        } else if (fetchError.name === 'TypeError' && time < 3000) {
-          // TypeError rápido: probablemente bloqueo CORS o red no disponible
-          // Intentar con Image como fallback
-          console.log(`⚠️ Fetch falló rápido para ${url}: ${time}ms, intentando Image...`);
-          intentarImage();
         } else {
-          // Otro error o timeout largo → caído
-          console.log(`❌ Verificación directa fetch error para ${url}: ${time}ms`);
-          resolver({
-            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-            status: 0,
-            error: 'Error en verificación directa',
-            verifiedDirect: true,
-          });
+          // Cualquier otro error (DNS, CORS, red, etc.) → intentar Image
+          // Si Image también falla, entonces sí está caído
+          console.log(`⚠️ Fetch falló para ${url}: ${fetchError.name || fetchError.message}, intentando Image...`);
+          intentarImage();
         }
       }
     };
 
-    const intentarImage = () => {
-      const imgStartTime = performance.now();
-      const img = new Image();
-
-      const imgTimeout = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          img.onload = img.onerror = null;
-          resolver({
-            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-            status: 0,
-            error: 'Sin respuesta (verificación directa)',
-            verifiedDirect: true,
-          });
-        }
-      }, 8000);
-
-      img.onload = function() {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(imgTimeout);
-        const time = Math.round(performance.now() - startTime);
-        console.log(`✅ Verificación directa Image OK para ${url}: ${time}ms`);
-        resolver({ time: time, status: 200, verifiedDirect: true });
-      };
-
-      img.onerror = function() {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(imgTimeout);
-        const imgTime = Math.round(performance.now() - imgStartTime);
-        const totalTime = Math.round(performance.now() - startTime);
-
-        // Si la imagen falló rápido (< 1.5s): probablemente 404 real
-        if (imgTime < 1500) {
-          console.log(`✅ Verificación directa OK (404) para ${url}: ${totalTime}ms`);
-          resolver({ time: totalTime, status: 200, verifiedDirect: true });
-        } else {
-          console.log(`❌ Verificación directa falló para ${url}: ${totalTime}ms`);
-          resolver({
-            time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-            status: 0,
-            error: 'Error en verificación directa',
-            verifiedDirect: true,
-          });
-        }
-      };
-
-      img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
-    };
-
-    // Iniciar con fetch
+    // Iniciar
     intentarFetch();
   });
 }/**
