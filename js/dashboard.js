@@ -340,12 +340,15 @@ async function verificarEstado(url) {
 function verificarDirecto(url) {
   return new Promise((resolve) => {
     const startTime = performance.now();
-    const img = new Image();
     let resolved = false;
+    const UMBRAL_ERROR_RAPIDO = 3000; // 3 segundos
+
+    const img = new Image();
 
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
+        img.onload = img.onerror = null;
         resolve({ time: 99999, status: 0, verifiedDirect: true });
       }
     }, 10000);
@@ -365,8 +368,15 @@ function verificarDirecto(url) {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
-      console.log(`❌ Verificación directa falló para ${url}: error de carga`);
-      resolve({ time: 99999, status: 0, verifiedDirect: true });
+      const time = Math.round(performance.now() - startTime);
+
+      if (time < UMBRAL_ERROR_RAPIDO) {
+        // Error rápido: probablemente 404, servidor responde
+        resolve({ time: time, status: 200, verifiedDirect: true });
+      } else {
+        // Error lento: timeout, sitio caído
+        resolve({ time: 99999, status: 0, verifiedDirect: true });
+      }
     };
 
     img.src = new URL('/favicon.ico', url).href + '?_t=' + Date.now();

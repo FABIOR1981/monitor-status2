@@ -601,15 +601,18 @@ async function verificarEstado(url) {
 async function verificarDirecto(url) {
   return new Promise((resolve) => {
     const startTime = performance.now();
-    const img = new Image();
     let resolved = false;
 
-    // Timeout de 10 segundos para la imagen
+    // Umbral para distinguir 404 rápido vs timeout/caído
+    // Un 404 típico responde en < 500ms. Un timeout de DNS o conexión tarda > 3s
+    const UMBRAL_ERROR_RAPIDO = 3000; // 3 segundos
+
+    const img = new Image();
+
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
         img.onload = img.onerror = null;
-        // La imagen no cargó en 10s → probablemente caído
         resolve({
           time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
           status: 0,
@@ -619,7 +622,6 @@ async function verificarDirecto(url) {
       }
     }, 10000);
 
-    // La imagen cargó (aunque sea error 404) → el servidor responde
     img.onload = function() {
       if (resolved) return;
       resolved = true;
@@ -633,25 +635,33 @@ async function verificarDirecto(url) {
       });
     };
 
-    // Error al cargar la imagen → el sitio puede estar caído o el favicon no existe
-    // No podemos distinguir entre 404 y conexión fallida con Image()
-    // Por seguridad, marcamos como caído. Si el sitio funciona, el proxy lo detectará.
     img.onerror = function() {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
       const time = Math.round(performance.now() - startTime);
 
-      console.log(`❌ Verificación directa falló para ${url}: error de carga`);
-      resolve({
-        time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
-        status: 0,
-        error: 'Error en verificación directa (favicon no cargó)',
-        verifiedDirect: true,
-      });
+      if (time < UMBRAL_ERROR_RAPIDO) {
+        // Error rápido (< 3s): probablemente 404 (favicon no existe)
+        // pero el servidor respondió → sitio funciona
+        console.log(`✅ Verificación directa OK (404 favicon) para ${url}: ${time}ms`);
+        resolve({
+          time: time,
+          status: 200,
+          verifiedDirect: true,
+        });
+      } else {
+        // Error lento (> 3s): probablemente timeout de conexión/DNS → sitio caído
+        console.log(`❌ Verificación directa falló para ${url}: timeout (${time}ms)`);
+        resolve({
+          time: UMBRALES_LATENCIA.PENALIZACION_FALLO,
+          status: 0,
+          error: 'Timeout en verificación directa',
+          verifiedDirect: true,
+        });
+      }
     };
 
-    // Usamos favicon.ico con timestamp para evitar cache
     const faviconUrl = new URL('/favicon.ico', url).href + '?_t=' + Date.now();
     img.src = faviconUrl;
   });
