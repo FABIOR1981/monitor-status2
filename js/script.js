@@ -1429,7 +1429,6 @@ function reiniciarMonitoreo() {
   monitorearTodosWebsites();
 }
 
-async 
 // =======================================================
 // NUEVO: VISTA DE TARJETAS
 // =======================================================
