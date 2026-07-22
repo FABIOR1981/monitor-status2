@@ -104,13 +104,13 @@
         background: #0056b3;
       }
 
-      /* Grid de tarjetas */
+      /* Grid de tarjetas - COMPACTO */
       .grid-tarjetas {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-        display: none; /* Oculto por defecto */
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+        display: none;
       }
 
       .grid-tarjetas.visible {
@@ -119,127 +119,161 @@
 
       .tarjeta-servicio {
         background: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border-left: 5px solid;
-        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 10px;
+        padding: 12px 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        border-left: 4px solid;
+        transition: transform 0.15s, box-shadow 0.15s;
         position: relative;
+        font-size: 0.9em;
       }
 
       .tarjeta-servicio:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
       }
 
-      .tarjeta-servicio.estado-ok { border-left-color: #4caf50; background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%); }
-      .tarjeta-servicio.estado-lento { border-left-color: #ff9800; background: linear-gradient(135deg, #ffffff 0%, #fff3e0 100%); }
-      .tarjeta-servicio.estado-critico { border-left-color: #f44336; background: linear-gradient(135deg, #ffffff 0%, #ffebee 100%); }
-      .tarjeta-servicio.estado-caido { border-left-color: #9e9e9e; background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%); }
+      .tarjeta-servicio.estado-ok { border-left-color: #4caf50; background: linear-gradient(135deg, #ffffff 0%, #f0f9f0 100%); }
+      .tarjeta-servicio.estado-lento { border-left-color: #ff9800; background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%); }
+      .tarjeta-servicio.estado-critico { border-left-color: #f44336; background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%); }
+      .tarjeta-servicio.estado-caido { border-left-color: #9e9e9e; background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%); }
 
       .tarjeta-servicio.directo {
-        border-right: 3px solid #3498db;
+        border-right: 2px solid #3498db;
       }
 
-      .tarjeta-header {
+      /* Header compacto */
+      .tarjeta-header-compacto {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        padding-bottom: 5px;
       }
 
-      .tarjeta-nombre {
-        font-weight: 600;
-        font-size: 1.1em;
+      .tarjeta-nombre-compacto {
+        font-weight: 700;
+        font-size: 0.95em;
         color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 85%;
       }
 
-      .tarjeta-fuente {
-        font-size: 1.2em;
-        opacity: 0.7;
+      .tarjeta-fuente-compacto {
+        font-size: 0.85em;
+        opacity: 0.6;
       }
 
-      .tarjeta-latencia {
-        font-size: 2em;
+      /* Body compacto */
+      .tarjeta-body-compacto {
+        margin-bottom: 6px;
+      }
+
+      .tarjeta-latencia-compacto {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        margin-bottom: 4px;
+      }
+
+      .latencia-numero {
+        font-size: 1.8em;
         font-weight: 700;
         color: #333;
-        margin-bottom: 5px;
+        line-height: 1.1;
       }
 
-      .tarjeta-unidad {
-        font-size: 0.5em;
-        font-weight: 400;
+      .latencia-unidad {
+        font-size: 0.65em;
         color: #888;
+        font-weight: 400;
       }
 
-      .tarjeta-promedio {
-        font-size: 0.9em;
-        color: #666;
-        margin-bottom: 8px;
+      .latencia-fuente {
+        font-size: 0.75em;
+        margin-left: auto;
+        opacity: 0.5;
       }
 
-      .tarjeta-tendencia {
-        font-size: 1.3em;
-        margin-bottom: 10px;
-        letter-spacing: 2px;
-      }
-
-      .tarjeta-estado {
+      .tarjeta-fila-datos {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 8px;
+        flex-wrap: wrap;
+        font-size: 0.8em;
+        line-height: 1.4;
+        margin-bottom: 2px;
       }
 
-      .tarjeta-estado-icono {
-        font-size: 1.3em;
+      .dato-promedio {
+        color: #666;
+        font-weight: 500;
       }
 
-      .tarjeta-estado-texto {
+      .dato-estado-prom {
         font-weight: 600;
-        font-size: 0.95em;
+        font-size: 0.85em;
+      }
+
+      .tendencia {
+        font-size: 1em;
+        letter-spacing: 1px;
+      }
+
+      .estado-actual {
+        font-weight: 600;
+        font-size: 0.9em;
       }
 
       .tarjeta-errores {
-        font-size: 0.8em;
         color: #c92a2a;
-        margin-bottom: 8px;
         cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85em;
       }
 
       .tarjeta-errores:hover {
         text-decoration: underline;
       }
 
-      .tarjeta-url {
-        font-size: 0.8em;
-        color: #888;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+      /* Footer compacto */
+      .tarjeta-footer-compacto {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid rgba(0,0,0,0.06);
+        padding-top: 5px;
+        font-size: 0.75em;
       }
 
-      .tarjeta-url a {
+      .tarjeta-footer-compacto a {
         color: #1976d2;
         text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 75%;
       }
 
-      .tarjeta-url a:hover {
+      .tarjeta-footer-compacto a:hover {
         text-decoration: underline;
       }
 
-      .tarjeta-acciones {
-        margin-top: 10px;
-        display: flex;
-        gap: 8px;
+      .psi-compacto {
+        padding: 2px 8px !important;
+        font-size: 0.7em !important;
+        border-radius: 10px !important;
       }
 
       /* Resumen superior para tarjetas */
       .resumen-superior {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        margin-bottom: 25px;
+        gap: 10px;
+        margin-bottom: 15px;
         display: none;
       }
 
@@ -249,16 +283,16 @@
 
       .contador {
         background: white;
-        border-radius: 12px;
-        padding: 15px;
+        border-radius: 8px;
+        padding: 10px 8px;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border-top: 4px solid;
-        transition: transform 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        border-top: 3px solid;
+        transition: transform 0.15s;
       }
 
       .contador:hover {
-        transform: translateY(-2px);
+        transform: translateY(-1px);
       }
 
       .contador.ok { border-top-color: #4caf50; }
@@ -272,14 +306,14 @@
 
       .contador-numero {
         display: block;
-        font-size: 2em;
+        font-size: 1.6em;
         font-weight: 700;
         line-height: 1;
-        margin-bottom: 5px;
+        margin-bottom: 2px;
       }
 
       .contador-label {
-        font-size: 0.85em;
+        font-size: 0.75em;
         color: #666;
         font-weight: 500;
       }

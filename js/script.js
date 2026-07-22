@@ -1532,6 +1532,11 @@ function obtenerInfoEstado(estado) {
   return mapa[estado] || mapa.ok;
 }
 
+function truncarURL(url, maxLen) {
+  if (url.length <= maxLen) return url;
+  return url.substring(0, maxLen - 3) + '...';
+}
+
 function renderizarTarjetas() {
   const grid = document.getElementById('grid-tarjetas');
   if (!grid) return;
@@ -1564,13 +1569,13 @@ function crearTarjetaHTML(web, ultima, estado, historial) {
 
   // Obtener promedio
   const { promedio, estadoPromedio, validCount } = calcularPromedio(web.url);
-  const promedioTexto = validCount > 0 ? `${promedio} ms [${validCount}/${maxHistorialActual}]` : 'Sin datos';
+  const promedioTexto = validCount > 0 ? `${promedio}ms [${validCount}/${maxHistorialActual}]` : 'Sin datos';
 
   // Obtener errores
   const errores = obtenerHistorialErrores(web.url);
   const totalMediciones = historial.length;
   const erroresHTML = errores.length > 0
-    ? `<div class="tarjeta-errores" onclick="toggleErroresDetalle('${web.url}')">⚠️ ${errores.length} errores de ${totalMediciones}</div>`
+    ? `<span class="tarjeta-errores" onclick="toggleErroresDetalle('${web.url}')" title="Ver errores">⚠️${errores.length}/${totalMediciones}</span>`
     : '';
 
   // Botón PSI (solo en temas avanzados)
@@ -1578,36 +1583,33 @@ function crearTarjetaHTML(web, ultima, estado, historial) {
   const temaActual = params.get('tema') || TEMA_DEFAULT;
   const permiteExpansion = !TEMAS_BASICOS.includes(temaActual);
 
-  let accionesHTML = '';
-  if (permiteExpansion) {
-    accionesHTML = `<button class="psi-button" onclick="window.open('https://pagespeed.web.dev/report?url=${web.url}', '_blank')" title="PageSpeed Insights">PSI</button>`;
-  }
+  const fuenteIcono = esDirecto ? '🖥️' : '🌐';
+  const fuenteTitle = esDirecto ? 'Directo' : 'Proxy';
 
   return `
     <div class="tarjeta-servicio estado-${estado} ${esDirecto ? 'directo' : ''}">
-      <div class="tarjeta-header">
-        <span class="tarjeta-nombre">${web.nombre}</span>
-        ${esDirecto ? '<span class="tarjeta-fuente" title="Medición directa (red interna)">🖥️</span>' : '<span class="tarjeta-fuente" title="Medición vía proxy">🌐</span>'}
+      <div class="tarjeta-header-compacto">
+        <span class="tarjeta-nombre-compacto">${web.nombre}</span>
+        <span class="tarjeta-fuente-compacto" title="${fuenteTitle}">${fuenteIcono}</span>
       </div>
-      <div class="tarjeta-latencia">
-        ${tiempo} <span class="tarjeta-unidad">ms</span>
+      <div class="tarjeta-body-compacto">
+        <div class="tarjeta-latencia-compacto">
+          <span class="latencia-numero">${tiempo}</span><span class="latencia-unidad">ms</span>
+          <span class="latencia-fuente" title="${fuenteTitle}">${fuenteIcono}</span>
+        </div>
+        <div class="tarjeta-fila-datos">
+          <span class="dato-promedio" title="Promedio">Ø ${promedioTexto}</span>
+          <span class="dato-estado-prom" style="color:${estadoPromedio.className ? '' : '#666'}">${estadoPromedio.text}</span>
+        </div>
+        <div class="tarjeta-fila-datos">
+          <span class="tendencia" title="${tendencia.tooltip}">${tendencia.flechas}</span>
+          <span class="estado-actual" style="color:${estadoInfo.color}">${estadoInfo.icono} ${estadoInfo.texto}</span>
+          ${erroresHTML}
+        </div>
       </div>
-      <div class="tarjeta-promedio">
-        Promedio: ${promedioTexto} | Estado: ${estadoPromedio.text}
-      </div>
-      <div class="tarjeta-tendencia" title="${tendencia.tooltip}">
-        ${tendencia.flechas}
-      </div>
-      <div class="tarjeta-estado">
-        <span class="tarjeta-estado-icono">${estadoInfo.icono}</span>
-        <span class="tarjeta-estado-texto" style="color:${estadoInfo.color}">${estadoInfo.texto}</span>
-      </div>
-      ${erroresHTML}
-      <div class="tarjeta-url">
-        <a href="${web.url}" target="_blank" rel="noopener">${web.url}</a>
-      </div>
-      <div class="tarjeta-acciones">
-        ${accionesHTML}
+      <div class="tarjeta-footer-compacto">
+        <a href="${web.url}" target="_blank" rel="noopener" title="${web.url}">${truncarURL(web.url, 35)}</a>
+        ${permiteExpansion ? `<button class="psi-button psi-compacto" onclick="window.open('https://pagespeed.web.dev/report?url=${web.url}', '_blank')" title="PageSpeed Insights">PSI</button>` : ''}
       </div>
     </div>
   `;
