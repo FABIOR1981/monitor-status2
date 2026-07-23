@@ -64,6 +64,56 @@
       }
 
       /* =======================================================
+         NUEVO: BARRA DE CONTROLES COMPACTA (selector + botones)
+         ======================================================= */
+      .controls-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .control-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .control-label {
+        font-size: 0.9em;
+      }
+
+      .control-select {
+        padding: 8px 14px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        font-size: 0.9em;
+        cursor: pointer;
+      }
+
+      .btn-reiniciar {
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.95em;
+        font-weight: 600;
+        background: #28a745;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.2s, transform 0.15s;
+      }
+
+      .btn-reiniciar:hover {
+        background: #218838;
+        transform: translateY(-1px);
+      }
+
+      /* =======================================================
          NUEVO: ESTILOS PARA VISTA DE TARJETAS
          ======================================================= */
       .vista-toggle-container {
@@ -357,37 +407,31 @@
       <div class="container">
         <h1 id="titulo-principal">Monitor de Estado de Servicios</h1>
 
-        <div style="text-align: center; margin-bottom: 15px">
-          <label
-            for="duracion-selector"
-            style="font-size: 0.9em; margin-right: 8px"
-            >Duración del historial:</label
-          >
-          <select
-            id="duracion-selector"
-            style="
-              padding: 5px 10px;
-              border-radius: 4px;
-              border: 1px solid #ccc;
-              font-size: 0.9em;
-              cursor: pointer;
-            "
-            aria-label="Seleccionar duración del historial"
-          ></select>
+        <!-- NUEVO: Barra de controles compacta -->
+        <div class="controls-bar">
+          <div class="control-group">
+            <label
+              for="duracion-selector"
+              class="control-label"
+              >Duración del historial:</label
+            >
+            <select
+              id="duracion-selector"
+              class="control-select"
+              aria-label="Seleccionar duración del historial"
+            ></select>
+          </div>
+
           <button
             id="btn-reiniciar"
-            class="btn-primary"
-            style="margin-left: 15px; padding: 5px 15px; font-size: 0.9em"
+            class="btn-reiniciar"
             onclick="reiniciarMonitoreo()"
             aria-label="Reiniciar monitoreo de servicios"
           >
             <span aria-hidden="true">🔄</span>
             <span id="texto-btn-reiniciar">Reiniciar Monitoreo</span>
           </button>
-        </div>
 
-        <!-- NUEVO: Toggle Vista Tabla / Tarjetas -->
-        <div class="vista-toggle-container">
           <button
             id="btn-vista-tabla"
             class="vista-toggle-btn activo"
@@ -404,6 +448,26 @@
           >
             🎯 Tarjetas
           </button>
+
+          <a
+            href="leyenda.html"
+            id="enlace-leyenda"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="menu-item"
+            title="Ver rangos y colores de latencia"
+          >
+            📊 Leyenda
+          </a>
+          <a
+            href="abm-webs.html"
+            id="enlace-abm"
+            class="menu-item"
+            style="display: none"
+            title="Administrar sitios web monitoreados"
+          >
+            ⚙️ ABM Webs
+          </a>
         </div>
 
         <!-- NUEVO: Resumen superior (solo visible en vista tarjetas) -->
@@ -432,30 +496,6 @@
           role="status"
           aria-live="polite"
         ></div>
-
-        <div style="text-align: center; margin-bottom: 10px">
-          <div class="menu-horizontal">
-            <a
-              href="leyenda.html"
-              id="enlace-leyenda"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="menu-item"
-              title="Ver rangos y colores de latencia"
-            >
-              📊 Leyenda
-            </a>
-            <a
-              href="abm-webs.html"
-              id="enlace-abm"
-              class="menu-item"
-              style="display: none"
-              title="Administrar sitios web monitoreados"
-            >
-              ⚙️ ABM Webs
-            </a>
-          </div>
-        </div>
 
         <div
           class="update-info"
