@@ -107,7 +107,7 @@ function renderizarDashboard() {
   const tarjetas = websitesData.map(web => {
     const historial = historialStatus[web.url] || [];
     const ultima = historial[historial.length - 1];
-    const estado = ultima ? clasificarEstado(ultima.time, ultima.status) : 'caido';
+    const estado = ultima ? clasificarEstado(ultima.time, ultima.status, ultima.source === 'direct') : 'caido';
 
     contadores[estado]++;
 
@@ -161,7 +161,7 @@ function crearTarjeta(web, ultima, estado, historial) {
 // =======================================================
 // CLASIFICAR ESTADO (usa mismos umbrales que config.js)
 // =======================================================
-function clasificarEstado(tiempo, status) {
+function clasificarEstado(tiempo, status, esDirecto = false) {
   if (status === 0 || status === 599) return 'caido';
   if (status === 408) return 'critico'; // muy lento
   if (status >= 400 && status < 600) return 'lento'; // error HTTP pero funciona
@@ -170,9 +170,12 @@ function clasificarEstado(tiempo, status) {
   if (isNaN(t) || t <= 0) return 'caido';
 
   // Fallback si config.js no cargó
-  const umbrales = (typeof UMBRALES_LATENCIA !== 'undefined') ? UMBRALES_LATENCIA : {
-    MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000
-  };
+  const fallback = { MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000 };
+  const fallbackProxy = { MUY_RAPIDO: 600, RAPIDO: 1000, NORMAL: 1600, LENTO: 3000, CRITICO: 6000, RIESGO: 10000 };
+
+  const umbrales = esDirecto
+    ? ((typeof UMBRALES_LATENCIA_DIRECTO !== 'undefined') ? UMBRALES_LATENCIA_DIRECTO : fallback)
+    : ((typeof UMBRALES_LATENCIA_PROXY !== 'undefined') ? UMBRALES_LATENCIA_PROXY : fallbackProxy);
 
   if (t <= umbrales.MUY_RAPIDO) return 'ok';
   if (t <= umbrales.RAPIDO) return 'ok';

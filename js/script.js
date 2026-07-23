@@ -227,13 +227,14 @@ function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) 
   // clasificar por velocidad, NO mostrar como caído
   if (esVerificadoDirecto && estado === 200) {
     // Clasificar por velocidad como cualquier otro sitio funcional
+    // (usa la escala DIRECTA: más estricta, porque no hay distancia de datacenter de por medio)
     const estadosVelocidad = [
-      { umbral: UMBRALES_LATENCIA.MUY_RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST, className: 'status-very-fast' },
-      { umbral: UMBRALES_LATENCIA.RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.FAST, className: 'status-fast' },
-      { umbral: UMBRALES_LATENCIA.NORMAL, text: window.TEXTOS_ACTUAL.velocidad.NORMAL, className: 'status-normal' },
-      { umbral: UMBRALES_LATENCIA.LENTO, text: window.TEXTOS_ACTUAL.velocidad.SLOW, className: 'status-slow' },
-      { umbral: UMBRALES_LATENCIA.CRITICO, text: window.TEXTOS_ACTUAL.velocidad.CRITICAL, className: 'status-critical' },
-      { umbral: UMBRALES_LATENCIA.RIESGO, text: window.TEXTOS_ACTUAL.velocidad.RISK, className: 'status-risk' },
+      { umbral: UMBRALES_LATENCIA_DIRECTO.MUY_RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST, className: 'status-very-fast' },
+      { umbral: UMBRALES_LATENCIA_DIRECTO.RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.FAST, className: 'status-fast' },
+      { umbral: UMBRALES_LATENCIA_DIRECTO.NORMAL, text: window.TEXTOS_ACTUAL.velocidad.NORMAL, className: 'status-normal' },
+      { umbral: UMBRALES_LATENCIA_DIRECTO.LENTO, text: window.TEXTOS_ACTUAL.velocidad.SLOW, className: 'status-slow' },
+      { umbral: UMBRALES_LATENCIA_DIRECTO.CRITICO, text: window.TEXTOS_ACTUAL.velocidad.CRITICAL, className: 'status-critical' },
+      { umbral: UMBRALES_LATENCIA_DIRECTO.RIESGO, text: window.TEXTOS_ACTUAL.velocidad.RISK, className: 'status-risk' },
     ];
 
     for (const ev of estadosVelocidad) {
@@ -260,34 +261,37 @@ function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) 
     };
   }
 
+  // A esta altura la medición viene del proxy (si fuera directa y status 200,
+  // ya se resolvió más arriba). Se usa la escala PROXY, más permisiva, porque
+  // incluye la latencia de red real entre el datacenter de Netlify y el sitio.
   const estadosVelocidad = [
     {
-      umbral: UMBRALES_LATENCIA.MUY_RAPIDO,
+      umbral: UMBRALES_LATENCIA_PROXY.MUY_RAPIDO,
       text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST,
       className: 'status-very-fast',
     },
     {
-      umbral: UMBRALES_LATENCIA.RAPIDO,
+      umbral: UMBRALES_LATENCIA_PROXY.RAPIDO,
       text: window.TEXTOS_ACTUAL.velocidad.FAST,
       className: 'status-fast',
     },
     {
-      umbral: UMBRALES_LATENCIA.NORMAL,
+      umbral: UMBRALES_LATENCIA_PROXY.NORMAL,
       text: window.TEXTOS_ACTUAL.velocidad.NORMAL,
       className: 'status-normal',
     },
     {
-      umbral: UMBRALES_LATENCIA.LENTO,
+      umbral: UMBRALES_LATENCIA_PROXY.LENTO,
       text: window.TEXTOS_ACTUAL.velocidad.SLOW,
       className: 'status-slow',
     },
     {
-      umbral: UMBRALES_LATENCIA.CRITICO,
+      umbral: UMBRALES_LATENCIA_PROXY.CRITICO,
       text: window.TEXTOS_ACTUAL.velocidad.CRITICAL,
       className: 'status-critical',
     },
     {
-      umbral: UMBRALES_LATENCIA.RIESGO,
+      umbral: UMBRALES_LATENCIA_PROXY.RIESGO,
       text: window.TEXTOS_ACTUAL.velocidad.RISK,
       className: 'status-risk',
     },
@@ -1475,7 +1479,7 @@ function aplicarVista(vista) {
   }
 }
 
-function clasificarEstadoDashboard(tiempo, status) {
+function clasificarEstadoDashboard(tiempo, status, esDirecto = false) {
   if (status === 0 || status === 599) return 'caido';
   if (status === 408) return 'critico';
   if (status >= 400 && status < 600) return 'lento';
@@ -1483,9 +1487,12 @@ function clasificarEstadoDashboard(tiempo, status) {
   const t = parseFloat(tiempo);
   if (isNaN(t) || t <= 0) return 'caido';
 
-  const umbrales = (typeof UMBRALES_LATENCIA !== 'undefined') ? UMBRALES_LATENCIA : {
-    MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000
-  };
+  const fallback = { MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000 };
+  const fallbackProxy = { MUY_RAPIDO: 600, RAPIDO: 1000, NORMAL: 1600, LENTO: 3000, CRITICO: 6000, RIESGO: 10000 };
+
+  const umbrales = esDirecto
+    ? ((typeof UMBRALES_LATENCIA_DIRECTO !== 'undefined') ? UMBRALES_LATENCIA_DIRECTO : fallback)
+    : ((typeof UMBRALES_LATENCIA_PROXY !== 'undefined') ? UMBRALES_LATENCIA_PROXY : fallbackProxy);
 
   if (t <= umbrales.MUY_RAPIDO) return 'ok';
   if (t <= umbrales.RAPIDO) return 'ok';
@@ -1546,7 +1553,7 @@ function renderizarTarjetas() {
   const tarjetas = websitesData.map(web => {
     const historial = historialStatus[web.url] || [];
     const ultima = historial[historial.length - 1];
-    const estado = ultima ? clasificarEstadoDashboard(ultima.time, ultima.status) : 'caido';
+    const estado = ultima ? clasificarEstadoDashboard(ultima.time, ultima.status, ultima.source === 'direct') : 'caido';
     contadores[estado]++;
 
     return crearTarjetaHTML(web, ultima, estado, historial);
@@ -1644,12 +1651,6 @@ async function cargarYMostrarHistorialExistente() {
     const row = tbody.insertRow();
     row.setAttribute('data-url', web.url);
 
-    // Borde izquierdo azul para mediciones directas
-    if (ultimaMedicion.source === 'direct') {
-      row.style.borderLeft = '4px solid #3498db';
-      row.title = 'Medición directa desde navegador (red interna)';
-    }
-
     const cellNombre = row.insertCell();
     cellNombre.textContent = web.nombre;
 
@@ -1665,6 +1666,12 @@ async function cargarYMostrarHistorialExistente() {
     const historial = historialStatus[web.url] || [];
     const ultimaMedicion =
       historial.length > 0 ? historial[historial.length - 1] : null;
+
+    // Borde izquierdo azul para mediciones directas
+    if (ultimaMedicion && ultimaMedicion.source === 'direct') {
+      row.style.borderLeft = '4px solid #3498db';
+      row.title = 'Medición directa desde navegador (red interna)';
+    }
 
     // Obtener tema actual y verificar si permite expansión (todos menos DEF y OSC)
     const params = new URLSearchParams(window.location.search);

@@ -2,7 +2,7 @@
 
 Este documento explica por qué usamos los rangos de latencia actuales y qué significan desde el punto de vista de UX y operación.
 
-Valores por defecto (milisegundos)
+Valores por defecto — verificación DIRECTA (navegador), en milisegundos
 
 - MUY_RAPIDO: 300
 - RAPIDO: 500
@@ -11,6 +11,27 @@ Valores por defecto (milisegundos)
 - CRITICO: 3000
 - RIESGO: 5000
 - PENALIZACION_FALLO: 99999 (valor simbólico para errores)
+
+Valores por defecto — verificación vía PROXY (Netlify), en milisegundos
+
+- MUY_RAPIDO: 600
+- RAPIDO: 1000
+- NORMAL: 1600
+- LENTO: 3000
+- CRITICO: 6000
+- RIESGO: 10000
+- PENALIZACION_FALLO: 99999
+
+**¿Por qué dos escalas?** El proxy corre en un datacenter de Netlify (a
+veces en otro país/continente respecto al sitio monitoreado), así que
+cada medición suma latencia de red internacional real que **no** indica
+que el sitio esté lento para tus usuarios reales. Antes de este ajuste,
+ambas fuentes usaban la misma escala y eso hacía que mediciones de proxy
+perfectamente normales (por ejemplo 700ms cruzando continentes) se
+mostraran como "LENTO" o "CRÍTICO". Ahora cada fuente (🌐 proxy / 🖥️
+directo) se clasifica con su propia escala. Podés ajustar ambas en
+`js/config.js` (`UMBRALES_LATENCIA_DIRECTO` y `UMBRALES_LATENCIA_PROXY`)
+según la distancia real entre tu sitio y la región de Netlify.
 
 Nuevos estados de conexión
 

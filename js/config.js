@@ -1,7 +1,15 @@
 // Umbrales de latencia (en milisegundos)
 // Estos valores sirven para clasificar qué tan rápido o lento responde un servicio.
 // Si querés saber más, mirá el archivo docs/justificacion_rangos_latencia.md
-const UMBRALES_LATENCIA = {
+//
+// IMPORTANTE: hay DOS escalas porque el proxy (Netlify) y la verificación
+// directa (tu navegador) miden cosas distintas. El proxy corre en un
+// datacenter (a veces en otro país/continente) y esa distancia agrega
+// latencia real de red que NO indica que el sitio esté lento para tus
+// usuarios. La verificación directa sí refleja tu experiencia real.
+
+// Umbrales para verificación DIRECTA (navegador → red del usuario)
+const UMBRALES_LATENCIA_DIRECTO = {
   MUY_RAPIDO: 300, // Excelente: responde casi al instante
   RAPIDO: 500, // Bueno: rápido, se nota poco el retraso
   NORMAL: 800, // Aceptable: algo lento pero usable
@@ -10,6 +18,26 @@ const UMBRALES_LATENCIA = {
   RIESGO: 5000, // Al borde del fallo: casi no responde
   PENALIZACION_FALLO: 99999, // Valor especial para marcar fallos (no cuenta en el promedio)
 };
+
+// Umbrales para verificación vía PROXY (Netlify → internet público)
+// Más permisivos: la propia documentación del proyecto ya estimaba que el
+// proxy típicamente da 50-500ms más que una medición directa, así que estos
+// umbrales están corridos hacia arriba para no marcar como "lento/crítico"
+// algo que es simplemente distancia geográfica normal.
+const UMBRALES_LATENCIA_PROXY = {
+  MUY_RAPIDO: 600,
+  RAPIDO: 1000,
+  NORMAL: 1600,
+  LENTO: 3000,
+  CRITICO: 6000,
+  RIESGO: 10000,
+  PENALIZACION_FALLO: 99999,
+};
+
+// Se mantiene por compatibilidad con el resto del código que todavía
+// referencia UMBRALES_LATENCIA directamente (p. ej. para PENALIZACION_FALLO,
+// que es igual en ambas escalas).
+const UMBRALES_LATENCIA = UMBRALES_LATENCIA_DIRECTO;
 
 // -----------------------------
 // 1) Temas y archivos CSS (UI)
