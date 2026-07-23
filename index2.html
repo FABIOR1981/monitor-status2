@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Bar</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="contenedor-calculadora">
+        <h1>Calculadora de Bar</h1>
+
+        <div class="datos-entrada">
+            <label for="montoCuenta">Monto de la Cuenta:</label>
+            <input type="text" id="montoCuenta" placeholder="Ej: 50.00">
+        </div>
+
+        <div class="datos-entrada">
+            <label for="montoPago">Monto de Pago:</label>
+            <input type="text" id="montoPago" placeholder="Ej: 60.00">
+        </div>
+
+        <div class="prop-options">
+            <label>Selecciona la Propina:</label><br>
+            <input type="radio" id="prop10" name="propina" value="10" checked>
+            <label for="prop10">10%</label>
+            <input type="radio" id="prop15" name="propina" value="15">
+            <label for="prop15">15%</label>
+            <input type="radio" id="prop20" name="propina" value="20">
+            <label for="prop20">20%</label>
+        </div>
+
+        <button onclick="calcular()">Calcular</button>
+
+        <div class="datos-resultado">
+            <p>Propina: $<span id="propinaResultado">0.00</span></p>
+            <p>Total a Pagar: $<span id="totalResultado">0.00</span></p>
+            <p>Vuelto: $<span id="vueltoResultado">0.00</span></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Calculadora de Bar. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
