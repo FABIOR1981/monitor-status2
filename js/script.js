@@ -219,6 +219,40 @@ function actualizarUltimaActualizacion(fecha) {
   }
 }
 
+/**
+ * Devuelve una descripción legible para un código de estado HTTP.
+ * Primero busca una etiqueta explícita en el diccionario de idioma
+ * (lang/i18n_es.js / i18n_en.js). Si el código no está mapeado ahí
+ * (por ejemplo 520-530, que son extensiones propias de Cloudflare y
+ * no códigos HTTP oficiales), clasifica por RANGO en vez de exigir
+ * que cada código nuevo se agregue a mano.
+ */
+function obtenerDescripcionPorRango(codigo) {
+  // Rango 520-530: extensiones no estándar usadas por Cloudflare (y CDNs
+  // similares) para indicar que el proxy/CDN funcionó, pero el servidor
+  // de origen detrás no respondió correctamente o a tiempo.
+  if (codigo >= 520 && codigo <= 530) {
+    return 'Error de origen vía CDN/Proxy (Cloudflare u similar) — el servidor real no respondió';
+  }
+  if (codigo >= 500 && codigo < 600) {
+    return 'Error del servidor';
+  }
+  if (codigo >= 400 && codigo < 500) {
+    return 'Error del cliente';
+  }
+  if (codigo >= 300 && codigo < 400) {
+    return 'Redireccionamiento';
+  }
+  return window.TEXTOS_ACTUAL?.httpStatus?.GENERIC || 'Error HTTP';
+}
+
+function obtenerDescripcionEstadoHttp(codigo) {
+  return (
+    window.TEXTOS_ACTUAL?.httpStatus?.[codigo] ||
+    obtenerDescripcionPorRango(codigo)
+  );
+}
+
 function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) {
   const tiempoNum = parseFloat(tiempo);
 
@@ -246,9 +280,7 @@ function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) 
   }
 
   if (estado !== 200 || tiempoNum >= UMBRALES_LATENCIA.PENALIZACION_FALLO) {
-    const descripcionEstado =
-      window.TEXTOS_ACTUAL.httpStatus?.[estado] ||
-      window.TEXTOS_ACTUAL.httpStatus?.GENERIC;
+    const descripcionEstado = obtenerDescripcionEstadoHttp(estado);
 
     const textoFallo =
       estado !== 200
@@ -989,7 +1021,7 @@ function obtenerMensajeError(codigo) {
     503: 'No disponible',
     504: 'Gateway timeout',
   };
-  return mensajes[codigo] || `Error ${codigo}`;
+  return mensajes[codigo] || obtenerDescripcionPorRango(codigo);
 }
 
 /**
