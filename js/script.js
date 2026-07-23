@@ -1494,10 +1494,8 @@ function aplicarVista(vista) {
 function clasificarEstadoDashboard(tiempo, status, esDirecto = false) {
   if (status === 0 || status === 599) return 'caido';
   if (status === 408) return 'critico';
-  if (status >= 400 && status < 600) return 'lento';
 
   const t = parseFloat(tiempo);
-  if (isNaN(t) || t <= 0) return 'caido';
 
   const fallback = { MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000 };
   const fallbackProxy = { MUY_RAPIDO: 600, RAPIDO: 1000, NORMAL: 1600, LENTO: 3000, CRITICO: 6000, RIESGO: 10000 };
@@ -1505,6 +1503,18 @@ function clasificarEstadoDashboard(tiempo, status, esDirecto = false) {
   const umbrales = esDirecto
     ? ((typeof UMBRALES_LATENCIA_DIRECTO !== 'undefined') ? UMBRALES_LATENCIA_DIRECTO : fallback)
     : ((typeof UMBRALES_LATENCIA_PROXY !== 'undefined') ? UMBRALES_LATENCIA_PROXY : fallbackProxy);
+
+  // Códigos de error HTTP (4xx/5xx, excluyendo 408 y 599 ya manejados arriba):
+  // el servicio respondió pero con error. Antes esto se mostraba SIEMPRE como
+  // "lento" sin importar cuánto tardó. Ahora, si además tardó mucho, se
+  // escala la severidad en vez de ocultarla detrás de un simple "lento".
+  if (status >= 400 && status < 600) {
+    if (!isNaN(t) && t > umbrales.RIESGO) return 'caido';
+    if (!isNaN(t) && t > umbrales.CRITICO) return 'critico';
+    return 'lento';
+  }
+
+  if (isNaN(t) || t <= 0) return 'caido';
 
   if (t <= umbrales.MUY_RAPIDO) return 'ok';
   if (t <= umbrales.RAPIDO) return 'ok';
