@@ -577,7 +577,19 @@ async function verificarEstado(url) {
 
     const data = await response.json();
 
-    // Si el proxy dice que el sitio está caído (status 0), verificar directamente
+    // Si el DNS falló, el dominio realmente no existe/no resuelve.
+    // Esto NO es algo que un WAF pueda "fingir": la resolución DNS es
+    // pública e igual para todo el mundo. NO tiene sentido pasar a
+    // verificación directa acá, porque el truco del <img> del navegador
+    // no puede distinguir "DNS inexistente" de "404 normal" (ambos fallan
+    // rápido) y terminaría marcando como "arriba" un sitio que no existe.
+    if (data.errorType === 'DNS_ERROR') {
+      console.log(`DNS inexistente para ${url}, se marca como caído sin verificación directa.`);
+      return data;
+    }
+
+    // Si el proxy dice que el sitio está caído (status 0) por otro motivo
+    // (bloqueo, timeout, conexión rechazada), sí verificamos directamente
     // porque el proxy puede estar bloqueado por el WAF
     if (data.status === 0 || data.status === ESTADO_ERROR_CONEXION) {
       console.log(`Proxy reporta caído para ${url}, verificando directamente...`);
