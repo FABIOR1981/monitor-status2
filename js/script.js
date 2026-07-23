@@ -796,6 +796,13 @@ function formatearFecha(timestamp) {
  * Muestra u oculta el detalle de errores en una fila
  */
 function toggleErroresDetalle(url) {
+  // NUEVO: en vista de tarjetas, el detalle debe insertarse junto a la
+  // tarjeta correspondiente (la tabla está oculta y no sirve como destino).
+  if (typeof vistaActual !== 'undefined' && vistaActual === 'tarjetas') {
+    toggleErroresDetalleTarjeta(url);
+    return;
+  }
+
   const tbody = document.getElementById('status-table-body');
   const row = tbody.querySelector(`tr[data-url="${CSS.escape(url)}"]`);
   if (!row) return;
@@ -883,6 +890,80 @@ function toggleErroresDetalle(url) {
 
   // Trigger animación
   setTimeout(() => newRow.classList.add('expanded'), 10);
+}
+
+/**
+ * Muestra u oculta el detalle de errores para la VISTA DE TARJETAS.
+ * Inserta el bloque de detalle como elemento propio del grid (spanning
+ * todo el ancho), justo después de la tarjeta correspondiente.
+ */
+function toggleErroresDetalleTarjeta(url) {
+  const grid = document.getElementById('grid-tarjetas');
+  if (!grid) return;
+
+  const card = grid.querySelector(
+    `.tarjeta-servicio[data-url="${CSS.escape(url)}"]`
+  );
+  if (!card) return;
+
+  // Si ya existe el detalle abierto para esta tarjeta, colapsar y quitar
+  const detalleExistente = grid.querySelector(
+    `.error-detail-card[data-parent-url="${CSS.escape(url)}"]`
+  );
+  if (detalleExistente) {
+    detalleExistente.classList.remove('expanded');
+    setTimeout(() => {
+      if (detalleExistente && detalleExistente.parentNode) {
+        detalleExistente.remove();
+      }
+    }, 200);
+    return;
+  }
+
+  const errores = obtenerHistorialErrores(url);
+  if (errores.length === 0) return;
+
+  const maxErrores = 10;
+  const erroresLimitados = errores.slice(-maxErrores);
+  const hayMas = errores.length > maxErrores;
+
+  let html = '<div class="error-detail-container">';
+  html += `<div class="error-detail-header">⚠️ Errores detectados (${errores.length} de ${historialStatus[url].length} mediciones):</div>`;
+  html += '<ul class="error-detail-list">';
+
+  erroresLimitados.reverse().forEach((error) => {
+    const fecha = formatearFecha(error.timestamp);
+    const codigo = error.status;
+    const latencia = error.time;
+    const mensaje = codigo === 200 ? 'Timeout' : obtenerMensajeError(codigo);
+
+    html += `<li>`;
+    html += `<span class="error-time">${fecha}</span>`;
+    html += ` → `;
+    html += `<span class="error-code">${codigo}</span> `;
+    html += `<span class="error-msg">${mensaje}</span> `;
+    html += `<span class="error-latency">(${latencia}ms)</span>`;
+    html += `</li>`;
+  });
+
+  html += '</ul>';
+
+  if (hayMas) {
+    html += `<div class="error-detail-footer">...mostrando últimos ${maxErrores} errores</div>`;
+  }
+
+  html += '</div>';
+
+  const detalleDiv = document.createElement('div');
+  detalleDiv.className = 'error-detail-card';
+  detalleDiv.setAttribute('data-parent-url', url);
+  detalleDiv.innerHTML = html;
+
+  // Insertar justo después de la tarjeta correspondiente
+  card.insertAdjacentElement('afterend', detalleDiv);
+
+  // Trigger animación
+  setTimeout(() => detalleDiv.classList.add('expanded'), 10);
 }
 
 // Hacer función accesible globalmente
@@ -1616,7 +1697,7 @@ function crearTarjetaHTML(web, ultima, estado, historial) {
   const fuenteTitle = esDirecto ? 'Directo' : 'Proxy';
 
   return `
-    <div class="tarjeta-servicio estado-${estado} ${esDirecto ? 'directo' : ''}">
+    <div class="tarjeta-servicio estado-${estado} ${esDirecto ? 'directo' : ''}" data-url="${web.url}">
       <div class="tarjeta-header-compacto">
         <span class="tarjeta-nombre-compacto">${web.nombre}</span>
         <span class="tarjeta-fuente-compacto" title="${fuenteTitle}">${fuenteIcono}</span>

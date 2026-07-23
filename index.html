@@ -318,6 +318,22 @@
         border-radius: 10px !important;
       }
 
+      /* Detalle de errores dentro de la vista de tarjetas */
+      .error-detail-card {
+        grid-column: 1 / -1;
+        background: #fff5f5;
+        border-left: 4px solid #ff6b6b;
+        border-radius: 8px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+      }
+
+      .error-detail-card.expanded {
+        max-height: 500px;
+        transition: max-height 0.3s ease-in;
+      }
+
       /* Resumen superior para tarjetas */
       .resumen-superior {
         display: grid;
