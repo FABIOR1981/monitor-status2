@@ -203,3 +203,15 @@ footer {
     font-size: 1.3em;
   }
 }
+
+/* --- Sección de iconos de fuente (🌐 proxy / 🖥️ directo) --- */
+.leyenda-lista-iconos {
+  list-style: disc;
+  padding-left: 22px;
+  margin: 10px 0;
+}
+
+.leyenda-lista-iconos li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}

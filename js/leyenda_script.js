@@ -119,6 +119,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     umbralesSection.appendChild(table);
     container.appendChild(umbralesSection);
 
+    // Sección: explicación de los iconos de fuente (🌐 proxy / 🖥️ directo)
+    if (leyendaData.iconos_title) {
+      const iconosSection = document.createElement('div');
+      iconosSection.className = 'leyenda-section iconos-fuente-section';
+      iconosSection.style.marginTop = '30px';
+
+      const h3Iconos = document.createElement('h3');
+      h3Iconos.textContent = leyendaData.iconos_title;
+      iconosSection.appendChild(h3Iconos);
+
+      if (leyendaData.iconos_intro) {
+        const pIntro = document.createElement('p');
+        pIntro.textContent = leyendaData.iconos_intro;
+        iconosSection.appendChild(pIntro);
+      }
+
+      const listaIconos = document.createElement('ul');
+      listaIconos.className = 'leyenda-lista-iconos';
+      (leyendaData.iconos || []).forEach((icono) => {
+        const li = document.createElement('li');
+        const strong = document.createElement('strong');
+        strong.textContent = `${icono.emoji || ''} ${icono.label || ''}: `;
+        li.appendChild(strong);
+        li.appendChild(document.createTextNode(icono.desc || ''));
+        listaIconos.appendChild(li);
+      });
+      iconosSection.appendChild(listaIconos);
+
+      if (leyendaData.iconos_nota_borde) {
+        const pBorde = document.createElement('p');
+        pBorde.textContent = leyendaData.iconos_nota_borde;
+        iconosSection.appendChild(pBorde);
+      }
+
+      if (leyendaData.iconos_nota_promedio) {
+        const pProm = document.createElement('p');
+        pProm.textContent = leyendaData.iconos_nota_promedio;
+        iconosSection.appendChild(pProm);
+      }
+
+      container.appendChild(iconosSection);
+    }
+
     const codesSection = document.createElement('div');
     codesSection.className = 'leyenda-section codigos-error-section';
     codesSection.style.marginTop = '30px';

@@ -41,7 +41,7 @@ const TEXTOS_ES = {
       code: 0,
       label: 'Sin conexión',
       description:
-        'No se pudo establecer conexión con el servidor (timeout, DNS, red).',
+        'No se pudo establecer conexión con el servidor. Puede ser DNS inexistente (el dominio no existe, se marca caído directamente), timeout o conexión rechazada (en estos casos el sistema además verifica directamente desde tu navegador antes de confirmar la caída).',
     },
     {
       code: 301,
@@ -76,7 +76,8 @@ const TEXTOS_ES = {
     {
       code: 403,
       label: 'Acceso prohibido',
-      description: 'Acceso prohibido, incluso con autenticación válida.',
+      description:
+        'Acceso prohibido, incluso con autenticación válida. En este monitor suele significar que un WAF/firewall bloqueó al proxy (por venir de un servidor cloud) — el sitio puede estar funcionando normalmente para usuarios reales. El sistema verifica directamente desde tu navegador (🖥️) para confirmarlo.',
     },
     {
       code: 404,
@@ -97,7 +98,8 @@ const TEXTOS_ES = {
     {
       code: 408,
       label: 'Tiempo agotado',
-      description: 'El servidor agotó el tiempo de espera para la solicitud.',
+      description:
+        'El sitio respondió, pero el proxy tardó más de 25 segundos en obtener la respuesta (SLOW_RESPONSE). No es una caída: el servicio funciona pero de forma extremadamente lenta.',
     },
     {
       code: 409,
@@ -121,7 +123,7 @@ const TEXTOS_ES = {
       code: 429,
       label: 'Demasiadas solicitudes',
       description:
-        'Se ha superado el límite de tasa (Rate Limit) del servicio.',
+        'Se ha superado el límite de tasa (Rate Limit) del servicio. Al igual que el 403, puede tratarse de un WAF limitando al proxy — no necesariamente el sitio está caído para usuarios reales.',
     },
     {
       code: 500,
@@ -178,14 +180,14 @@ TEXTOS_ES.leyenda = {
   main_header: 'Umbrales de Latencia y Justificación Operacional',
   link_volver: 'Volver a la Aplicación',
   intro:
-    'Los colores y símbolos reflejan el tiempo de respuesta (latencia) medido. La justificación se basa en la Psicología de la Interacción y el Significado Operacional del rendimiento.',
+    'Los colores y símbolos reflejan el tiempo de respuesta (latencia) medido. La justificación se basa en la Psicología de la Interacción y el Significado Operacional del rendimiento. IMPORTANTE: el sistema mide de dos formas distintas (🌐 proxy e 🖥️ directo), y cada una usa su propia escala de umbrales porque no son comparables entre sí — mirá la sección "¿Qué significan los iconos 🌐 y 🖥️?" más abajo.',
   umbrales: [
     {
       key: 'very_fast',
       className: 'status-very-fast',
       emoji: '🚀',
       label: 'MUY RÁPIDO',
-      range_text: '< 300 ms',
+      range_text: '🖥️ Directo: < 300 ms  ·  🌐 Proxy: < 600 ms',
       summary: 'Rendimiento Óptimo (Instantáneo para el Usuario)',
       details:
         'Estándar Dorado. El cerebro humano percibe cualquier respuesta por debajo de los 100 ms como instantánea (Regla de Nielsen). Mantener el umbral hasta 300 ms asegura una experiencia fluida. Significado Operacional: El sistema está operando en condiciones óptimas y con alta eficiencia.',
@@ -195,7 +197,7 @@ TEXTOS_ES.leyenda = {
       className: 'status-fast',
       emoji: '⭐',
       label: 'RÁPIDO',
-      range_text: '300 ms ≤ Latencia < 500 ms',
+      range_text: '🖥️ Directo: 300–500 ms  ·  🌐 Proxy: 600–1000 ms',
       summary: 'Interacción Fluida sin Molestias (Percepción Inconsciente)',
       details:
         'Límite de la Percepción Inconsciente. La demora es notable pero el usuario no la percibe como una espera molesta. Significado Operacional: Rendimiento excelente, buen punto de control para procesos rápidos de backend.',
@@ -205,7 +207,7 @@ TEXTOS_ES.leyenda = {
       className: 'status-normal',
       emoji: '✅',
       label: 'NORMAL',
-      range_text: '500 ms ≤ Latencia < 800 ms',
+      range_text: '🖥️ Directo: 500–800 ms  ·  🌐 Proxy: 1000–1600 ms',
       summary: 'Rendimiento Aceptable (El Foco se Mantiene)',
       details:
         'La Distracción Comienza. A partir de 500 ms el usuario puede comenzar a desviarse, aunque puede mantener su hilo de pensamiento. Significado Operacional: Rendimiento aceptable, pero acercándose a donde la sensación de espera se consolida.',
@@ -215,7 +217,7 @@ TEXTOS_ES.leyenda = {
       className: 'status-slow',
       emoji: '⚠️',
       label: 'LENTO',
-      range_text: '800 ms ≤ Latencia < 1500 ms',
+      range_text: '🖥️ Directo: 800–1500 ms  ·  🌐 Proxy: 1600–3000 ms',
       summary: 'Demora Molesta (Distractor Activo / Alerta Temprana)',
       details:
         'Límite del 1 Segundo. La demora se convierte en un distractor activo. La experiencia está notablemente degradada. Significado Operacional: Alerta Temprana. El servidor o la red experimentan estrés. Momento de investigar.',
@@ -225,7 +227,7 @@ TEXTOS_ES.leyenda = {
       className: 'status-critical',
       emoji: '🐌',
       label: 'CRÍTICO',
-      range_text: '1500 ms ≤ Latencia < 3000 ms',
+      range_text: '🖥️ Directo: 1500–3000 ms  ·  🌐 Proxy: 3000–6000 ms',
       summary: 'Riesgo de Abandono del Usuario (3 Segundos / Fallo Inminente)',
       details:
         'Pérdida de Foco y Frustración. El límite crítico (3 segundos) donde los usuarios abandonan una página web. Significado Operacional: Fallo Inminente. Indica carga extremadamente pesada o cuellos de botella severos.',
@@ -235,7 +237,7 @@ TEXTOS_ES.leyenda = {
       className: 'status-risk',
       emoji: '🚨',
       label: 'RIESGO',
-      range_text: '3000 ms ≤ Latencia < 5000 ms',
+      range_text: '🖥️ Directo: 3000–5000 ms  ·  🌐 Proxy: 6000–10000 ms',
       summary: 'Fallo Funcional y Colapso (5 Segundos / Alarma)',
       details:
         'Fallo Funcional. Las demoras superiores a 5 segundos son consideradas un fallo funcional en muchos sistemas. Significado Operacional: ALARMA. El servicio está al borde del colapso o no sirve peticiones de manera confiable.',
@@ -245,7 +247,7 @@ TEXTOS_ES.leyenda = {
       className: 'status-extreme-risk',
       emoji: '🔥',
       label: 'RIESGO EXTREMO',
-      range_text: '5000 ms ≤ Latencia < 99999 ms',
+      range_text: '🖥️ Directo: 5000–99999 ms  ·  🌐 Proxy: 10000–99999 ms',
       summary: 'Latencia Inaceptable (CAOS / Abandono Asegurado)',
       details:
         'CAOS/Limbo. Rango antes del timeout máximo. Es casi seguro que el usuario abandonó la acción. Significado Operacional: El servidor no puede procesar la solicitud en un tiempo razonable. Requiere atención INMEDIATA.',
@@ -264,6 +266,25 @@ TEXTOS_ES.leyenda = {
   http_codes_title: 'Códigos de Estado HTTP y Fallos del Sistema',
   http_codes_description:
     'Cuando un servicio devuelve un código de estado fuera del rango 2xx (Éxito), el monitor lo clasifica visualmente como ❌ FALLO TOTAL, pero muestra el código real entre paréntesis (ej: ❌ Caída (404)).',
+  iconos_title: '¿Qué significan los iconos 🌐 y 🖥️?',
+  iconos_intro:
+    'Este monitor verifica cada sitio de dos formas posibles. Por eso hay dos escalas de umbrales distintas (ver tabla de arriba): comparar un tiempo 🌐 contra los umbrales 🖥️ (o viceversa) da una lectura equivocada.',
+  iconos: [
+    {
+      emoji: '🌐',
+      label: 'Proxy (internet pública)',
+      desc: 'Medición hecha desde un servidor de Netlify. Es la medición por defecto. Como viaja por internet (a veces cruzando países/continentes), naturalmente tiene más latencia — por eso su escala de umbrales es más permisiva.',
+    },
+    {
+      emoji: '🖥️',
+      label: 'Directo (tu navegador)',
+      desc: 'Medición hecha desde tu propio navegador, generalmente cuando el proxy reportó una caída (para descartar que sea un WAF bloqueando al proxy y no una caída real). Refleja tu experiencia real, por eso usa la escala más estricta.',
+    },
+  ],
+  iconos_nota_borde:
+    'Un borde azul a la izquierda de una fila indica que la última medición de ese sitio fue directa (🖥️).',
+  iconos_nota_promedio:
+    'Si un sitio tiene mediciones mixtas (algunas por proxy, otras directas), la columna "Promedio" muestra ambos valores por separado, por ejemplo: 620 ms 🌐 / 45 ms 🖥️.',
 };
 
 TEXTOS_ES.leyenda.codigos_error = [

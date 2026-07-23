@@ -43,7 +43,7 @@ const TEXTOS_EN = {
       code: 0,
       label: 'No connection',
       description:
-        'Network failure, DNS, timeout, CORS blocking, or server did not respond.',
+        'Could not connect to the server. Can be a non-existent DNS (the domain does not exist, marked down immediately) or a timeout/refused connection (in these cases the system also verifies directly from your browser before confirming the outage).',
     },
     {
       code: 301,
@@ -78,7 +78,8 @@ const TEXTOS_EN = {
     {
       code: 403,
       label: 'Forbidden',
-      description: 'Access denied, even with valid authentication.',
+      description:
+        'Access denied, even with valid authentication. In this monitor it usually means a WAF/firewall blocked the proxy (because it comes from a cloud server) — the site may be working fine for real users. The system verifies directly from your browser (🖥️) to confirm.',
     },
     {
       code: 404,
@@ -99,7 +100,8 @@ const TEXTOS_EN = {
     {
       code: 408,
       label: 'Request timeout',
-      description: 'The server timed out waiting for the request.',
+      description:
+        'The site responded, but the proxy took more than 25 seconds to get a response (SLOW_RESPONSE). Not an outage: the service works but extremely slowly.',
     },
     {
       code: 409,
@@ -122,7 +124,8 @@ const TEXTOS_EN = {
     {
       code: 429,
       label: 'Too many requests',
-      description: 'The service rate limit was exceeded.',
+      description:
+        'The service rate limit was exceeded. Like 403, this can be a WAF throttling the proxy — the site is not necessarily down for real users.',
     },
     {
       code: 500,
@@ -179,14 +182,14 @@ TEXTOS_EN.leyenda = {
   main_header: 'Latency Thresholds and Operational Justification',
   link_volver: 'Back to Application',
   intro:
-    'Colors and symbols reflect the measured response time (latency). The justification is based on Interaction Psychology and the Operational Meaning of performance.',
+    'Colors and symbols reflect the measured response time (latency). The justification is based on Interaction Psychology and the Operational Meaning of performance. IMPORTANT: the system measures in two different ways (\ud83c\udf10 proxy and \ud83d\udda5\ufe0f direct), and each one uses its own threshold scale because they are not directly comparable — see the "What do the \ud83c\udf10 and \ud83d\udda5\ufe0f icons mean?" section below.',
   umbrales: [
     {
       key: 'very_fast',
       className: 'status-very-fast',
       emoji: '🚀',
       label: 'VERY FAST',
-      range_text: '< 300 ms',
+      range_text: '\ud83d\udda5\ufe0f Direct: < 300 ms  \u00b7  \ud83c\udf10 Proxy: < 600 ms',
       summary: 'Optimal Performance (Instantaneous to the User)',
       details:
         "Golden Standard. The human brain perceives responses under 100 ms as instant (Nielsen's guideline). Keeping the threshold up to 300 ms ensures a smooth experience. Operational Meaning: The system is operating in optimal conditions.",
@@ -196,7 +199,7 @@ TEXTOS_EN.leyenda = {
       className: 'status-fast',
       emoji: '⭐',
       label: 'FAST',
-      range_text: '300 ms ≤ Latency < 500 ms',
+      range_text: '\ud83d\udda5\ufe0f Direct: 300\u2013500 ms  \u00b7  \ud83c\udf10 Proxy: 600\u20131000 ms',
       summary: 'Fluid Interaction without Noticeable Wait',
       details:
         'Limit of Unconscious Perception. The delay is noticeable but not perceived as a bothersome wait. Operational Meaning: Excellent performance; good control point for fast backend processes.',
@@ -206,7 +209,7 @@ TEXTOS_EN.leyenda = {
       className: 'status-normal',
       emoji: '✅',
       label: 'NORMAL',
-      range_text: '500 ms ≤ Latency < 800 ms',
+      range_text: '\ud83d\udda5\ufe0f Direct: 500\u2013800 ms  \u00b7  \ud83c\udf10 Proxy: 1000\u20131600 ms',
       summary: 'Acceptable Performance (User Maintains Focus)',
       details:
         'Begin of Distraction. From 500 ms the user may start to divert attention, although they can maintain their thought flow. Operational Meaning: Acceptable performance but approaching where wait sensation consolidates.',
@@ -216,7 +219,7 @@ TEXTOS_EN.leyenda = {
       className: 'status-slow',
       emoji: '⚠️',
       label: 'SLOW',
-      range_text: '800 ms ≤ Latency < 1500 ms',
+      range_text: '\ud83d\udda5\ufe0f Direct: 800\u20131500 ms  \u00b7  \ud83c\udf10 Proxy: 1600\u20133000 ms',
       summary: 'Annoying Delay (Active Distractor / Early Alert)',
       details:
         '1 second limit. The delay becomes an active distractor. Experience is noticeably degraded. Operational Meaning: Early Alert. Server or network under stress; investigate.',
@@ -226,7 +229,7 @@ TEXTOS_EN.leyenda = {
       className: 'status-critical',
       emoji: '🐌',
       label: 'CRITICAL',
-      range_text: '1500 ms ≤ Latency < 3000 ms',
+      range_text: '\ud83d\udda5\ufe0f Direct: 1500\u20133000 ms  \u00b7  \ud83c\udf10 Proxy: 3000\u20136000 ms',
       summary: 'Abandonment Risk (3 Seconds / Imminent Failure)',
       details:
         'Loss of Focus and Frustration. The critical boundary (3 seconds) where users may abandon pages. Operational Meaning: Imminent Failure. Heavy load or severe bottlenecks.',
@@ -236,7 +239,7 @@ TEXTOS_EN.leyenda = {
       className: 'status-risk',
       emoji: '🚨',
       label: 'RISK',
-      range_text: '3000 ms ≤ Latency < 5000 ms',
+      range_text: '\ud83d\udda5\ufe0f Direct: 3000\u20135000 ms  \u00b7  \ud83c\udf10 Proxy: 6000\u201310000 ms',
       summary: 'Functional Failure and Collapse (5 Seconds / Alarm)',
       details:
         'Functional Failure. Delays longer than 5 seconds are often considered a functional failure. Operational Meaning: ALARM. Service near collapse or unreliable request handling.',
@@ -246,7 +249,7 @@ TEXTOS_EN.leyenda = {
       className: 'status-extreme-risk',
       emoji: '🔥',
       label: 'EXTREME RISK',
-      range_text: '5000 ms ≤ Latency < 99999 ms',
+      range_text: '\ud83d\udda5\ufe0f Direct: 5000\u201399999 ms  \u00b7  \ud83c\udf10 Proxy: 10000\u201399999 ms',
       summary: 'Unacceptable Latency (Chaos / Guaranteed Abandonment)',
       details:
         'Chaos/Limbo. Range before maximum timeout. The user likely abandoned the action. Operational Meaning: Server cannot process requests in reasonable time. Immediate attention required.',
@@ -265,6 +268,25 @@ TEXTOS_EN.leyenda = {
   http_codes_title: 'HTTP Status Codes and System Failures',
   http_codes_description:
     'When a service returns a status code outside the 2xx range (Success), the monitor visually classifies it as ❌ DOWN, but it displays the real status code (e.g., ❌ Down (404)).',
+  iconos_title: 'What do the 🌐 and 🖥️ icons mean?',
+  iconos_intro:
+    'This monitor checks each site in two possible ways. That is why there are two different threshold scales (see table above): comparing a 🌐 time against the 🖥️ thresholds (or vice versa) gives a wrong reading.',
+  iconos: [
+    {
+      emoji: '🌐',
+      label: 'Proxy (public internet)',
+      desc: 'Measurement taken from a Netlify server. This is the default measurement. Since it travels over the internet (sometimes across countries/continents), it naturally has more latency — that is why its threshold scale is more lenient.',
+    },
+    {
+      emoji: '🖥️',
+      label: 'Direct (your browser)',
+      desc: 'Measurement taken from your own browser, usually when the proxy reported an outage (to rule out a WAF blocking the proxy rather than a real outage). Reflects your real experience, hence the stricter scale.',
+    },
+  ],
+  iconos_nota_borde:
+    'A blue left border on a row indicates that the last measurement for that site was direct (🖥️).',
+  iconos_nota_promedio:
+    'If a site has mixed measurements (some via proxy, some direct), the "Average" column shows both values separately, e.g.: 620 ms 🌐 / 45 ms 🖥️.',
 };
 
 TEXTOS_EN.leyenda.codigos_error = [
