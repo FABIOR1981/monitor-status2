@@ -11,6 +11,9 @@ let duracionSeleccionada = 1;
 let intervaloMonitoreo = null;
 let countdownInterval = null;
 let countdownValue = 300; // 5 minutos
+const HISTORIAL_STORAGE_KEY = 'monitorStatusHistorial';
+const DURACION_STORAGE_KEY = 'duracionMonitoreo';
+const DURACION_LEGACY_STORAGE_KEY = 'duracionSeleccionada';
 
 // =======================================================
 // INICIALIZACIÓN
@@ -26,8 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarConfiguracion() {
   // FIX: Usar la clave correcta con "h" para DURACION_OPCIONES
-  const duracionGuardada = localStorage.getItem('duracionSeleccionada');
-  duracionSeleccionada = duracionGuardada ? parseInt(duracionGuardada) : 1;
+  const duracionGuardada =
+    localStorage.getItem(DURACION_STORAGE_KEY) ||
+    localStorage.getItem(DURACION_LEGACY_STORAGE_KEY);
+  duracionSeleccionada = duracionGuardada ? parseInt(duracionGuardada, 10) : 1;
 
   if (typeof DURACION_OPCIONES !== 'undefined') {
     const duracionKey = duracionSeleccionada + 'h';
@@ -50,18 +55,7 @@ async function cargarWebsites() {
 }
 
 function inicializarDashboard() {
-  // Cargar historial existente desde sessionStorage (compartido con tabla)
-  websitesData.forEach(web => {
-    const key = 'historial_' + web.url;
-    const stored = sessionStorage.getItem(key);
-    if (stored) {
-      try {
-        historialStatus[web.url] = JSON.parse(stored);
-      } catch(e) {
-        console.warn('Error parseando historial para', web.url, e);
-      }
-    }
-  });
+  cargarHistorialExistente();
 
   // Selector de duración
   const selector = document.getElementById('duracion-selector');
@@ -69,7 +63,7 @@ function inicializarDashboard() {
     selector.value = duracionSeleccionada;
     selector.addEventListener('change', (e) => {
       duracionSeleccionada = parseInt(e.target.value);
-      localStorage.setItem('duracionSeleccionada', duracionSeleccionada);
+      guardarDuracionSeleccionada(duracionSeleccionada);
 
       if (typeof DURACION_OPCIONES !== 'undefined') {
         const duracionKey = duracionSeleccionada + 'h';
@@ -127,6 +121,69 @@ function renderizarDashboard() {
   if (ultimaActualizacion) {
     ultimaActualizacion.textContent = 'Última actualización: ' + new Date().toLocaleTimeString();
   }
+}
+
+function obtenerMaxHistorialParaDuracion(duracion) {
+  if (typeof DURACION_OPCIONES === 'undefined') {
+    const mapa = { 1: 12, 2: 24, 3: 36, 4: 48, 5: 60, 6: 72, 7: 84, 8: 96, 9: 108 };
+    return mapa[duracion] || 12;
+  }
+
+  const duracionKey = duracion + 'h';
+  return DURACION_OPCIONES[duracionKey]?.mediciones || 12;
+}
+
+function guardarDuracionSeleccionada(duracion) {
+  localStorage.setItem(DURACION_STORAGE_KEY, String(duracion));
+  localStorage.setItem(DURACION_LEGACY_STORAGE_KEY, String(duracion));
+}
+
+function cargarHistorialExistente() {
+  const almacenado = sessionStorage.getItem(HISTORIAL_STORAGE_KEY);
+
+  if (almacenado) {
+    try {
+      historialStatus = JSON.parse(almacenado) || {};
+      return;
+    } catch (error) {
+      console.warn('Error parseando historial compartido', error);
+    }
+  }
+
+  const historialLegado = {};
+  websitesData.forEach((web) => {
+    const key = 'historial_' + web.url;
+    const stored = sessionStorage.getItem(key);
+
+    if (stored) {
+      try {
+        historialLegado[web.url] = JSON.parse(stored);
+      } catch (error) {
+        console.warn('Error parseando historial para', web.url, error);
+      }
+    }
+  });
+
+  historialStatus = historialLegado;
+  if (Object.keys(historialStatus).length > 0) {
+    guardarHistorial();
+  }
+}
+
+function guardarHistorial() {
+  sessionStorage.setItem(HISTORIAL_STORAGE_KEY, JSON.stringify(historialStatus));
+
+  Object.keys(historialStatus).forEach((url) => {
+    sessionStorage.setItem('historial_' + url, JSON.stringify(historialStatus[url]));
+  });
+}
+
+function limpiarHistorialGuardado() {
+  sessionStorage.removeItem(HISTORIAL_STORAGE_KEY);
+
+  websitesData.forEach((web) => {
+    sessionStorage.removeItem('historial_' + web.url);
+  });
 }
 
 function crearTarjeta(web, ultima, estado, historial) {
@@ -264,6 +321,7 @@ function calcularTendencia(historial) {
 // MONITOREO (comparte sessionStorage con tabla)
 // =======================================================
 function iniciarMonitoreo() {
+  if (intervaloMonitoreo) clearInterval(intervaloMonitoreo);
   intervaloMonitoreo = setInterval(monitorearTodos, 300000); // 5 minutos
   iniciarCountdown();
 }
@@ -387,18 +445,21 @@ function recortarHistorial() {
   Object.keys(historialStatus).forEach(url => {
     if (historialStatus[url].length > maxHistorialActual) {
       historialStatus[url] = historialStatus[url].slice(-maxHistorialActual);
-      sessionStorage.setItem('historial_' + url, JSON.stringify(historialStatus[url]));
+      guardarHistorial();
     }
   });
 }
 
 function reiniciarMonitoreo() {
   historialStatus = {};
-  Object.keys(sessionStorage).forEach(key => {
-    if (key.startsWith('historial_')) sessionStorage.removeItem(key);
-  });
+  limpiarHistorialGuardado();
+  if (intervaloMonitoreo) clearInterval(intervaloMonitoreo);
+  if (countdownInterval) clearInterval(countdownInterval);
+  intervaloMonitoreo = null;
+  countdownInterval = null;
   renderizarDashboard();
   // FIX: Reiniciar también el monitoreo inmediato
+  iniciarMonitoreo();
   monitorearTodos();
 }
 

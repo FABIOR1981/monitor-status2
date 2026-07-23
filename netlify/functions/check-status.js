@@ -5,7 +5,7 @@ const http = require('http');
 const dns = require('dns').promises;
 
 const httpsAgent = new https.Agent({
-  rejectUnauthorized: false,
+  rejectUnauthorized: true,
   keepAlive: true,
   maxSockets: 10,
   timeout: 30000,
