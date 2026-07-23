@@ -20,6 +20,10 @@
     "url": "https://www.casillamia.uy"
   },
   {
+    "nombre": "Consulta de giros",
+    "url": "https://www.correo.com.uy/consulta-giros"
+  },
+  {
     "nombre": "Correo",
     "url": "https://www.correo.com.uy/home",
     "grupo": "CRITICO"
@@ -40,5 +44,21 @@
   {
     "nombre": "Notas",
     "url": "https://notas.correo.com.uy/notas"
+  },
+  {
+    "nombre": "Geopostal",
+    "url": "https://geo.correo.com.uy/geopostal/"
+  },
+  {
+    "nombre": "Tienda Filatélica",
+    "url": "https://www.stamps.uy.post/"
+  },
+  {
+    "nombre": "Búsqueda de códigos postales",
+    "url": "https://www.correo.com.uy/web/guest/codigospostales"
+  },
+  {
+    "nombre": "Seguimiento de envíos",
+    "url": "https://www.correo.com.uy/seguimientodeenvios"
   }
 ]
