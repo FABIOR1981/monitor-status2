@@ -1,16 +1,5 @@
 [
-  {
-    "nombre": "Google (Referencia)",
-    "url": "https://www.google.com",
-    "orden": 1,
-    "grupo": "CRITICO"
-  },
-  {
-    "nombre": "No Existe (Referencia)",
-    "url": "https://estositiodefinitivamentenoexiste12345.com",
-    "orden": 1,
-    "grupo": "CRITICO"
-  },
+ 
   {
     "nombre": "AhiVa",
     "url": "https://ahiva.correo.com.uy"
