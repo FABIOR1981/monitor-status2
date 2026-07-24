@@ -413,3 +413,34 @@ h1 {
     font-size: 1.3em;
   }
 }
+
+
+/*prueba */
+
+/* Contenedor o clase base donde están los contadores */
+.contador-item, 
+.badge-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* El número del contador */
+.contador-numero {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+/* La etiqueta (🟢 OK) */
+.contador-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
