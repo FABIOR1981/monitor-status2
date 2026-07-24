@@ -91,16 +91,17 @@
 
     const contadores = { ok: 0, lento: 0, critico: 0, caido: 0 };
 
-    const tarjetas = websitesData.map(web => {
+    const tarjetas = websitesData.map((web, index) => {
       const historial = historialStatus[web.url] || [];
       const ultima = historial[historial.length - 1];
       const estado = ultima ? clasificarEstadoDashboard(ultima.time, ultima.status, ultima.source === 'direct') : 'caido';
       contadores[estado]++;
 
-      return crearTarjetaHTML(web, ultima, estado, historial);
+      return crearTarjetaHTML(web, ultima, estado, historial, index);
     }).join('');
 
     grid.innerHTML = tarjetas;
+    grid.dataset.cargado = '1';
 
     // Actualizar contadores superiores
     document.getElementById('contador-ok').textContent = contadores.ok;
@@ -109,7 +110,7 @@
     document.getElementById('contador-caido').textContent = contadores.caido;
   }
 
-  function crearTarjetaHTML(web, ultima, estado, historial) {
+  function crearTarjetaHTML(web, ultima, estado, historial, index = 0) {
     const tiempo = ultima ? ultima.time : '--';
     const esDirecto = ultima && ultima.source === 'direct';
     const tendencia = calcularTendencia(historial);
@@ -134,8 +135,12 @@
     const fuenteIcono = esDirecto ? '🖥️' : '🌐';
     const fuenteTitle = esDirecto ? 'Directo' : 'Proxy';
 
+    // Animación de entrada escalonada: cada tarjeta aparece un poco después
+    // que la anterior (tope de 600ms para que no se demore con muchos sitios)
+    const animationDelay = Math.min(index * 45, 600);
+
     return `
-    <div class="tarjeta-servicio estado-${estado} ${esDirecto ? 'directo' : ''}" data-url="${web.url}">
+    <div class="tarjeta-servicio estado-${estado} ${esDirecto ? 'directo' : ''}" data-url="${web.url}" style="animation-delay: ${animationDelay}ms">
       <div class="tarjeta-header-compacto">
         <span class="tarjeta-nombre-compacto">${web.nombre}</span>
         <span class="tarjeta-fuente-compacto" title="${fuenteTitle}">${fuenteIcono}</span>

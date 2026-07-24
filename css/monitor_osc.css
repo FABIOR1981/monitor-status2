@@ -24,6 +24,7 @@
   --card-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
   --card-border-subtle: rgba(255, 255, 255, 0.08);
   --card-footer-link: #5cb3ff;
+  --skeleton-shimmer: rgba(255, 255, 255, 0.18);
 
   /* Contadores del resumen superior */
   --contador-bg: #16213e;

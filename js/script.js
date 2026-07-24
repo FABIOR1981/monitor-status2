@@ -1583,6 +1583,28 @@ function cambiarVista(vista) {
   renderizarTarjetasSiNecesario();
 }
 
+// Muestra tarjetas "esqueleto" (placeholders con efecto de carga) apenas se
+// entra a la vista de tarjetas, para entretener el tiempo entre que el
+// usuario abre la app y llegan los datos reales. renderizarTarjetas() (en el
+// módulo lazy) las reemplaza por las tarjetas reales y marca data-cargado="1".
+function mostrarEsqueletosTarjetas() {
+  const grid = document.getElementById('grid-tarjetas');
+  if (!grid || grid.dataset.cargado === '1') return;
+
+  const cantidad = websitesData.length > 0 ? websitesData.length : 6;
+  grid.innerHTML = Array.from({ length: cantidad })
+    .map(
+      () => `
+    <div class="tarjeta-skeleton">
+      <div class="skeleton-linea skeleton-titulo"></div>
+      <div class="skeleton-linea skeleton-numero"></div>
+      <div class="skeleton-linea skeleton-corta"></div>
+      <div class="skeleton-linea skeleton-corta"></div>
+    </div>`
+    )
+    .join('');
+}
+
 function aplicarVista(vista) {
   const btnTabla = document.getElementById('btn-vista-tabla');
   const btnTarjetas = document.getElementById('btn-vista-tarjetas');
@@ -1602,6 +1624,7 @@ function aplicarVista(vista) {
     tablaContainer?.classList.add('tarjetas-activas');
     gridTarjetas?.classList.add('visible');
     resumenSuperior?.classList.add('visible');
+    mostrarEsqueletosTarjetas();
   }
 }
 
