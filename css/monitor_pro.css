@@ -105,24 +105,6 @@ h1 {
   box-shadow: 0 2px 8px rgba(67, 181, 129, 0.3);
 }
 
-.error-button {
-  background-color: #f04747; /* Rojo Discord */
-  color: #ffffff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 0.8em;
-  font-weight: 500;
-  transition: all 0.2s;
-  margin-left: 5px;
-}
-.error-button:hover {
-  background-color: #d84040;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(240, 71, 71, 0.3);
-}
-
 /* ======================================================= */
 /* --- Colores de Estado (PRO: Énfasis en el Borde Izquierdo) --- */
 /* ======================================================= */
@@ -186,15 +168,6 @@ h1 {
   100% {
     border-color: #ff0000;
   }
-}
-
-/* --- Estilo para la Latencia (Métricas) --- */
-.latency-metric {
-  font-weight: bold;
-  font-size: 1em;
-  /* Sombra de texto sutil para destacar el número */
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  color: #ffffff; /* Asegura color blanco para el número */
 }
 
 /* --- Responsive (se mantiene) --- */

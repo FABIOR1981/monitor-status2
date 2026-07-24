@@ -123,16 +123,6 @@ function renderizarDashboard() {
   }
 }
 
-function obtenerMaxHistorialParaDuracion(duracion) {
-  if (typeof DURACION_OPCIONES === 'undefined') {
-    const mapa = { 1: 12, 2: 24, 3: 36, 4: 48, 5: 60, 6: 72, 7: 84, 8: 96, 9: 108 };
-    return mapa[duracion] || 12;
-  }
-
-  const duracionKey = duracion + 'h';
-  return DURACION_OPCIONES[duracionKey]?.mediciones || 12;
-}
-
 function guardarDuracionSeleccionada(duracion) {
   localStorage.setItem(DURACION_STORAGE_KEY, String(duracion));
   localStorage.setItem(DURACION_LEGACY_STORAGE_KEY, String(duracion));

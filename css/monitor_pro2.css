@@ -106,24 +106,6 @@ h1 {
   box-shadow: 0 2px 8px rgba(59, 165, 93, 0.3);
 }
 
-.error-button {
-  background-color: #ed4245;
-  color: #ffffff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 0.8em;
-  font-weight: 500;
-  transition: all 0.2s;
-  margin-left: 5px;
-}
-.error-button:hover {
-  background-color: #c03537;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(237, 66, 69, 0.3);
-}
-
 /* ======================================================= */
 /* --- Colores de Estado (PRO2: Énfasis en el Borde Izquierdo con Paleta Clara) --- */
 /* ======================================================= */
@@ -185,14 +167,6 @@ h1 {
   100% {
     border-color: #d32f2f;
   }
-}
-
-/* --- Estilo para la Latencia (Métricas) --- */
-.latency-metric {
-  font-weight: bold;
-  font-size: 1em;
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
-  color: #1a1a1a;
 }
 
 /* --- Responsive --- */

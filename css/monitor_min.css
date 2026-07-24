@@ -142,24 +142,6 @@ h1 {
   box-shadow: 0 2px 8px rgba(85, 85, 85, 0.3);
 }
 
-.error-button {
-  background-color: #d9534f; /* Rojo Bootstrap */
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 0.8em;
-  font-weight: 500;
-  transition: all 0.2s;
-  margin-left: 5px;
-}
-.error-button:hover {
-  background-color: #c9302c;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(217, 83, 79, 0.3);
-}
-
 /* ======================================================= */
 /* --- Colores de Estado (Minimalista con Corrección de Contraste) --- */
 /* ======================================================= */
@@ -177,13 +159,6 @@ h1 {
 }
 
 /* Las diferencias de presentación están centralizadas en styles_base usando variables CSS */
-
-/* --- Estilo para la Latencia (Métricas) --- (se mantiene) */
-.latency-metric {
-  font-weight: bold;
-  font-size: 1em;
-  background-color: #fff;
-}
 
 /* --- Responsive (se mantiene) --- */
 @media (max-width: 768px) {

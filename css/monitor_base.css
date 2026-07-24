@@ -129,15 +129,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Menú horizontal */
-.menu-horizontal {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
 .menu-item {
   display: inline-flex;
   align-items: center;
@@ -209,7 +200,6 @@ h1 {
 
 /* Botones y métricas */
 .psi-button,
-.error-button,
 .btn-primary {
   border: none;
   padding: 5px 8px;
@@ -223,37 +213,6 @@ h1 {
 .psi-button {
   display: inline-block;
   vertical-align: middle;
-}
-
-/* Botón de Errores */
-.error-button {
-  background-color: #c92a2a;
-  color: #ffffff;
-  border: none;
-  padding: 5px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8em;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 5px;
-  transition: all 0.2s;
-}
-
-.error-button:hover {
-  background-color: #a61e1e;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(201, 42, 42, 0.3);
-}
-
-.error-button:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-.latency-metric {
-  font-weight: bold;
-  font-size: 1em;
 }
 
 /* Clases de estado base (colores definidos por el tema) */
@@ -308,19 +267,6 @@ h1 {
   content: ' ❌';
 }
 
-/* Ayudante de accesibilidad: solo para lectores de pantalla (mantiene el texto legible para tecnologías de asistencia) */
-.sr-only {
-  position: absolute !important;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 /* ====================================
    ESTILOS PARA EXPANSIÓN DE ERRORES
    ==================================== */
@@ -336,12 +282,6 @@ h1 {
 .status-down[style*='cursor: pointer']:hover {
   opacity: 0.8;
   text-decoration: underline;
-}
-
-/* Botón PSI */
-.psi-button {
-  display: inline-block;
-  vertical-align: middle;
 }
 
 /* Fila de detalle de errores */
