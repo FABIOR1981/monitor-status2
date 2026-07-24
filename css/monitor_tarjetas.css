@@ -23,7 +23,9 @@
 .control-select {
   padding: 8px 14px;
   border-radius: 20px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--control-select-border, #ccc);
+  background-color: var(--control-select-bg, #ffffff);
+  color: var(--control-select-text, inherit);
   font-size: 0.9em;
   cursor: pointer;
 }
@@ -35,7 +37,7 @@
   cursor: pointer;
   font-size: 0.95em;
   font-weight: 600;
-  background: #28a745;
+  background: var(--btn-reiniciar-bg, #28a745);
   color: white;
   display: inline-flex;
   align-items: center;
@@ -44,7 +46,7 @@
 }
 
 .btn-reiniciar:hover {
-  background: #218838;
+  background: var(--btn-reiniciar-bg-hover, #218838);
   transform: translateY(-1px);
 }
 
@@ -62,9 +64,9 @@
 .vista-toggle-btn {
   padding: 8px 20px;
   border-radius: 20px;
-  border: 2px solid #007bff;
-  background: white;
-  color: #007bff;
+  border: 2px solid var(--vista-toggle-border, #007bff);
+  background: var(--vista-toggle-bg, #ffffff);
+  color: var(--vista-toggle-text, #007bff);
   font-weight: 600;
   font-size: 0.95em;
   cursor: pointer;
@@ -75,18 +77,18 @@
 }
 
 .vista-toggle-btn:hover {
-  background: #e8f4ff;
+  background: var(--vista-toggle-hover-bg, #e8f4ff);
   transform: translateY(-1px);
 }
 
 .vista-toggle-btn.activo {
-  background: #007bff;
+  background: var(--vista-toggle-active-bg, #007bff);
   color: white;
-  border-color: #007bff;
+  border-color: var(--vista-toggle-active-bg, #007bff);
 }
 
 .vista-toggle-btn.activo:hover {
-  background: #0056b3;
+  background: var(--vista-toggle-active-hover-bg, #0056b3);
 }
 
 /* Grid de tarjetas - COMPACTO */
@@ -103,10 +105,11 @@
 }
 
 .tarjeta-servicio {
-  background: white;
+  background: var(--card-bg, #ffffff);
+  color: var(--card-text, #333333);
   border-radius: 10px;
   padding: 12px 14px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--card-shadow, 0 1px 4px rgba(0, 0, 0, 0.08));
   border-left: 4px solid;
   transition: transform 0.15s, box-shadow 0.15s;
   position: relative;
@@ -115,24 +118,40 @@
 
 .tarjeta-servicio:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--card-shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.12));
 }
 
 .tarjeta-servicio.estado-ok {
   border-left-color: #4caf50;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f9f0 100%);
+  background: linear-gradient(
+    135deg,
+    var(--card-gradient-start, #ffffff) 0%,
+    var(--card-gradient-ok-end, #f0f9f0) 100%
+  );
 }
 .tarjeta-servicio.estado-lento {
   border-left-color: #ff9800;
-  background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
+  background: linear-gradient(
+    135deg,
+    var(--card-gradient-start, #ffffff) 0%,
+    var(--card-gradient-lento-end, #fff8f0) 100%
+  );
 }
 .tarjeta-servicio.estado-critico {
   border-left-color: #f44336;
-  background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+  background: linear-gradient(
+    135deg,
+    var(--card-gradient-start, #ffffff) 0%,
+    var(--card-gradient-critico-end, #fff5f5) 100%
+  );
 }
 .tarjeta-servicio.estado-caido {
   border-left-color: #9e9e9e;
-  background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+  background: linear-gradient(
+    135deg,
+    var(--card-gradient-start, #ffffff) 0%,
+    var(--card-gradient-caido-end, #f9f9f9) 100%
+  );
 }
 
 .tarjeta-servicio.directo {
@@ -145,14 +164,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--card-border-subtle, rgba(0, 0, 0, 0.06));
   padding-bottom: 5px;
 }
 
 .tarjeta-nombre-compacto {
   font-weight: 700;
   font-size: 0.95em;
-  color: #333;
+  color: var(--card-text, #333);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -179,13 +198,13 @@
 .latencia-numero {
   font-size: 1.8em;
   font-weight: 700;
-  color: #333;
+  color: var(--card-text, #333);
   line-height: 1.1;
 }
 
 .latencia-unidad {
   font-size: 0.65em;
-  color: #888;
+  color: var(--card-text-secondary, #888);
   font-weight: 400;
 }
 
@@ -206,7 +225,7 @@
 }
 
 .dato-promedio {
-  color: #666;
+  color: var(--card-text-secondary, #666);
   font-weight: 500;
 }
 
@@ -241,13 +260,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--card-border-subtle, rgba(0, 0, 0, 0.06));
   padding-top: 5px;
   font-size: 0.75em;
 }
 
 .tarjeta-footer-compacto a {
-  color: #1976d2;
+  color: var(--card-footer-link, #1976d2);
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
@@ -295,11 +314,11 @@
 }
 
 .contador {
-  background: white;
+  background: var(--contador-bg, #ffffff);
   border-radius: 8px;
   padding: 10px 8px;
   text-align: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--contador-shadow, 0 1px 4px rgba(0, 0, 0, 0.08));
   border-top: 3px solid;
   transition: transform 0.15s;
 }
@@ -343,7 +362,7 @@
 
 .contador-label {
   font-size: 0.75em;
-  color: #666;
+  color: var(--contador-label, #666);
   font-weight: 500;
 }
 

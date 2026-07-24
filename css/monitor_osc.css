@@ -1,14 +1,47 @@
 :root {
-  --bg: #121212;
-  --text: #e8e8e8;
+  /* Paleta alineada al modo oscuro de dashboard.html (azul marino) */
+  --bg: #1a1a2e;
+  --text: #e0e0e0;
   --accent: #5cb3ff;
-  --container-bg: #1e1e1e;
+  --container-bg: #16213e;
   --container-radius: 8px;
-  --container-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --container-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   --header-color: #5cb3ff;
   --table-header-bg: #1f3a5f;
   --table-header-color: #ffffff;
   --link-color: #5cb3ff;
+
+  /* Tarjetas de servicio (vista "Tarjetas") — igual que dashboard.html */
+  --card-bg: #16213e;
+  --card-gradient-start: #16213e;
+  --card-gradient-ok-end: #1b5e20;
+  --card-gradient-lento-end: #e65100;
+  --card-gradient-critico-end: #b71c1c;
+  --card-gradient-caido-end: #424242;
+  --card-text: #e0e0e0;
+  --card-text-secondary: #aaaaaa;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --card-border-subtle: rgba(255, 255, 255, 0.08);
+  --card-footer-link: #5cb3ff;
+
+  /* Contadores del resumen superior */
+  --contador-bg: #16213e;
+  --contador-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --contador-label: #aaaaaa;
+
+  /* Barra de controles y toggles de vista */
+  --control-select-bg: #3a3a3a;
+  --control-select-border: #4a9eff;
+  --control-select-text: #e0e0e0;
+  --btn-reiniciar-bg: #1976d2;
+  --btn-reiniciar-bg-hover: #1565c0;
+  --vista-toggle-bg: #16213e;
+  --vista-toggle-border: #5cb3ff;
+  --vista-toggle-text: #5cb3ff;
+  --vista-toggle-hover-bg: #1f3a5f;
+  --vista-toggle-active-bg: #1976d2;
+  --vista-toggle-active-hover-bg: #1565c0;
 }
 
 /* Sobrescrituras específicas del tema oscuro */
@@ -36,7 +69,7 @@ h1 {
   overflow: hidden;
   border-radius: 8px;
   margin-bottom: 20px;
-  background-color: #2d2d2d;
+  background-color: #16213e;
 }
 #monitor-table th,
 #monitor-table td {
@@ -93,7 +126,7 @@ h1 {
   cursor: pointer;
 }
 #monitor-table tbody tr:hover {
-  background-color: #2a2a2a;
+  background-color: #1c2b4d;
   transform: scale(1.002);
   box-shadow: 0 4px 12px rgba(92, 179, 255, 0.2);
 }
@@ -136,14 +169,14 @@ button:active {
 
 /* --- Sección de Duración --- */
 .duration-section {
-  background-color: #2d2d2d;
-  border: 1px solid #404040;
+  background-color: #16213e;
+  border: 1px solid #2a3b5e;
 }
 
 /* --- Barra de Información --- */
 .info-bar {
-  background-color: #2d2d2d;
-  border: 1px solid #404040;
+  background-color: #16213e;
+  border: 1px solid #2a3b5e;
 }
 
 /* --- Spinner de Carga --- */

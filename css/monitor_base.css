@@ -28,6 +28,38 @@
   --status-extreme-risk-color: inherit;
   --status-down-bg: transparent;
   --status-down-color: inherit;
+
+  /* Tarjetas de servicio (vista "Tarjetas") */
+  --card-bg: #ffffff;
+  --card-gradient-start: #ffffff;
+  --card-gradient-ok-end: #f0f9f0;
+  --card-gradient-lento-end: #fff8f0;
+  --card-gradient-critico-end: #fff5f5;
+  --card-gradient-caido-end: #f9f9f9;
+  --card-text: #333333;
+  --card-text-secondary: #888888;
+  --card-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --card-border-subtle: rgba(0, 0, 0, 0.06);
+  --card-footer-link: #1976d2;
+
+  /* Contadores del resumen superior */
+  --contador-bg: #ffffff;
+  --contador-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --contador-label: #666666;
+
+  /* Barra de controles y toggles de vista */
+  --control-select-bg: #ffffff;
+  --control-select-border: #cccccc;
+  --control-select-text: inherit;
+  --btn-reiniciar-bg: #28a745;
+  --btn-reiniciar-bg-hover: #218838;
+  --vista-toggle-bg: #ffffff;
+  --vista-toggle-border: #007bff;
+  --vista-toggle-text: #007bff;
+  --vista-toggle-hover-bg: #e8f4ff;
+  --vista-toggle-active-bg: #007bff;
+  --vista-toggle-active-hover-bg: #0056b3;
 }
 
 /* Aplicar colores de estado usando variables */
