@@ -1470,21 +1470,12 @@ function toggleDarkMode() {
 }
 
 /**
- * Muestra u oculta el enlace ABM según el tema activo
+ * Muestra el enlace ABM (visible en todos los temas)
  */
 function actualizarVisibilidadABM() {
   const enlaceABM = document.getElementById('enlace-abm');
   if (!enlaceABM) return;
-
-  const params = new URLSearchParams(window.location.search);
-  const temaActual = params.get('tema') || TEMA_DEFAULT;
-
-  // Ocultar solo en temas básicos: def y osc
-  if (temaActual === TEMA_DEFAULT || temaActual === TEMA_OSC) {
-    enlaceABM.style.display = 'none';
-  } else {
-    enlaceABM.style.display = 'inline-flex';
-  }
+  enlaceABM.style.display = 'inline-flex';
 }
 
 /**
