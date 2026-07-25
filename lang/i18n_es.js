@@ -6,8 +6,7 @@ const TEXTOS_ES = {
     PAGE_TITLE: 'Monitor de Estado de Servicios',
     LAST_UPDATE: 'Última actualización:',
     LOADING: 'Cargando...',
-    INFO_BAR:
-      'Los datos se actualizan automáticamente cada 5 minutos usando un Proxy Serverless.',
+    INFO_BAR: 'se actualiza cada 5 min',
     ADVERTENCIA_FALLO_GLOBAL_HTML:
       'Datos de monitoreo no disponibles/no confiables. Se detectó una latencia crítica generalizada, posiblemente debido a una sobrecarga del sistema de monitoreo. Por favor, espere el próximo ciclo o actualice la página.',
     MOTIVO_FALLO_PRO: 'Motivo Pro:',

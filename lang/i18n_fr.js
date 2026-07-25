@@ -6,8 +6,7 @@ const TEXTOS_FR = {
     PAGE_TITLE: "Moniteur d'État des Services",
     LAST_UPDATE: 'Dernière mise à jour :',
     LOADING: 'Chargement...',
-    INFO_BAR:
-      'Les données sont mises à jour automatiquement toutes les 5 minutes via un Proxy Serverless.',
+    INFO_BAR: 'mise à jour toutes les 5 min',
     ADVERTENCIA_FALLO_GLOBAL_HTML:
       'Données de surveillance indisponibles/non fiables. Une latence critique généralisée a été détectée, probablement due à une surcharge du système de surveillance. Veuillez attendre le prochain cycle ou actualiser la page.',
     MOTIVO_FALLO_PRO: 'Motif Pro :',

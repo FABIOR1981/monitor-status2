@@ -6,8 +6,7 @@ const TEXTOS_EN = {
     PAGE_TITLE: 'Service Status Monitor',
     LAST_UPDATE: 'Last Update:',
     LOADING: 'Loading...',
-    INFO_BAR:
-      'Data is automatically updated every 5 minutes using a Serverless Proxy.',
+    INFO_BAR: 'updates every 5 min',
     ADVERTENCIA_FALLO_GLOBAL_HTML:
       'Monitoring data unavailable/unreliable. Widespread critical latency detected, possibly due to a monitoring system overload. Please wait for the next cycle or refresh the page.',
     MOTIVO_FALLO_PRO: 'Pro Reason:',
