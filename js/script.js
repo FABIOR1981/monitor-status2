@@ -1323,9 +1323,6 @@ function obtenerTemaDeURL() {
   const params = new URLSearchParams(window.location.search);
   const tema = params.get('tema');
   if (tema === TEMA_DEFAULT) return TEMA_DEFAULT;
-  if (tema === TEMA_PRO) return TEMA_PRO;
-  if (tema === TEMA_PRO2) return TEMA_PRO2;
-  if (tema === TEMA_MIN) return TEMA_MIN;
   if (tema === TEMA_OSC) return TEMA_OSC;
   return null;
 }
@@ -1411,8 +1408,7 @@ function actualizarBotonToggle(temaActual) {
   }
 
   // Si el tema destino es oscuro, mostrar luna (acción: pasar a oscuro)
-  const destinosOscuros = [TEMA_OSC, TEMA_PRO];
-  if (destinosOscuros.includes(temaDestino)) {
+  if (temaDestino === TEMA_OSC) {
     themeIcon.textContent = '🌙';
     themeBtn.setAttribute(
       'title',

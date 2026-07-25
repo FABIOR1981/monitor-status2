@@ -271,8 +271,7 @@ function actualizarBotonToggle(temaActual) {
     return;
   }
 
-  const destinosOscuros = [TEMA_OSC, TEMA_PRO];
-  if (destinosOscuros.includes(temaDestino)) {
+  if (temaDestino === TEMA_OSC) {
     themeIcon.textContent = '🌙';
     themeBtn.setAttribute(
       'title',

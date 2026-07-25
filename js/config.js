@@ -44,16 +44,11 @@ const UMBRALES_LATENCIA = UMBRALES_LATENCIA_DIRECTO;
 // -----------------------------
 // Nombres de temas disponibles en la UI
 const TEMA_DEFAULT = 'def';
-const TEMA_PRO = 'pro';
-const TEMA_PRO2 = 'pro2'; // Versión clara de PRO
-const TEMA_MIN = 'min';
 const TEMA_OSC = 'osc';
 
 // Archivo CSS asociado a cada tema
-// NOTA: pro/pro2/min quedaron DESACTIVADOS (no se usan en producción).
-// Se dejan las constantes TEMA_PRO/TEMA_PRO2/TEMA_MIN definidas más abajo
-// para que el resto del código no rompa, pero no aparecen acá, así que
-// cualquier ?tema=pro/pro2/min cae automáticamente al tema por defecto.
+// NOTA: los temas pro/pro2/min se eliminaron por completo (no se usaban en
+// producción). Solo quedan def (claro) y osc (oscuro).
 const TEMA_FILES = {
   [TEMA_DEFAULT]: 'css/monitor_def.css',
   [TEMA_OSC]: 'css/monitor_osc.css',
