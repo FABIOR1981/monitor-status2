@@ -168,12 +168,6 @@ button:active {
   background-color: #2a2a2a;
 }
 
-/* --- Barra de Información --- */
-.info-bar {
-  background-color: #16213e;
-  border: 1px solid #2a3b5e;
-}
-
 /* --- Spinner de Carga --- */
 .spinner {
   border: 4px solid #3a3a3a;

@@ -119,15 +119,23 @@ h1 {
   text-align: center;
   margin-bottom: 5px;
 }
-.info-bar {
-  text-align: center;
+.estado-linea {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-bottom: 20px;
   font-size: 0.9em;
 }
+.info-bar {
+  /* El color lo define cada tema (monitor_def.css / monitor_osc.css) */
+}
+.separador-punto {
+  opacity: 0.5;
+}
 .update-info {
-  text-align: center;
   font-weight: bold;
-  margin-bottom: 20px;
 }
 
 .menu-item {
