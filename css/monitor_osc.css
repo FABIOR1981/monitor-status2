@@ -1,5 +1,5 @@
 :root {
-  /* Paleta alineada al modo oscuro de dashboard.html (azul marino) */
+  /*(azul marino) */
   --bg: #1a1a2e;
   --text: #e0e0e0;
   --accent: #5cb3ff;
@@ -11,7 +11,7 @@
   --table-header-color: #ffffff;
   --link-color: #5cb3ff;
 
-  /* Tarjetas de servicio (vista "Tarjetas") — igual que dashboard.html */
+  /* Tarjetas de servicio (vista "Tarjetas") */
   --card-bg: #16213e;
   --card-gradient-start: #16213e;
   --card-gradient-ok-end: #1b5e20;
