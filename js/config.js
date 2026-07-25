@@ -50,11 +50,12 @@ const TEMA_MIN = 'min';
 const TEMA_OSC = 'osc';
 
 // Archivo CSS asociado a cada tema
+// NOTA: pro/pro2/min quedaron DESACTIVADOS (no se usan en producción).
+// Se dejan las constantes TEMA_PRO/TEMA_PRO2/TEMA_MIN definidas más abajo
+// para que el resto del código no rompa, pero no aparecen acá, así que
+// cualquier ?tema=pro/pro2/min cae automáticamente al tema por defecto.
 const TEMA_FILES = {
   [TEMA_DEFAULT]: 'css/monitor_def.css',
-  [TEMA_PRO]: 'css/monitor_pro.css',
-  [TEMA_PRO2]: 'css/monitor_pro2.css',
-  [TEMA_MIN]: 'css/monitor_min.css',
   [TEMA_OSC]: 'css/monitor_osc.css',
 };
 
@@ -63,8 +64,6 @@ const TEMA_FILES = {
 const TEMA_TOGGLE_PAIRS = {
   [TEMA_DEFAULT]: TEMA_OSC, // def (claro) → osc (oscuro)
   [TEMA_OSC]: TEMA_DEFAULT, // osc (oscuro) → def (claro)
-  [TEMA_PRO2]: TEMA_PRO, // pro2 (claro) → pro (oscuro)
-  [TEMA_PRO]: TEMA_PRO2, // pro (oscuro) → pro2 (claro)
 };
 
 // Temas que no muestran funciones avanzadas (ej. detalles de error)
@@ -74,9 +73,6 @@ const DEFAULT_LEYENDA_TEMA = TEMA_DEFAULT;
 const LEYENDA_TEMA_FILES = {
   default: 'css/leyenda_claro.css',
   def: 'css/leyenda_claro.css',
-  pro2: 'css/leyenda_claro.css',
-  min: 'css/leyenda_claro.css',
-  pro: 'css/leyenda_oscuro.css',
   osc: 'css/leyenda_oscuro.css',
 };
 
