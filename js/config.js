@@ -166,3 +166,23 @@ const ALERTAS_COPY_LABEL_RESET_MS = 1500;
 // 8) Umbrales de latencia (definición colocada al final por visibilidad)
 // -----------------------------
 // (Se mantiene la definición arriba; esta sección es referencial)
+
+// -----------------------------
+// 9) Acceso al panel de administración (abm-webs.html)
+// -----------------------------
+// Hash SHA-256 de la contraseña de acceso. Se valida tanto en abm-webs.html
+// (cliente) como en netlify/functions/update-webs.js (servidor) contra ESTA
+// misma constante, así que para cambiar la contraseña alcanza con
+// actualizarla acá y calcular el nuevo hash — no hay que tocar los otros
+// dos archivos.
+const HASH_ACCESO_SHA256 =
+  'f25b5391c1c2d9a1480a8e8c829fa6cd549b3ecd8c51a1f36ce5ef8ba624e65a';
+
+// Este archivo se carga de dos formas distintas:
+// - Como <script> normal en el navegador (index.html, leyenda.html, abm-webs.html)
+// - Con require() desde una función serverless de Node (update-webs.js)
+// El bloque de abajo solo se ejecuta en el segundo caso (en el navegador,
+// "module" no existe, así que este "if" nunca corre ahí).
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { HASH_ACCESO_SHA256 };
+}

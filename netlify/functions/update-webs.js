@@ -1,4 +1,13 @@
 const fetch = require('node-fetch');
+const crypto = require('crypto');
+// Fuente única del hash de acceso: la misma constante la valida también
+// abm-webs.html del lado del cliente. Para cambiar la contraseña alcanza
+// con actualizar js/config.js.
+const { HASH_ACCESO_SHA256 } = require('../../js/config.js');
+
+function calcularHashSHA256(texto) {
+  return crypto.createHash('sha256').update(texto || '').digest('hex');
+}
 
 exports.handler = async (event, context) => {
   // Solo permitir POST
@@ -19,10 +28,25 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-password',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
       },
       body: '',
+    };
+  }
+
+  // Validar contraseña ANTES de mirar el body: sin esto, cualquiera con la
+  // URL de esta función podría escribir en el repo sin pasar por el login.
+  const passwordRecibida =
+    event.headers['x-admin-password'] || event.headers['X-Admin-Password'];
+  if (calcularHashSHA256(passwordRecibida) !== HASH_ACCESO_SHA256) {
+    return {
+      statusCode: 401,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ error: 'Contraseña incorrecta o faltante' }),
     };
   }
 

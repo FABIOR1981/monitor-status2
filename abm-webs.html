@@ -230,10 +230,89 @@
           font-size: 12px;
         }
       }
+
+      /* --- Pantalla de acceso --- */
+      .login-gate {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1a1a2e;
+        padding: 20px;
+      }
+      .login-box {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 40px 32px;
+        max-width: 360px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+      .login-box h1 {
+        margin: 0 0 8px;
+        font-size: 1.4em;
+      }
+      .login-box p {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 0.9em;
+      }
+      .login-box form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .login-box input[type='password'] {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1em;
+      }
+      .login-box button {
+        padding: 10px 12px;
+        border: none;
+        border-radius: 8px;
+        background: #1976d2;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .login-box button:hover {
+        background: #1565c0;
+      }
+      .login-error {
+        color: #dc3545;
+        margin-top: 12px;
+        margin-bottom: 0;
+        font-size: 0.9em;
+      }
     </style>
   </head>
   <body>
-    <div class="container">
+    <!-- Pantalla de acceso: se muestra hasta ingresar la contraseña correcta -->
+    <div id="login-gate" class="login-gate">
+      <div class="login-box">
+        <h1>🔒 Acceso Restringido</h1>
+        <p>Ingresá la contraseña para administrar los sitios monitoreados.</p>
+        <form id="login-form" autocomplete="off">
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Contraseña"
+            autocomplete="current-password"
+            required
+          />
+          <button type="submit">Ingresar</button>
+        </form>
+        <p id="login-error" class="login-error hidden">
+          ❌ Contraseña incorrecta.
+        </p>
+      </div>
+    </div>
+
+    <div class="container hidden" id="admin-container">
       <header>
         <h1>⚙️ Panel de Administración</h1>
         <p>Gestión de Sitios Web del Monitor de Estado</p>
@@ -242,6 +321,7 @@
       <div class="nav-links">
         <a href="index.html">← Volver al Monitor</a>
         <a href="leyenda.html">Ver Leyenda</a>
+        <a href="#" id="btn-cerrar-sesion">🔒 Cerrar sesión</a>
       </div>
 
       <div class="content">
@@ -368,7 +448,72 @@
       </div>
     </div>
 
+    <script src="js/config.js"></script>
     <script>
+      // =======================================================
+      // ACCESO RESTRINGIDO (contraseña embebida como hash SHA-256)
+      // =======================================================
+      // HASH_ACCESO_SHA256 viene de js/config.js (fuente única): la misma
+      // constante la valida también netlify/functions/update-webs.js del
+      // lado del servidor. Nunca se guarda ni se transmite la contraseña en
+      // texto plano salvo, dentro de esta misma sesión de navegador, al
+      // llamar a la función serverless para guardar cambios.
+
+      async function calcularHashSHA256(texto) {
+        const datos = new TextEncoder().encode(texto);
+        const buffer = await crypto.subtle.digest('SHA-256', datos);
+        return Array.from(new Uint8Array(buffer))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+      }
+
+      async function verificarAcceso(password) {
+        const hashIngresado = await calcularHashSHA256(password);
+        return hashIngresado === HASH_ACCESO_SHA256;
+      }
+
+      function mostrarPanelAdmin() {
+        document.getElementById('login-gate').classList.add('hidden');
+        document.getElementById('admin-container').classList.remove('hidden');
+      }
+
+      // Si ya se autenticó antes en esta pestaña (sessionStorage: se borra al
+      // cerrar la pestaña/navegador), no volver a pedir la contraseña.
+      if (sessionStorage.getItem('abmAuthToken')) {
+        mostrarPanelAdmin();
+      }
+
+      document
+        .getElementById('login-form')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const input = document.getElementById('login-password');
+          const errorMsg = document.getElementById('login-error');
+          const password = input.value;
+
+          if (await verificarAcceso(password)) {
+            // Se guarda en sessionStorage (no localStorage) para que se
+            // necesite el envío del header x-admin-password al guardar
+            // cambios; el servidor vuelve a validar su propio hash.
+            sessionStorage.setItem('abmAuthToken', password);
+            errorMsg.classList.add('hidden');
+            input.value = '';
+            mostrarPanelAdmin();
+          } else {
+            errorMsg.classList.remove('hidden');
+            input.value = '';
+            input.focus();
+          }
+        });
+
+      document
+        .getElementById('btn-cerrar-sesion')
+        .addEventListener('click', (e) => {
+          e.preventDefault();
+          sessionStorage.removeItem('abmAuthToken');
+          window.location.reload();
+        });
+
       let sitios = [];
 
       // Cargar datos al iniciar
@@ -551,6 +696,7 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'x-admin-password': sessionStorage.getItem('abmAuthToken') || '',
             },
             body: JSON.stringify({
               data: sitios,
