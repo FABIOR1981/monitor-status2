@@ -313,6 +313,30 @@
         margin-bottom: 0;
         font-size: 0.9em;
       }
+
+      /* --- Modal de alta/edición de sitio --- */
+      .sitio-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 900;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.55);
+        padding: 40px 20px;
+        overflow-y: auto;
+      }
+      .sitio-modal-box {
+        background: white;
+        border-radius: 12px;
+        padding: 28px 32px;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      }
+      .sitio-modal-box h2 {
+        margin-top: 0;
+      }
     </style>
   </head>
   <body>
@@ -364,63 +388,77 @@
 
         <!-- Formulario ABM -->
         <div class="form-section">
-          <h2 id="form-title">➕ Agregar Nuevo Sitio</h2>
-          <form id="abm-form">
-            <input type="hidden" id="edit-index" value="" />
+          <button type="button" class="btn btn-primary" id="btn-abrir-modal-sitio">
+            ➕ Agregar Nuevo Sitio
+          </button>
+        </div>
 
-            <div class="form-group">
-              <label for="nombre">Nombre del Sitio *</label>
-              <input
-                type="text"
-                id="nombre"
-                required
-                placeholder="Ej: Google"
-              />
-            </div>
+        <!-- Modal de alta/edición de sitio -->
+        <div id="sitio-modal-backdrop" class="sitio-modal-backdrop hidden">
+          <div class="sitio-modal-box">
+            <h2 id="form-title">➕ Agregar Nuevo Sitio</h2>
+            <form id="abm-form">
+              <input type="hidden" id="edit-index" value="" />
 
-            <div class="form-group">
-              <label for="url">URL *</label>
-              <input
-                type="url"
-                id="url"
-                required
-                placeholder="Ej: https://www.google.com"
-              />
-              <small>Debe incluir https:// o http://</small>
-            </div>
+              <div class="form-group">
+                <label for="nombre">Nombre del Sitio *</label>
+                <input
+                  type="text"
+                  id="nombre"
+                  required
+                  placeholder="Ej: Google"
+                />
+              </div>
 
-            <div class="form-group">
-              <label for="orden">Orden (opcional)</label>
-              <input
-                type="number"
-                id="orden"
-                min="1"
-                placeholder="Deja vacío para agregar al final"
-              />
-              <small>Define la posición en la lista</small>
-            </div>
+              <div class="form-group">
+                <label for="url">URL *</label>
+                <input
+                  type="url"
+                  id="url"
+                  required
+                  placeholder="Ej: https://www.google.com"
+                />
+                <small>Debe incluir https:// o http://</small>
+                <p id="url-duplicada-error" class="login-error hidden">
+                  ⚠️ Esa URL ya está en la lista.
+                </p>
+              </div>
 
-            <div class="form-group">
-              <label for="grupo">Grupo (opcional)</label>
-              <select id="grupo">
-                <option value="">Sin grupo</option>
-                <option value="CRITICO">CRÍTICO</option>
-              </select>
-              <small>Los sitios críticos se destacan en el monitor</small>
-            </div>
+              <div class="form-group">
+                <label for="orden">Orden (opcional)</label>
+                <input
+                  type="number"
+                  id="orden"
+                  min="1"
+                  placeholder="Deja vacío para agregar al final"
+                />
+                <small>Define la posición en la lista</small>
+              </div>
 
-            <button type="submit" class="btn btn-primary" id="btn-submit">
-              Agregar Sitio
-            </button>
-            <button
-              type="button"
-              class="btn btn-edit hidden"
-              id="btn-cancel"
-              onclick="cancelarEdicion()"
-            >
-              Cancelar
-            </button>
-          </form>
+              <div class="form-group">
+                <label for="grupo">Grupo (opcional)</label>
+                <select id="grupo">
+                  <option value="">Sin grupo</option>
+                  <option value="CRITICO">CRÍTICO</option>
+                </select>
+                <small>Los sitios críticos se destacan en el monitor</small>
+              </div>
+
+              <div style="display: flex; gap: 10px">
+                <button type="submit" class="btn btn-primary" id="btn-submit">
+                  Agregar Sitio
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-edit"
+                  id="btn-cancel"
+                  onclick="cerrarModalSitio()"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- Tabla de sitios -->
@@ -661,6 +699,12 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
+      // Normaliza una URL para poder comparar (ignora mayúsculas, espacios
+      // y una barra final) sin importar cómo la haya tipeado el usuario.
+      function normalizarUrl(url) {
+        return url.trim().toLowerCase().replace(/\/+$/, '');
+      }
+
       // Agregar o actualizar sitio
       document
         .getElementById('abm-form')
@@ -668,10 +712,26 @@
           e.preventDefault();
 
           const editIndex = document.getElementById('edit-index').value;
+          const indiceEditando = editIndex !== '' ? parseInt(editIndex) : -1;
+
           const sitio = {
             nombre: document.getElementById('nombre').value.trim(),
             url: document.getElementById('url').value.trim(),
           };
+
+          // Validar que la URL no esté ya en la lista (ignorando el propio
+          // sitio si estamos editándolo, para no chocar contra sí mismo).
+          const urlNormalizada = normalizarUrl(sitio.url);
+          const yaExiste = sitios.some(
+            (s, i) => i !== indiceEditando && normalizarUrl(s.url) === urlNormalizada
+          );
+          const errorDuplicada = document.getElementById('url-duplicada-error');
+
+          if (yaExiste) {
+            errorDuplicada.classList.remove('hidden');
+            return; // No cerrar el modal ni guardar nada
+          }
+          errorDuplicada.classList.add('hidden');
 
           const orden = document.getElementById('orden').value;
           if (orden) {
@@ -683,9 +743,9 @@
             sitio.grupo = grupo;
           }
 
-          if (editIndex !== '') {
+          if (indiceEditando !== -1) {
             // Editar
-            sitios[parseInt(editIndex)] = sitio;
+            sitios[indiceEditando] = sitio;
             mostrarMensaje('✅ Sitio actualizado correctamente', 'success');
           } else {
             // Agregar
@@ -695,8 +755,38 @@
 
           guardarEnLocalStorage();
           renderizarTabla();
-          this.reset();
-          cancelarEdicion();
+          cerrarModalSitio();
+        });
+
+      // Abrir el modal para agregar un sitio nuevo (formulario en blanco)
+      function abrirModalSitio() {
+        document.getElementById('edit-index').value = '';
+        document.getElementById('abm-form').reset();
+        document.getElementById('url-duplicada-error').classList.add('hidden');
+        document.getElementById('form-title').textContent =
+          '➕ Agregar Nuevo Sitio';
+        document.getElementById('btn-submit').textContent = 'Agregar Sitio';
+        document.getElementById('sitio-modal-backdrop').classList.remove('hidden');
+        document.getElementById('nombre').focus();
+      }
+
+      // Cerrar el modal sin guardar
+      function cerrarModalSitio() {
+        document.getElementById('sitio-modal-backdrop').classList.add('hidden');
+        document.getElementById('abm-form').reset();
+        document.getElementById('edit-index').value = '';
+        document.getElementById('url-duplicada-error').classList.add('hidden');
+      }
+
+      document
+        .getElementById('btn-abrir-modal-sitio')
+        .addEventListener('click', abrirModalSitio);
+
+      // Cerrar el modal si se hace click fuera de la caja (en el fondo)
+      document
+        .getElementById('sitio-modal-backdrop')
+        .addEventListener('click', function (e) {
+          if (e.target === this) cerrarModalSitio();
         });
 
       // Editar sitio
@@ -708,23 +798,11 @@
         document.getElementById('url').value = sitio.url;
         document.getElementById('orden').value = sitio.orden || '';
         document.getElementById('grupo').value = sitio.grupo || '';
+        document.getElementById('url-duplicada-error').classList.add('hidden');
 
         document.getElementById('form-title').textContent = '✏️ Editar Sitio';
         document.getElementById('btn-submit').textContent = 'Actualizar Sitio';
-        document.getElementById('btn-cancel').classList.remove('hidden');
-
-        // Scroll al formulario
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-
-      // Cancelar edición
-      function cancelarEdicion() {
-        document.getElementById('edit-index').value = '';
-        document.getElementById('form-title').textContent =
-          '➕ Agregar Nuevo Sitio';
-        document.getElementById('btn-submit').textContent = 'Agregar Sitio';
-        document.getElementById('btn-cancel').classList.add('hidden');
-        document.getElementById('abm-form').reset();
+        document.getElementById('sitio-modal-backdrop').classList.remove('hidden');
       }
 
       // Eliminar sitio
