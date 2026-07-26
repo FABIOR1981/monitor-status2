@@ -232,7 +232,13 @@
       }
 
       /* --- Pantalla de acceso --- */
+      body.modal-abierto {
+        overflow: hidden;
+      }
       .login-gate {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
         min-height: 100vh;
         display: flex;
         align-items: center;
@@ -341,7 +347,7 @@
       </div>
     </div>
 
-    <div class="container hidden" id="admin-container">
+    <div class="container" id="admin-container">
       <header>
         <h1>⚙️ Panel de Administración</h1>
         <p>Gestión de Sitios Web del Monitor de Estado</p>
@@ -501,15 +507,21 @@
         return hashIngresado === HASH_ACCESO_SHA256;
       }
 
-      function mostrarPanelAdmin() {
+      function ocultarModalLogin() {
         document.getElementById('login-gate').classList.add('hidden');
-        document.getElementById('admin-container').classList.remove('hidden');
+      }
+
+      function mostrarModalLogin() {
+        document.getElementById('login-gate').classList.remove('hidden');
+        document.body.classList.add('modal-abierto');
       }
 
       // Si ya se autenticó antes en esta pestaña (sessionStorage: se borra al
       // cerrar la pestaña/navegador), no volver a pedir la contraseña.
       if (sessionStorage.getItem('abmAuthToken')) {
-        mostrarPanelAdmin();
+        ocultarModalLogin();
+      } else {
+        document.body.classList.add('modal-abierto');
       }
 
       document
@@ -538,7 +550,8 @@
             sessionStorage.setItem('abmAuthToken', password);
             errorMsg.classList.add('hidden');
             input.value = '';
-            mostrarPanelAdmin();
+            document.body.classList.remove('modal-abierto');
+            ocultarModalLogin();
           } else {
             errorMsg.classList.remove('hidden');
             input.value = '';
@@ -551,7 +564,10 @@
         .addEventListener('click', (e) => {
           e.preventDefault();
           sessionStorage.removeItem('abmAuthToken');
-          window.location.reload();
+          document.getElementById('login-password').value = '';
+          document.getElementById('login-error').classList.add('hidden');
+          mostrarModalLogin();
+          document.getElementById('login-password').focus();
         });
 
       let sitios = [];
