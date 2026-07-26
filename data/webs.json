@@ -1,5 +1,4 @@
 [
- 
   {
     "nombre": "AhiVa",
     "url": "https://ahiva.correo.com.uy"
@@ -49,5 +48,9 @@
   {
     "nombre": "Seguimiento de envíos",
     "url": "https://www.correo.com.uy/seguimientodeenvios"
+  },
+  {
+    "nombre": "Nuevo",
+    "url": "http://www.nuevocaidano.com.uy"
   }
 ]
