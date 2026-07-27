@@ -1,0 +1,22 @@
+/* abm_claro.css — Tema claro (por defecto) para abm-webs.html */
+:root {
+  --abm-bg: #f4f7f9;
+  --abm-text: #333333;
+  --abm-container-bg: #ffffff;
+  --abm-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --abm-header-bg: #007bff;
+  --abm-header-text: #ffffff;
+  --abm-nav-bg: #f8f9fa;
+  --abm-link-color: #007bff;
+  --abm-form-section-bg: #f8f9fa;
+  --abm-label-color: #555555;
+  --abm-muted-text: #777777;
+  --abm-input-bg: #ffffff;
+  --abm-input-border: #dddddd;
+  --abm-input-focus-border: #007bff;
+  --abm-input-focus-shadow: rgba(0, 123, 255, 0.1);
+  --abm-table-header-bg: #004085;
+  --abm-table-header-text: #ffffff;
+  --abm-table-row-border: #eeeeee;
+  --abm-table-row-hover-bg: #f8f9fa;
+}

@@ -71,6 +71,12 @@ const LEYENDA_TEMA_FILES = {
   osc: 'css/leyenda_oscuro.css',
 };
 
+const ABM_TEMA_FILES = {
+  default: 'css/abm_claro.css',
+  def: 'css/abm_claro.css',
+  osc: 'css/abm_oscuro.css',
+};
+
 // -----------------------------
 // 2) Umbrales y estados
 // -----------------------------

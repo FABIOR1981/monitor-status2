@@ -1,0 +1,24 @@
+/* abm_oscuro.css — Tema oscuro para abm-webs.html
+   Misma paleta azul marino que monitor_osc.css, para que se sienta
+   consistente con el resto de la app en modo oscuro. */
+:root {
+  --abm-bg: #1a1a2e;
+  --abm-text: #e0e0e0;
+  --abm-container-bg: #16213e;
+  --abm-container-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --abm-header-bg: #12182e;
+  --abm-header-text: #ffffff;
+  --abm-nav-bg: #1f2b4d;
+  --abm-link-color: #5cb3ff;
+  --abm-form-section-bg: #1f2b4d;
+  --abm-label-color: #c0c0c0;
+  --abm-muted-text: #999999;
+  --abm-input-bg: #22304f;
+  --abm-input-border: #3a4a6e;
+  --abm-input-focus-border: #5cb3ff;
+  --abm-input-focus-shadow: rgba(92, 179, 255, 0.2);
+  --abm-table-header-bg: #0d1b3d;
+  --abm-table-header-text: #ffffff;
+  --abm-table-row-border: #2a3b5e;
+  --abm-table-row-hover-bg: #1c2b4d;
+}

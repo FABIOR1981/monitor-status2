@@ -1,0 +1,364 @@
+/* abm_base.css
+   Estructura y layout de abm-webs.html, independiente del tema.
+   Los colores usan variables CSS (--abm-*) que definen abm_claro.css y
+   abm_oscuro.css — este archivo solo trae valores de resguardo (fallback)
+   por si alguno de los dos no llegara a cargar. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  background: var(--abm-bg, #f4f7f9);
+  color: var(--abm-text, #333333);
+  min-height: 100vh;
+  padding: 20px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--abm-container-bg, #ffffff);
+  border-radius: 8px;
+  box-shadow: var(--abm-container-shadow, 0 4px 8px rgba(0, 0, 0, 0.1));
+  overflow: hidden;
+}
+header {
+  background: var(--abm-header-bg, #007bff);
+  color: var(--abm-header-text, #ffffff);
+  padding: 30px;
+  text-align: center;
+}
+header h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+header p {
+  opacity: 0.9;
+}
+.nav-links {
+  text-align: center;
+  padding: 15px;
+  background: var(--abm-nav-bg, #f8f9fa);
+}
+.nav-links a {
+  color: var(--abm-link-color, #007bff);
+  text-decoration: none;
+  margin: 0 15px;
+  font-weight: 500;
+}
+.nav-links a:hover {
+  text-decoration: underline;
+}
+.content {
+  padding: 30px;
+}
+.form-section {
+  background: var(--abm-form-section-bg, #f8f9fa);
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+.form-section h2 {
+  color: var(--abm-text, #333333);
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--abm-label-color, #555555);
+  font-weight: 500;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--abm-input-border, #dddddd);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--abm-input-bg, #ffffff);
+  color: var(--abm-text, #333333);
+}
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--abm-input-focus-border, #007bff);
+  box-shadow: 0 0 0 3px var(--abm-input-focus-shadow, rgba(0, 123, 255, 0.1));
+}
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: var(--abm-muted-text, #777777);
+  font-size: 12px;
+}
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+.btn-primary:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+.btn-danger:hover {
+  background: #c82333;
+}
+.btn-edit {
+  background: #ffc107;
+  color: #333;
+  padding: 8px 16px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+.btn-edit:hover {
+  background: #e0a800;
+}
+.table-section {
+  margin-top: 30px;
+}
+.table-section h2 {
+  color: var(--abm-text, #333333);
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--abm-container-bg, #ffffff);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+thead {
+  background: var(--abm-table-header-bg, #004085);
+  color: var(--abm-table-header-text, #ffffff);
+}
+th,
+td {
+  padding: 15px;
+  text-align: left;
+}
+th {
+  font-weight: 600;
+}
+tbody tr {
+  border-bottom: 1px solid var(--abm-table-row-border, #eeeeee);
+}
+tbody tr:hover {
+  background: var(--abm-table-row-hover-bg, #f8f9fa);
+}
+.actions {
+  white-space: nowrap;
+}
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #007bff;
+  color: white;
+}
+.badge-critico {
+  background: #dc3545;
+}
+.alert {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+.alert-danger {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+.download-section {
+  text-align: center;
+  padding: 20px;
+  background: var(--abm-form-section-bg, #f8f9fa);
+  border-radius: 8px;
+  margin-top: 20px;
+}
+.download-section p {
+  margin-bottom: 15px;
+  color: var(--abm-label-color, #555555);
+}
+.hidden {
+  display: none !important;
+}
+@media (max-width: 768px) {
+  .container {
+    border-radius: 0;
+  }
+  table {
+    font-size: 12px;
+  }
+  th,
+  td {
+    padding: 10px 5px;
+  }
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* --- Botón flotante de alternar tema (mismo estilo que index.html/leyenda.html) --- */
+.theme-toggle-button-corner {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 1100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--abm-container-bg, #ffffff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  font-size: 1.3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+.theme-toggle-button-corner:hover {
+  transform: scale(1.08);
+}
+
+/* --- Pantalla de acceso --- */
+body.modal-abierto {
+  overflow: hidden;
+}
+.login-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a2e;
+  padding: 20px;
+}
+.login-box {
+  background: var(--abm-container-bg, #ffffff);
+  color: var(--abm-text, #333333);
+  border-radius: 12px;
+  padding: 40px 32px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.login-box h1 {
+  margin: 0 0 8px;
+  font-size: 1.4em;
+}
+.login-box p {
+  color: var(--abm-muted-text, #666666);
+  margin-bottom: 20px;
+  font-size: 0.9em;
+}
+.login-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.login-box input[type='password'],
+.login-box input[type='text'] {
+  padding: 10px 40px 10px 12px;
+  border: 1px solid var(--abm-input-border, #cccccc);
+  border-radius: 8px;
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--abm-input-bg, #ffffff);
+  color: var(--abm-text, #333333);
+}
+.password-wrapper {
+  position: relative;
+  display: flex;
+}
+.btn-ver-password {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.1em;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.login-box button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #1976d2;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.login-box button:hover {
+  background: #1565c0;
+}
+.login-error {
+  color: #dc3545;
+  margin-top: 12px;
+  margin-bottom: 0;
+  font-size: 0.9em;
+}
+
+/* --- Modal de alta/edición de sitio --- */
+.sitio-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.sitio-modal-box {
+  background: var(--abm-container-bg, #ffffff);
+  color: var(--abm-text, #333333);
+  border-radius: 12px;
+  padding: 28px 32px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+.sitio-modal-box h2 {
+  margin-top: 0;
+}
