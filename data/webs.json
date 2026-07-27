@@ -48,5 +48,13 @@
   {
     "nombre": "Seguimiento de envíos",
     "url": "https://www.correo.com.uy/seguimientodeenvios"
+  },
+  {
+    "nombre": "nuevo",
+    "url": "https://nuevonuevo.com.uy"
+  },
+  {
+    "nombre": "ALGO",
+    "url": "https://algonofunciona.com.uy"
   }
 ]
