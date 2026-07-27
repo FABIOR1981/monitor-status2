@@ -53,23 +53,6 @@
             <span id="texto-btn-reiniciar">Reiniciar Monitoreo</span>
           </button>
 
-          <button
-            id="btn-vista-tabla"
-            class="vista-toggle-btn activo"
-            onclick="cambiarVista('tabla')"
-            title="Ver como tabla"
-          >
-            📋 Tabla
-          </button>
-          <button
-            id="btn-vista-tarjetas"
-            class="vista-toggle-btn"
-            onclick="cambiarVista('tarjetas')"
-            title="Ver como tarjetas"
-          >
-            🎯 Tarjetas
-          </button>
-
           <a
             href="leyenda.html"
             id="enlace-leyenda"
@@ -91,7 +74,7 @@
         </div>
 
         <!-- NUEVO: Resumen superior (solo visible en vista tarjetas) -->
-        <div id="resumen-superior" class="resumen-superior">
+        <div id="resumen-superior" class="resumen-superior visible">
           <div class="contador ok" data-estado="ok">
             <span class="contador-numero" id="contador-ok">0</span>
             <span class="contador-label">🟢 OK</span>
@@ -119,7 +102,7 @@
         <!-- Los filtros se insertarán aquí dinámicamente -->
 
         <!-- VISTA TABLA (original) -->
-        <div class="table-scroll-container" id="tabla-container">
+        <div class="table-scroll-container tarjetas-activas" id="tabla-container">
           <table
             id="monitor-table"
             role="table"
@@ -141,7 +124,7 @@
         </div>
 
         <!-- NUEVO: VISTA TARJETAS -->
-        <div id="grid-tarjetas" class="grid-tarjetas"></div>
+        <div id="grid-tarjetas" class="grid-tarjetas visible"></div>
       </div>
     </main>
 

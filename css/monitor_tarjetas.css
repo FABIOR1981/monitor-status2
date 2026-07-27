@@ -53,35 +53,6 @@
 /* =======================================================
    ESTILOS PARA VISTA DE TARJETAS
    ======================================================= */
-.vista-toggle-btn {
-  padding: 8px 20px;
-  border-radius: 20px;
-  border: 2px solid var(--vista-toggle-border, #007bff);
-  background: var(--vista-toggle-bg, #ffffff);
-  color: var(--vista-toggle-text, #007bff);
-  font-weight: 600;
-  font-size: 0.95em;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.vista-toggle-btn:hover {
-  background: var(--vista-toggle-hover-bg, #e8f4ff);
-  transform: translateY(-1px);
-}
-
-.vista-toggle-btn.activo {
-  background: var(--vista-toggle-active-bg, #007bff);
-  color: white;
-  border-color: var(--vista-toggle-active-bg, #007bff);
-}
-
-.vista-toggle-btn.activo:hover {
-  background: var(--vista-toggle-active-hover-bg, #0056b3);
-}
 
 /* Grid de tarjetas - COMPACTO */
 .grid-tarjetas {

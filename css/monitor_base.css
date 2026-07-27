@@ -55,12 +55,6 @@
   --control-select-text: inherit;
   --btn-reiniciar-bg: #28a745;
   --btn-reiniciar-bg-hover: #218838;
-  --vista-toggle-bg: #ffffff;
-  --vista-toggle-border: #007bff;
-  --vista-toggle-text: #007bff;
-  --vista-toggle-hover-bg: #e8f4ff;
-  --vista-toggle-active-bg: #007bff;
-  --vista-toggle-active-hover-bg: #0056b3;
 }
 
 /* Aplicar colores de estado usando variables */

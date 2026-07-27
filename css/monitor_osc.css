@@ -37,12 +37,6 @@
   --control-select-text: #e0e0e0;
   --btn-reiniciar-bg: #1976d2;
   --btn-reiniciar-bg-hover: #1565c0;
-  --vista-toggle-bg: #16213e;
-  --vista-toggle-border: #5cb3ff;
-  --vista-toggle-text: #5cb3ff;
-  --vista-toggle-hover-bg: #1f3a5f;
-  --vista-toggle-active-bg: #1976d2;
-  --vista-toggle-active-hover-bg: #1565c0;
 }
 
 /* Sobrescrituras específicas del tema oscuro */
