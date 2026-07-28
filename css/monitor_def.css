@@ -151,6 +151,8 @@ h1 {
   --status-extreme-risk-color: white;
   --status-down-bg: #343a40;
   --status-down-color: white;
+  --status-bloqueo-externo-bg: #fff3e0;
+  --status-bloqueo-externo-color: #e65100;
 }
 
 /* Mantener el peso de fuente y otras presentaciones por encima de las reglas base */

@@ -34,6 +34,7 @@ const TEXTOS_ES = {
   estados: {
     DOWN: 'CAÍDA',
     DOWN_ERROR: 'CAÍDA/ERROR',
+    BLOQUEO_EXTERNO: 'POSIBLE BLOQUEO EXTERNO',
   },
   httpCodes: [
     {

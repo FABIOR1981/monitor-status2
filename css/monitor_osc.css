@@ -18,6 +18,7 @@
   --card-gradient-lento-end: #e65100;
   --card-gradient-critico-end: #b71c1c;
   --card-gradient-caido-end: #424242;
+  --card-gradient-bloqueo-end: #7a3e00;
   --card-text: #e0e0e0;
   --card-text-secondary: #aaaaaa;
   --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -186,6 +187,8 @@ button:active {
   --status-extreme-risk-color: #ffcccc;
   --status-down-bg: #000000;
   --status-down-color: #ffffff;
+  --status-bloqueo-externo-bg: #7a3e00;
+  --status-bloqueo-externo-color: #ffcc80;
 }
 
 /* Mantener font-weight donde sea necesario */

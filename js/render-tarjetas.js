@@ -14,6 +14,13 @@
     if (status === 0 || status === 599) return 'caido';
     if (status === 408) return 'critico';
 
+    // Si esta medición llegó por la ruta directa/interna (es decir, el
+    // proxy externo ya había fallado antes) y respondió 200: NO es un
+    // éxito común. Significa que el sitio anda por dentro pero podría
+    // estar inaccesible para alguien de afuera — se marca aparte para
+    // que no quede tapado como si estuviera todo bien.
+    if (esDirecto && status === 200) return 'bloqueo';
+
     const t = parseFloat(tiempo);
 
     const fallback = { MUY_RAPIDO: 300, RAPIDO: 500, NORMAL: 800, LENTO: 1500, CRITICO: 3000, RIESGO: 5000 };
@@ -76,6 +83,7 @@
       lento: { icono: '🟡', texto: 'LENTO', color: '#ff9800' },
       critico: { icono: '🔴', texto: 'CRÍTICO', color: '#f44336' },
       caido: { icono: '⚫', texto: 'CAÍDO', color: '#9e9e9e' },
+      bloqueo: { icono: '🟠', texto: 'BLOQUEO EXTERNO', color: '#e65100' },
     };
     return mapa[estado] || mapa.ok;
   }
@@ -89,7 +97,7 @@
     const grid = document.getElementById('grid-tarjetas');
     if (!grid) return;
 
-    const contadores = { ok: 0, lento: 0, critico: 0, caido: 0 };
+    const contadores = { ok: 0, lento: 0, critico: 0, caido: 0, bloqueo: 0 };
 
     const tarjetas = websitesData.map((web, index) => {
       const historial = historialStatus[web.url] || [];
@@ -108,6 +116,8 @@
     document.getElementById('contador-lento').textContent = contadores.lento;
     document.getElementById('contador-critico').textContent = contadores.critico;
     document.getElementById('contador-caido').textContent = contadores.caido;
+    const contadorBloqueo = document.getElementById('contador-bloqueo');
+    if (contadorBloqueo) contadorBloqueo.textContent = contadores.bloqueo;
   }
 
   function crearTarjetaHTML(web, ultima, estado, historial, index = 0) {
@@ -133,7 +143,9 @@
     const permiteExpansion = !TEMAS_BASICOS.includes(temaActual);
 
     const fuenteIcono = esDirecto ? '🖥️' : '🌐';
-    const fuenteTitle = esDirecto ? 'Directo' : 'Proxy';
+    const fuenteTitle = esDirecto
+      ? 'Red interna (el proxy externo falló primero) — no confirma acceso externo'
+      : 'Proxy externo (simula acceso de un usuario externo)';
 
     // Animación de entrada escalonada: cada tarjeta aparece un poco después
     // que la anterior (tope de 600ms para que no se demore con muchos sitios)

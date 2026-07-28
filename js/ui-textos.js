@@ -195,27 +195,18 @@ function obtenerDescripcionEstadoHttp(codigo) {
 function obtenerEstadoVisual(tiempo, estado = 200, esVerificadoDirecto = false) {
   const tiempoNum = parseFloat(tiempo);
 
-  // Si fue verificado directamente y el proxy decía "caído",
-  // pero la verificación directa confirmó que funciona (status 200),
-  // clasificar por velocidad, NO mostrar como caído
+  // Si fue verificado directamente y el proxy decía "caído", pero la
+  // verificación directa confirmó que funciona (status 200): esto YA NO
+  // significa "todo bien". Significa que el sitio respondió por la ruta
+  // interna/directa pero no por la ruta externa (proxy) — es decir, un
+  // usuario externo (el caso que más nos importa) podría no poder entrar,
+  // aunque desde acá adentro sí funcione. Se marca como advertencia
+  // distinta en vez de mostrarlo como si fuera un éxito normal.
   if (esVerificadoDirecto && estado === 200) {
-    // Clasificar por velocidad como cualquier otro sitio funcional
-    // (usa la escala DIRECTA: más estricta, porque no hay distancia de datacenter de por medio)
-    const estadosVelocidad = [
-      { umbral: UMBRALES_LATENCIA_DIRECTO.MUY_RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.VERY_FAST, className: 'status-very-fast' },
-      { umbral: UMBRALES_LATENCIA_DIRECTO.RAPIDO, text: window.TEXTOS_ACTUAL.velocidad.FAST, className: 'status-fast' },
-      { umbral: UMBRALES_LATENCIA_DIRECTO.NORMAL, text: window.TEXTOS_ACTUAL.velocidad.NORMAL, className: 'status-normal' },
-      { umbral: UMBRALES_LATENCIA_DIRECTO.LENTO, text: window.TEXTOS_ACTUAL.velocidad.SLOW, className: 'status-slow' },
-      { umbral: UMBRALES_LATENCIA_DIRECTO.CRITICO, text: window.TEXTOS_ACTUAL.velocidad.CRITICAL, className: 'status-critical' },
-      { umbral: UMBRALES_LATENCIA_DIRECTO.RIESGO, text: window.TEXTOS_ACTUAL.velocidad.RISK, className: 'status-risk' },
-    ];
-
-    for (const ev of estadosVelocidad) {
-      if (tiempoNum <= ev.umbral) {
-        return { text: ev.text, className: ev.className };
-      }
-    }
-    return { text: window.TEXTOS_ACTUAL.velocidad.EXTREME_RISK, className: 'status-extreme-risk' };
+    return {
+      text: window.TEXTOS_ACTUAL.estados.BLOQUEO_EXTERNO,
+      className: 'status-bloqueo-externo',
+    };
   }
 
   if (estado !== 200 || tiempoNum >= UMBRALES_LATENCIA.PENALIZACION_FALLO) {

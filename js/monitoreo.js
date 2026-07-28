@@ -449,10 +449,14 @@ function actualizarFila(web, resultado) {
 
   if (!row) return;
 
-  // Borde izquierdo azul para mediciones directas (red interna)
-  if (resultado.verifiedDirect) {
-    row.style.borderLeft = '4px solid #3498db';
-    row.title = 'Medición directa desde navegador (red interna)';
+  // Borde izquierdo naranja SOLO para el caso "bloqueo externo" (proxy
+  // externo falló pero la red interna sí responde) — es el caso que más
+  // nos importa destacar, para que no se confunda con un "todo bien".
+  // Si también falló la verificación directa, es una caída total real:
+  // ya queda claro con los colores normales de "caído", sin borde extra.
+  if (resultado.verifiedDirect && resultado.status === 200) {
+    row.style.borderLeft = '4px solid #e65100';
+    row.title = 'El proxy externo falló; responde solo por la red interna. Un usuario externo real podría no poder acceder.';
   } else {
     row.style.borderLeft = '';
     row.title = '';
@@ -463,12 +467,18 @@ function actualizarFila(web, resultado) {
   // Nota: calcularPromedio() obtiene los datos del historial que ACABA de ser actualizado
   const { promedio, promedioProxy, promedioDirecto, estadoPromedio, fuentes } = calcularPromedio(web.url);
 
-  // ALERTA: Solo alertar si el sitio REALMENTE está caído
-  // No alertar si fue verificado directamente (verifiedDirect: true con status 200)
-  // porque eso significa que el proxy estaba bloqueado pero el sitio funciona
+  // IMPORTANTE: resultado.verifiedDirect significa "se intentó una verificación
+  // directa", NO "la verificación directa tuvo éxito". Si el proxy externo
+  // falla y la verificación directa TAMBIÉN falla (status sigue en 0), es una
+  // caída total real — hay que alertar igual. Solo se considera "acceso
+  // solo interno" cuando la verificación directa realmente respondió 200.
+  const exitoSoloInterno = resultado.verifiedDirect && resultado.status === 200;
+
+  // ALERTA: Solo alertar como "caída real" si NI el proxy NI (si se intentó)
+  // la verificación directa lograron un 200.
   const sitioRealmenteCaido = resultado &&
     (resultado.status === 0 || resultado.status >= 400) &&
-    !resultado.verifiedDirect;
+    !exitoSoloInterno;
 
   if (sitioRealmenteCaido) {
     window.registrarErrorSitio &&
@@ -480,8 +490,22 @@ function actualizarFila(web, resultado) {
         resultado.error || '',
         resultado.diagnostics || resultado.attempts || null
       );
-  } else if (resultado && (resultado.status === 200 || resultado.verifiedDirect)) {
-    // Si el sitio funciona (directo o via proxy), limpiar alertas previas
+  } else if (exitoSoloInterno) {
+    // Responde por la red interna, pero el proxy externo (la ruta que más
+    // se parece a un usuario común) había fallado antes. Esto NO es "todo
+    // bien" — un usuario externo real podría no poder entrar. Se registra
+    // como su propia alerta en vez de limpiar las anteriores.
+    window.registrarErrorSitio &&
+      window.registrarErrorSitio(
+        web.nombre || web.url,
+        web.url,
+        resultado.time,
+        resultado.status,
+        'Posible bloqueo externo: el sitio respondió por la red interna, pero el proxy externo no pudo acceder. Un usuario externo real podría no poder entrar.',
+        null
+      );
+  } else if (resultado && resultado.status === 200 && !resultado.verifiedDirect) {
+    // Éxito genuino por la ruta externa (proxy): ahí sí limpiar alertas previas.
     window.limpiarErrorSitio && window.limpiarErrorSitio(web.nombre || web.url);
   }
 
@@ -490,14 +514,14 @@ function actualizarFila(web, resultado) {
   // Columna 3: Latencia Actual (índice 2)
   row.cells[2].textContent = `${resultado.time} ms ${resultado.verifiedDirect ? '🖥️' : '🌐'}`;
   row.cells[2].title = resultado.verifiedDirect 
-    ? 'Medición directa desde navegador (red interna)' 
-    : 'Medición vía proxy serverless (internet)';
+    ? 'Medición por red interna (el proxy externo falló primero)' 
+    : 'Medición vía proxy serverless (simula acceso externo)';
 
   // Columna 4: Estado Actual (índice 3)
   row.cells[3].textContent = estadoActual.text;
   row.cells[3].title = resultado.verifiedDirect 
-    ? 'Estado verificado directamente desde navegador' 
-    : 'Estado vía proxy serverless';
+    ? 'Solo se confirmó acceso por red interna — no confirma que un usuario externo pueda entrar' 
+    : 'Estado vía proxy serverless (la señal más parecida a un usuario externo)';
   row.cells[3].className = estadoActual.className;
 
   // Obtener tema actual y verificar si permite expansión (todos menos DEF y OSC)
@@ -552,7 +576,7 @@ function actualizarFila(web, resultado) {
   // Columna 6: Estado Promedio (índice 5)
   row.cells[5].textContent = estadoPromedio.text;
   row.cells[5].title = resultado.verifiedDirect 
-    ? 'Estado promedio con verificación directa' 
+    ? 'Promedio afectado por mediciones solo internas (posible bloqueo externo)' 
     : 'Estado promedio vía proxy';
   row.cells[5].className = estadoPromedio.className;
 

@@ -34,6 +34,7 @@ const TEXTOS_FR = {
   estados: {
     DOWN: 'HORS SERVICE',
     DOWN_ERROR: 'HORS SERVICE/ERREUR',
+    BLOQUEO_EXTERNO: 'BLOCAGE EXTERNE POSSIBLE',
   },
   httpCodes: [
     {

@@ -28,6 +28,8 @@
   --status-extreme-risk-color: inherit;
   --status-down-bg: transparent;
   --status-down-color: inherit;
+  --status-bloqueo-externo-bg: transparent;
+  --status-bloqueo-externo-color: inherit;
 
   /* Tarjetas de servicio (vista "Tarjetas") */
   --card-bg: #ffffff;
@@ -36,6 +38,7 @@
   --card-gradient-lento-end: #fff8f0;
   --card-gradient-critico-end: #fff5f5;
   --card-gradient-caido-end: #f9f9f9;
+  --card-gradient-bloqueo-end: #fff3e0;
   --card-text: #333333;
   --card-text-secondary: #888888;
   --card-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
@@ -89,6 +92,10 @@
 .status-down {
   background-color: var(--status-down-bg);
   color: var(--status-down-color);
+}
+.status-bloqueo-externo {
+  background-color: var(--status-bloqueo-externo-bg);
+  color: var(--status-bloqueo-externo-color);
 }
 
 body {
@@ -226,7 +233,8 @@ h1 {
 .status-critical,
 .status-risk,
 .status-extreme-risk,
-.status-down {
+.status-down,
+.status-bloqueo-externo {
   font-weight: bold;
 }
 
@@ -269,6 +277,9 @@ h1 {
 .status-down::after {
   content: ' ❌';
 }
+.status-bloqueo-externo::after {
+  content: ' 🟠';
+}
 
 /* ====================================
    ESTILOS PARA EXPANSIÓN DE ERRORES
@@ -282,7 +293,8 @@ h1 {
 .status-critical[style*='cursor: pointer']:hover,
 .status-risk[style*='cursor: pointer']:hover,
 .status-extreme-risk[style*='cursor: pointer']:hover,
-.status-down[style*='cursor: pointer']:hover {
+.status-down[style*='cursor: pointer']:hover,
+.status-bloqueo-externo[style*='cursor: pointer']:hover {
   opacity: 0.8;
   text-decoration: underline;
 }

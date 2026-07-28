@@ -121,10 +121,11 @@ async function cargarYMostrarHistorialExistente() {
     const ultimaMedicion =
       historial.length > 0 ? historial[historial.length - 1] : null;
 
-    // Borde izquierdo azul para mediciones directas
-    if (ultimaMedicion && ultimaMedicion.source === 'direct') {
-      row.style.borderLeft = '4px solid #3498db';
-      row.title = 'Medición directa desde navegador (red interna)';
+    // Borde izquierdo naranja SOLO si la última medición fue "bloqueo
+    // externo" (proxy externo falló, pero respondió por red interna)
+    if (ultimaMedicion && ultimaMedicion.source === 'direct' && ultimaMedicion.status === 200) {
+      row.style.borderLeft = '4px solid #e65100';
+      row.title = 'El proxy externo falló; responde solo por la red interna. Un usuario externo real podría no poder acceder.';
     }
 
     // Obtener tema actual y verificar si permite expansión (todos menos DEF y OSC)
@@ -148,14 +149,14 @@ async function cargarYMostrarHistorialExistente() {
       const cellLat = row.insertCell();
       cellLat.textContent = `${ultimaMedicion.time} ms ${ultimaMedicion.source === 'direct' ? '🖥️' : '🌐'}`;
       cellLat.title = ultimaMedicion.source === 'direct' 
-        ? 'Medición directa desde navegador (red interna)' 
-        : 'Medición vía proxy serverless (internet)';
+        ? 'Medición por red interna (el proxy externo falló primero)' 
+        : 'Medición vía proxy serverless (simula acceso externo)';
 
       const cellEstadoActual = row.insertCell();
       cellEstadoActual.textContent = estadoActual.text;
       cellEstadoActual.title = ultimaMedicion.source === 'direct' 
-        ? 'Estado verificado directamente desde navegador' 
-        : 'Estado vía proxy serverless';
+        ? 'Solo se confirmó acceso por red interna — no confirma que un usuario externo pueda entrar' 
+        : 'Estado vía proxy serverless (la señal más parecida a un usuario externo)';
       cellEstadoActual.className = estadoActual.className;
 
       // Hacer clickeable el badge si hay errores y el tema lo permite
@@ -176,13 +177,13 @@ async function cargarYMostrarHistorialExistente() {
       const cellProm = row.insertCell();
       cellProm.textContent = `${promedio} ms${contadorErrores} ${ultimaMedicion.source === 'direct' ? '🖥️' : '🌐'}`;
       cellProm.title = ultimaMedicion.source === 'direct' 
-        ? 'Promedio con medición directa desde navegador' 
+        ? 'Promedio afectado por mediciones solo internas (posible bloqueo externo)' 
         : 'Promedio vía proxy serverless';
 
       const cellEstadoPromedio = row.insertCell();
       cellEstadoPromedio.textContent = estadoPromedio.text;
       cellEstadoPromedio.title = ultimaMedicion.source === 'direct' 
-        ? 'Estado promedio con verificación directa' 
+        ? 'Promedio afectado por mediciones solo internas (posible bloqueo externo)' 
         : 'Estado promedio vía proxy';
       cellEstadoPromedio.className = estadoPromedio.className;
 
