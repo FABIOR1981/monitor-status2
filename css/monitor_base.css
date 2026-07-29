@@ -46,6 +46,10 @@
   --card-border-subtle: rgba(0, 0, 0, 0.06);
   --card-footer-link: #1976d2;
   --skeleton-shimmer: rgba(0, 0, 0, 0.12);
+  --aviso-medicion-bg: #eef6fc;
+  --aviso-medicion-border: #90caf9;
+  --aviso-medicion-text: #0d47a1;
+  --aviso-medicion-link: #1565c0;
 
   /* Contadores del resumen superior */
   --contador-bg: #ffffff;
@@ -137,6 +141,30 @@ h1 {
 }
 .update-info {
   font-weight: bold;
+}
+
+.aviso-medicion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  background: var(--aviso-medicion-bg, #eef6fc);
+  border: 1px solid var(--aviso-medicion-border, #90caf9);
+  color: var(--aviso-medicion-text, #0d47a1);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82em;
+  margin-bottom: 15px;
+}
+.aviso-medicion a {
+  color: var(--aviso-medicion-link, #1565c0);
+  font-weight: 600;
+  text-decoration: none;
+}
+.aviso-medicion a:hover {
+  text-decoration: underline;
 }
 
 .menu-item {

@@ -26,6 +26,10 @@
   --card-border-subtle: rgba(255, 255, 255, 0.08);
   --card-footer-link: #5cb3ff;
   --skeleton-shimmer: rgba(255, 255, 255, 0.18);
+  --aviso-medicion-bg: #16213e;
+  --aviso-medicion-border: #2a3b5e;
+  --aviso-medicion-text: #a8d4ff;
+  --aviso-medicion-link: #5cb3ff;
 
   /* Contadores del resumen superior */
   --contador-bg: #16213e;

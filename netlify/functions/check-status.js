@@ -121,8 +121,11 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // PASO 2: HEAD con headers mínimos (menos sospechoso para WAF)
-  let result = await tryFetch(targetUrl, 'HEAD', true, 1);
+  // PASO 2: GET con headers mínimos (antes era HEAD; se cambió porque un
+  // navegador real nunca manda HEAD solo, y algunos sitios/WAF procesan HEAD
+  // de forma distinta —a veces más lenta— que un GET normal, lo que inflaba
+  // la latencia medida sin relación con la experiencia real del usuario)
+  let result = await tryFetch(targetUrl, 'GET', true, 1);
   diagnostics.attempts.push(result);
 
   if (result.success) {
