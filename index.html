@@ -74,12 +74,18 @@
         </div>
 
         <!-- Aviso permanente sobre qué representa (y qué no) la medición 🌐 -->
-        <div class="aviso-medicion" role="note">
+        <div class="aviso-medicion" id="aviso-medicion" role="note">
           <span aria-hidden="true">ℹ️</span>
-          Las mediciones 🌐 se hacen desde un datacenter externo, no desde
-          Uruguay — pueden no reflejar tu experiencia real al entrar al
-          sitio. Las mediciones 🖥️ solo confirman acceso desde la red
-          interna. <a href="leyenda.html" target="_blank" rel="noopener noreferrer">Ver más</a>
+          <span>🌐 = medición externa, no tu experiencia real · 🖥️ = solo acceso interno.</span>
+          <a href="leyenda.html" target="_blank" rel="noopener noreferrer">Ver más</a>
+          <button
+            id="btn-cerrar-aviso"
+            class="btn-cerrar-aviso"
+            aria-label="Cerrar aviso"
+            title="Cerrar (no volver a mostrar)"
+          >
+            ✕
+          </button>
         </div>
 
         <!-- NUEVO: Resumen superior (solo visible en vista tarjetas) -->

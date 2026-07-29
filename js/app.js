@@ -237,11 +237,30 @@ async function cargarYMostrarHistorialExistente() {
 }
 
 // Cuando se carga la página, arranca todo el sistema
+// Muestra/oculta el aviso sobre 🌐/🖥️, recordando si el usuario ya lo cerró
+// (en ese caso no vuelve a aparecer, ni siquiera en otra visita).
+function inicializarAvisoMedicion() {
+  const aviso = document.getElementById('aviso-medicion');
+  const btnCerrar = document.getElementById('btn-cerrar-aviso');
+  if (!aviso || !btnCerrar) return;
+
+  if (localStorage.getItem('avisoMedicionCerrado') === '1') {
+    aviso.style.display = 'none';
+    return;
+  }
+
+  btnCerrar.addEventListener('click', () => {
+    aviso.style.display = 'none';
+    localStorage.setItem('avisoMedicionCerrado', '1');
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   inicializarTema();
   cargarHistorial();
   configurarEnlaceLeyenda();
   inicializarVista();
+  inicializarAvisoMedicion();
 
   try {
     // 1. Cargar dinámicamente el diccionario de idioma
