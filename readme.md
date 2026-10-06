@@ -72,13 +72,14 @@ https://tu-monitor.netlify.app/?lang=en   ← Interfaz en inglés
 
 Dónde encontrar la documentación técnica
 
-- Carpeta `docs/` (principal): `docs/readme.md`.
+- Manual de usuario (uso de la pantalla, sin datos técnicos): [MANUAL_USUARIO.md](https://github.com/FABIOR1981/documentacion-central/blob/main/monitor-status2/documentacion/MANUAL_USUARIO.md) ([PDF](https://github.com/FABIOR1981/documentacion-central/blob/main/monitor-status2/documentacion/MANUAL_USUARIO.pdf)).
+- En [documentacion-central](https://github.com/FABIOR1981/documentacion-central/tree/main/monitor-status2/documentacion) (principal: `readme.md`):
 - Guías específicas:
-  - `docs/configuracion.md` — ajustes y personalización
-  - `docs/arquitectura.md` — cómo funciona internamente
-  - `docs/estructura.md` — organización de archivos
-  - `docs/justificacion_rangos_latencia.md` — por qué esos umbrales
-  - `docs/resolución de problemas.md` — solución de problemas comunes
+  - `configuracion.md` — ajustes y personalización
+  - `arquitectura.md` — cómo funciona internamente
+  - `estructura.md` — organización de archivos
+  - `justificacion_rangos_latencia.md` — por qué esos umbrales
+  - `resolución de problemas.md` — solución de problemas comunes
 
 Licencia
 
