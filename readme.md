@@ -72,6 +72,7 @@ https://tu-monitor.netlify.app/?lang=en   ← Interfaz en inglés
 
 Dónde encontrar la documentación técnica
 
+- Manual de usuario (uso de la pantalla, sin datos técnicos): [MANUAL_USUARIO.md](https://github.com/FABIOR1981/documentacion-central/blob/main/monitor-status2/documentacion/MANUAL_USUARIO.md) ([PDF](https://github.com/FABIOR1981/documentacion-central/blob/main/monitor-status2/documentacion/MANUAL_USUARIO.pdf)).
 - En [documentacion-central](https://github.com/FABIOR1981/documentacion-central/tree/main/monitor-status2/documentacion) (principal: `readme.md`):
 - Guías específicas:
   - `configuracion.md` — ajustes y personalización
